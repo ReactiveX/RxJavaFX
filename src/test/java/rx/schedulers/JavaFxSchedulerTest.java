@@ -74,25 +74,6 @@ public final class JavaFxSchedulerTest {
     }
 
     @Test
-    public void testInvalidDelayValues() {
-        final JavaFxScheduler scheduler = new JavaFxScheduler();
-        final Worker inner = scheduler.createWorker();
-        final Action0 action = mock(Action0.class);
-
-        exception.expect(IllegalArgumentException.class);
-        inner.schedulePeriodically(action, -1L, 100L, TimeUnit.SECONDS);
-
-        exception.expect(IllegalArgumentException.class);
-        inner.schedulePeriodically(action, 100L, -1L, TimeUnit.SECONDS);
-
-        exception.expect(IllegalArgumentException.class);
-        inner.schedulePeriodically(action, 1L + Integer.MAX_VALUE, 100L, TimeUnit.MILLISECONDS);
-
-        exception.expect(IllegalArgumentException.class);
-        inner.schedulePeriodically(action, 100L, 1L + Integer.MAX_VALUE / 1000, TimeUnit.SECONDS);
-    }
-
-    @Test
     public void testPeriodicScheduling() throws Exception {
         final JavaFxScheduler scheduler = new JavaFxScheduler();
         final Worker inner = scheduler.createWorker();

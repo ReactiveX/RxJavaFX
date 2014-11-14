@@ -30,6 +30,8 @@ import rx.subscriptions.Subscriptions;
 
 import java.util.concurrent.TimeUnit;
 
+import static java.lang.Math.max;
+
 /**
  * Executes work on the JavaFx UI thread.
  * This scheduler should only be used with actions that execute quickly.
@@ -42,12 +44,6 @@ public final class JavaFxScheduler extends Scheduler {
 
     public static JavaFxScheduler getInstance() {
         return INSTANCE;
-    }
-
-    private static void assertThatTheDelayIsValidForTheJavaFxTimer(long delay) {
-        if (delay < 0 || delay > Integer.MAX_VALUE) {
-            throw new IllegalArgumentException(String.format("The JavaFx timer only accepts non-negative delays up to %d milliseconds.", Integer.MAX_VALUE));
-        }
     }
 
     @Override
@@ -71,10 +67,9 @@ public final class JavaFxScheduler extends Scheduler {
 
         @Override
         public Subscription schedule(final Action0 action, long delayTime, TimeUnit unit) {
-            long delay = unit.toMillis(delayTime);
-            assertThatTheDelayIsValidForTheJavaFxTimer(delay);
             final BooleanSubscription s = BooleanSubscription.create();
 
+            final long delay = unit.toMillis(max(delayTime, 0));
             final Timeline timeline = new Timeline(new KeyFrame(Duration.millis(delay), new EventHandler<ActionEvent>() {
 
                 @Override
