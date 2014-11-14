@@ -95,7 +95,7 @@ public final class JavaFxSchedulerTest {
 
         inner.schedulePeriodically(action, 50, 200, TimeUnit.MILLISECONDS);
 
-        if (!latch.await(5000, TimeUnit.MILLISECONDS)) {
+        if (!latch.await(1, TimeUnit.SECONDS)) {
             fail("timed out waiting for tasks to execute");
         }
 
