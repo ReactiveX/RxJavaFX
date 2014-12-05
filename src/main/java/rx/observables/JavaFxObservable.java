@@ -17,15 +17,18 @@ package rx.observables;
 
 
 import java.util.List;
+import java.util.Map;
 
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.event.Event;
 import javafx.event.EventType;
 import javafx.scene.Node;
 import rx.Observable;
 import rx.javafx.sources.NodeEventSource;
 import rx.javafx.sources.ObservableListSource;
+import rx.javafx.sources.ObservableMapSource;
 import rx.javafx.sources.ObservableValueSource;
 
 
@@ -64,5 +67,17 @@ public enum JavaFxObservable {
      */
     public static <T> Observable<List<? extends T>> fromObservableList(final ObservableList<T> list) {
         return ObservableListSource.fromObservableList(list);
+    }
+
+    /**
+     * Create an rx Observable from a javafx ObservableMap.
+     * 
+     * @param map the observed ObservableMap
+     * @param <K>          the type of the keys in the map
+     * @param <V>          the type of the values in the map
+     * @return an Observable emitting map versions as the wrapped ObservableMap changes
+     */
+    public static <K, V> Observable<Map<? extends K, ? extends V>> fromObservableMap(final ObservableMap<K, V> map) {
+        return ObservableMapSource.fromObservableMap(map);
     }
 }
