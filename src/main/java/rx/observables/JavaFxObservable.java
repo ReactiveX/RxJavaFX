@@ -16,12 +16,16 @@
 package rx.observables;
 
 
+import java.util.List;
+
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.event.Event;
 import javafx.event.EventType;
 import javafx.scene.Node;
 import rx.Observable;
 import rx.javafx.sources.NodeEventSource;
+import rx.javafx.sources.ObservableListSource;
 import rx.javafx.sources.ObservableValueSource;
 
 
@@ -49,5 +53,16 @@ public enum JavaFxObservable {
      */
     public static <T> Observable<T> fromObservableValue(final ObservableValue<T> fxObservable) {
         return ObservableValueSource.fromObservableValue(fxObservable);
+    }
+
+    /**
+     * Create an rx Observable from a javafx ObservableList.
+     * 
+     * @param list the observed ObservableList
+     * @param <T>          the type of the elements in the list
+     * @return an Observable emitting list versions as the wrapped ObservableList changes
+     */
+    public static <T> Observable<List<? extends T>> fromObservableList(final ObservableList<T> list) {
+        return ObservableListSource.fromObservableList(list);
     }
 }
