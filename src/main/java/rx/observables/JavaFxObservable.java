@@ -18,10 +18,12 @@ package rx.observables;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
+import javafx.collections.ObservableSet;
 import javafx.event.Event;
 import javafx.event.EventType;
 import javafx.scene.Node;
@@ -29,6 +31,7 @@ import rx.Observable;
 import rx.javafx.sources.NodeEventSource;
 import rx.javafx.sources.ObservableListSource;
 import rx.javafx.sources.ObservableMapSource;
+import rx.javafx.sources.ObservableSetSource;
 import rx.javafx.sources.ObservableValueSource;
 
 
@@ -79,5 +82,16 @@ public enum JavaFxObservable {
      */
     public static <K, V> Observable<Map<? extends K, ? extends V>> fromObservableMap(final ObservableMap<K, V> map) {
         return ObservableMapSource.fromObservableMap(map);
+    }
+
+    /**
+     * Create an rx Observable from a javafx ObservableSet.
+     * 
+     * @param set the observed ObservableSet
+     * @param <T>          the type of the elements in the set
+     * @return an Observable emitting set versions as the wrapped ObservableSet changes
+     */
+    public static <T> Observable<Set<? extends T>> fromObservableSet(final ObservableSet<T> set) {
+        return ObservableSetSource.fromObservableSet(set);
     }
 }
