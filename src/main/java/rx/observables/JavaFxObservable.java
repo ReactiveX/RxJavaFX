@@ -27,12 +27,14 @@ import javafx.collections.ObservableSet;
 import javafx.event.Event;
 import javafx.event.EventType;
 import javafx.scene.Node;
+import javafx.stage.Window;
 import rx.Observable;
 import rx.javafx.sources.NodeEventSource;
 import rx.javafx.sources.ObservableListSource;
 import rx.javafx.sources.ObservableMapSource;
 import rx.javafx.sources.ObservableSetSource;
 import rx.javafx.sources.ObservableValueSource;
+import rx.javafx.sources.WindowEventSource;
 
 
 public enum JavaFxObservable {
@@ -48,6 +50,17 @@ public enum JavaFxObservable {
      */
     public static <T extends Event> Observable<T> fromNodeEvents(final Node node, final EventType<T> eventType) {
         return NodeEventSource.fromNodeEvents(node, eventType);
+    }
+
+    /**
+     * Creates an observable corresponding to javafx window events.
+     * 
+     * @param window    The target of the window events
+     * @param eventType The type of the observed window events
+     * @return An Observable of window events, appropriately typed
+     */
+    public static <T extends Event> Observable<T> fromWindowEvent(final Window window, final EventType<T> eventType) {
+    	return WindowEventSource.fromWindowEvents(window, eventType);
     }
 
     /**
