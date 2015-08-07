@@ -6,3 +6,18 @@ jdk:
 before_install:
 - export DISPLAY=:99.0
 - sh -e /etc/init.d/xvfb start
+
+# script for build and release via Travis to Bintray
+script: gradle/buildViaTravis.sh
+
+# cache between builds
+cache:
+  directories:
+  - $HOME/.m2
+  - $HOME/.gradle
+env:
+  global:
+  - secure: ey2J74wtmQqSCoDHlUhH8B6oS2mHscLQIWCTZtzMnSgv6Y6FiKK2gKWYVGQo0p1V84sZFQnMB+V1f6BmX265MYcuzZESZQAcQRE1RnFH3kZ8DJShKEPJSHCRp8bZ8Lp5oFkvQDhqbv7WRKlCoLUXiOeWUbWkihTpMX1CPe98P/E=
+  - secure: hoTnU0bDEUaW3tDtihKPeAazr2P2KUH9h+BnTOY3hdk/GlwJVeKdnqvjKRhnXVlAUoBLWqbycrcrkT4mxnHChOMa7/ddQCDhQqJ3g1UuQAI6rg6MrCb547i2JaGUnmapD3FxFEBe9N4a4o6Clq8DRy6U0q4DsOjQZuGWRI92KLo=
+  - secure: POqbBFN2b2cSUhrFi1A3x3GQKpyJsAaND7NpF1AuNYsx/piZ4Xs0NQkMEi2i4ceZ2uWFQyI2Z+32EN2Meho3ShwBgC0ZMzg1DoEfzR3zGF0xnK3/9PUDMC4X7XCDaDJYwXUo7oQFmBZFAfi8JpS4JNhBTpUk7ZHY0c+BZXLRVpo=
+  - secure: dtxICswlTewVugT7ADNPnDqH/Y3Bf6yBhVwPs93tZ2fagdGJpuFG2Asi/PEszaOIfll1x+R7yxZef9LtTxGf+mm4fE341/ebklJpZQOezOFDSwtA9XRbBSHIa3iI6aIFXuHfw7njGIvHyCDc9ZkoLbGPF5kxUP6KPDIEA1RdM0U=
