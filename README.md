@@ -38,7 +38,7 @@ To build:
 
 ```
 $ git clone git@github.com:ReactiveX/RxJavaFX.git
-$ cd RxSwing/
+$ cd RxJavaFX/
 $ ./gradlew build
 ```
 
