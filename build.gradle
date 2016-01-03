@@ -1,9 +1,12 @@
-buildscript {
-  repositories { jcenter() }
-  dependencies { classpath 'com.netflix.nebula:gradle-rxjava-project-plugin:2.2.3' }
+plugins {
+  id 'nebula.rxjava-project' version '3.0.0'
 }
 
-apply plugin: 'rxjava-project'
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.8'
+    distributionUrl = 'https://services.gradle.org/distributions/gradle-2.8-all.zip'
+}
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
