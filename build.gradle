@@ -1,6 +1,12 @@
+buildscript {
+    repositories { jcenter() }
+}
+
 plugins {
   id 'nebula.rxjava-project' version '3.0.0'
 }
+
+apply plugin: 'nebula.rxjava-project'
 
 
 task wrapper(type: Wrapper) {
