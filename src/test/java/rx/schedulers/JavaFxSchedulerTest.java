@@ -17,6 +17,7 @@ package rx.schedulers;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
 import javafx.stage.Stage;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -64,13 +65,15 @@ public final class JavaFxSchedulerTest {
 
     @BeforeClass
     public static void initJFX() {
-        Thread t = new Thread("JavaFX Init Thread") {
+        /*Thread t = new Thread("JavaFX Init Thread") {
             public void run() {
                 Application.launch(AsNonApp.class, new String[0]);
             }
         };
         t.setDaemon(true);
-        t.start();
+        t.start();*/
+        //use panel to initialize JavaFX thread
+        JFXPanel panel = new JFXPanel();
     }
 
     @Test
