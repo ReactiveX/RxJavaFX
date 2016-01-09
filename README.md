@@ -55,12 +55,12 @@ $ ./gradlew build
 ## Features
 
 RxJava has two sets of features: 
+- Factories to turn `Node` and `ObservableValue` events into an RxJava `Observable`
 - A scheduler for the JavaFX dispatch thread
-- Factories to turn `Node` events and `ObservableValue` changes into an RxJava `Observable`.
 
 ###Node Events
 You can get event emissions by calling `JavaFxObservable.fromNodeEvents()` and pass the JavaFX `Node` and the `EventType` you are interested in.  This will return an RxJava `Observable`. 
-```
+```java
 Button incrementBttn = new Button("Increment");
 
 Observable<ActionEvent> bttnEvents =
@@ -71,7 +71,7 @@ Observable<ActionEvent> bttnEvents =
 ### ObservableValue Changes
 Not to be confused with the RxJava `Observable`, the JavaFX `ObservableValue` can be converted into an RxJava `Observable` that emits the initial value and all value changes. 
 
-```
+```java
 TextField textInput = new TextField();
 
 Observable<String> textInputs =
@@ -84,7 +84,7 @@ Note that many Nodes in JavaFX will have an initial value, which sometimes can b
 
 When you update any JavaFX control, it must be done on the JavaFX Event Dispatch Thread. Fortunately, the `JavaFxScheduler` makes it trivial to take work off the JavaFX thread and put it back when the results are ready.  Below we can use the `observeOn()` to pass text value emissions to a computation thread where the text will be flipped. Then we can pass `JavaFxScheduler.getInstance()` to another `observeOn()` afterwards to put it back on the JavaFX thread. From there it will update the `flippedTextLabel`.
 
-```
+```java
 TextField textInput = new TextField();
 Label fippedTextLabel = new Label();
 
@@ -105,7 +105,7 @@ Although ReactFX has some asynchronous operators like `threadBridge`, ReactFX em
 If you are heavily dependent on RxJava, asynchronous processing, or do not want your entire reactive codebase to be UI-focused, you will probably want to use RxJavaFX. 
 
 ## Comprehensive Example
-```
+```java
 package rx.schedulers;
 
 import javafx.application.Application;
