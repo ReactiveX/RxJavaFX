@@ -106,8 +106,6 @@ If you are heavily dependent on RxJava, asynchronous processing, or do not want 
 
 ## Comprehensive Example
 ```java
-package rx.schedulers;
-
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
