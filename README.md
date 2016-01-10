@@ -54,7 +54,7 @@ $ ./gradlew build
 
 ## Features
 
-RxJava has two sets of features: 
+RxJavaFX has two sets of features: 
 - Factories to turn `Node` and `ObservableValue` events into an RxJava `Observable`
 - A scheduler for the JavaFX dispatch thread
 
