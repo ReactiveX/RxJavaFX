@@ -16,24 +16,20 @@
 
 package rx.subscribers;
 
-import rx.Observable;
+import javafx.beans.property.Property;
 import rx.functions.Action1;
-
-import java.util.Optional;
 
 public enum JavaFxSubscriber {
     ;//no instances
 
-    public static <T> BindingSubscriber<T> toBinding(Observable<T> observable) {
-        return new BindingSubscriber<T>(observable, Optional.empty(), e -> {});
+    public static <T> BindingSubscriber<T> toBinding(Property<? super T> t) {
+        BindingSubscriber<T> bindingSubscriber = new BindingSubscriber<>(e -> {});
+        t.bind(bindingSubscriber);
+        return bindingSubscriber;
     }
-    public static <T> BindingSubscriber<T> toBinding(Observable<T> observable,Action1<Throwable> onErrorAction ) {
-        return new BindingSubscriber<T>(observable, Optional.empty(), onErrorAction);
-    }
-    public static <T> BindingSubscriber<T> toBinding(Observable<T> observable, T initialValue, Action1<Throwable> onErrorAction ) {
-        return new BindingSubscriber<T>(observable, Optional.of(initialValue), onErrorAction);
-    }
-    public static <T> BindingSubscriber<T> toBinding(Observable<T> observable, T initialValue) {
-        return new BindingSubscriber<T>(observable, Optional.of(initialValue), e -> {});
+    public static <T> BindingSubscriber<T> toBinding(Property<? super T> t, Action1<Throwable> onErrorAction ) {
+        BindingSubscriber<T> bindingSubscriber = new BindingSubscriber<>(onErrorAction);
+        t.bind(bindingSubscriber);
+        return bindingSubscriber;
     }
 }
