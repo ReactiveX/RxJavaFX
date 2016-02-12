@@ -27,7 +27,7 @@ import rx.Subscription;
 import rx.functions.Action1;
 
 
-public final class BindingSubscriber<T> extends Subscriber<T> implements ObservableValue<T>, Binding<T>, Subscription {
+final class BindingSubscriber<T> extends Subscriber<T> implements ObservableValue<T>, Binding<T>, Subscription {
 
     private final Action1<Throwable> onError;
     private ExpressionHelper<T> helper;

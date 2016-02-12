@@ -16,20 +16,21 @@
 
 package rx.subscribers;
 
-import javafx.beans.property.Property;
+import javafx.beans.binding.Binding;
+import rx.Observable;
 import rx.functions.Action1;
 
 public enum JavaFxSubscriber {
     ;//no instances
 
-    public static <T> BindingSubscriber<T> toBinding(Property<? super T> t) {
+    public static <T> Binding<T> toBinding(Observable<T> obs) {
         BindingSubscriber<T> bindingSubscriber = new BindingSubscriber<>(e -> {});
-        t.bind(bindingSubscriber);
+        obs.subscribe(bindingSubscriber);
         return bindingSubscriber;
     }
-    public static <T> BindingSubscriber<T> toBinding(Property<? super T> t, Action1<Throwable> onErrorAction ) {
+    public static <T> Binding<T> toBinding(Observable<T> obs, Action1<Throwable> onErrorAction ) {
         BindingSubscriber<T> bindingSubscriber = new BindingSubscriber<>(onErrorAction);
-        t.bind(bindingSubscriber);
+        obs.subscribe(bindingSubscriber);
         return bindingSubscriber;
     }
 }
