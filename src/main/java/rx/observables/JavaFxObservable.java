@@ -21,6 +21,7 @@ import javafx.event.Event;
 import javafx.event.EventType;
 import javafx.scene.Node;
 import rx.Observable;
+import rx.javafx.sources.Change;
 import rx.javafx.sources.NodeEventSource;
 import rx.javafx.sources.ObservableValueSource;
 
@@ -49,5 +50,16 @@ public enum JavaFxObservable {
      */
     public static <T> Observable<T> fromObservableValue(final ObservableValue<T> fxObservable) {
         return ObservableValueSource.fromObservableValue(fxObservable);
+    }
+
+    /**
+     * Create an rx Observable from a javafx ObservableValue, and emits changes with old and new value pairs
+     *
+     * @param fxObservable the observed ObservableValue
+     * @param <T>          the type of the observed value
+     * @return an Observable emitting values as the wrapped ObservableValue changes
+     */
+    public static <T> Observable<Change<T>> fromObservableValueChanges(final ObservableValue<T> fxObservable) {
+        return ObservableValueSource.fromObservableValueChanges(fxObservable);
     }
 }
