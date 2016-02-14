@@ -54,8 +54,9 @@ $ ./gradlew build
 
 ## Features
 
-RxJavaFX has two sets of features: 
+RxJavaFX has a lightweight set of features:
 - Factories to turn `Node` and `ObservableValue` events into an RxJava `Observable`
+- Factories to turn an RxJava `Observable` into a JavaFX `Binding`. 
 - A scheduler for the JavaFX dispatch thread
 
 ###Node Events
@@ -68,7 +69,7 @@ Observable<ActionEvent> bttnEvents =
 ```
 
 
-### ObservableValue Changes
+###ObservableValue 
 Not to be confused with the RxJava `Observable`, the JavaFX `ObservableValue` can be converted into an RxJava `Observable` that emits the initial value and all value changes. 
 
 ```java
@@ -77,8 +78,42 @@ TextField textInput = new TextField();
 Observable<String> textInputs =
         JavaFxObservable.fromObservableValue(textInput.textProperty());
 ```
-
 Note that many Nodes in JavaFX will have an initial value, which sometimes can be `null`, and you might consider using RxJava's `skip()` operator to ignore this initial value. 
+
+###ObservableValue Changes
+
+For every change to an `ObservableValue`, you can emit the old value and new value as a pair. The two values will be wrapped up in a `Change` class and you can access them via `getOldVal()` and `getNewVal()`. Just call the `JavaFxObservable.fromObservableValueChanges()` factory. 
+```
+SpinnerValueFactory<Integer> svf = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100);
+Spinner spinner = new Spinner<>();
+spinner.setValueFactory(svf);
+spinner.setEditable(true);
+
+Label spinnerChangesLabel = new Label();
+Subscription subscription = JavaFxObservable.fromObservableValueChanges(spinner.valueProperty())
+        .map(change -> "OLD: " + change.getOldVal() + " NEW: " + change.getNewVal())
+        .subscribe(spinnerChangesLabel::setText);
+```
+
+###Binding
+You can convert an RxJava `Observable` into a JavaFX `Binding` by calling the `JavaFxSubscriber.toBinding()` factory. Calling the `dispose()` method on the `Binding` will handle the unsubscription from the `Observable`.  
+
+```
+Button incrementBttn = new Button("Increment");
+Label incrementLabel =  new Label("");
+
+Observable<ActionEvent> bttnEvents =
+        JavaFxObservable.fromNodeEvents(incrementBttn, ActionEvent.ACTION);
+
+Binding<String> binding = JavaFxSubscriber.toBinding(bttnEvents.map(e -> 1).scan(0,(x, y) -> x + y)
+        .map(Object::toString));
+
+incrementLabel.textProperty().bind(binding);
+
+//do stuff, then dispose Binding
+binding.dispose();
+
+```
 
 ### JavaFX Scheduler
 
@@ -106,52 +141,76 @@ If you are heavily dependent on RxJava, asynchronous processing, or do not want 
 
 ## Comprehensive Example
 ```java
+
 import javafx.application.Application;
+import javafx.beans.binding.Binding;
 import javafx.event.ActionEvent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-import rx.Observable;
-import rx.Subscription;
 import rx.observables.JavaFxObservable;
+import rx.schedulers.JavaFxScheduler;
+import rx.schedulers.Schedulers;
+import rx.subscribers.JavaFxSubscriber;
 
 public class RxJavaFXTest extends Application {
 
     private final Button incrementBttn;
     private final Label incrementLabel;
-    private final Subscription sub1;
+    private final Binding<String> binding1;
 
     private final TextField textInput;
     private final Label fippedTextLabel;
-    private final Subscription sub2;
+    private final Binding<String> binding2;
+
+    private final Spinner<Integer> spinner;
+    private final Label spinnerChangesLabel;
+    private final Subscription subscription;
 
     public RxJavaFXTest() {
 
         //initialize increment demo
+        //Turns button events into Binding
         incrementBttn = new Button("Increment");
         incrementLabel =  new Label("");
 
         Observable<ActionEvent> bttnEvents =
                 JavaFxObservable.fromNodeEvents(incrementBttn, ActionEvent.ACTION);
 
-        sub1 = bttnEvents.map(e -> 1).scan(0,(x,y) -> x + y)
-                .map(Object::toString)
-                .subscribe(incrementLabel::setText);
+        binding1 = JavaFxSubscriber.toBinding(bttnEvents.map(e -> 1).scan(0,(x, y) -> x + y)
+                .map(Object::toString));
+
+        incrementLabel.textProperty().bind(binding1);
 
         //initialize text flipper
+        //Schedules on computation Scheduler for text flip calculation
+        //Then resumes on JavaFxScheduler thread to update Binding
         textInput = new TextField();
         fippedTextLabel = new Label();
 
         Observable<String> textInputs =
                 JavaFxObservable.fromObservableValue(textInput.textProperty());
 
-        sub2 = textInputs.observeOn(Schedulers.computation())
+        binding2 = JavaFxSubscriber.toBinding(textInputs.observeOn(Schedulers.computation())
                 .map(s -> new StringBuilder(s).reverse().toString())
-                .observeOn(JavaFxScheduler.getInstance())
-                .subscribe(fippedTextLabel::setText);
+                .observeOn(JavaFxScheduler.getInstance()));
+
+        fippedTextLabel.textProperty().bind(binding2);
+
+        //initialize Spinner value changes
+        //Emits Change items containing old and new value
+        //Uses RxJava Subscription instead of Binding just to show that option
+        SpinnerValueFactory<Integer> svf = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100);
+        spinner = new Spinner<>();
+        spinner.setValueFactory(svf);
+        spinner.setEditable(true);
+
+        spinnerChangesLabel = new Label();
+        subscription = JavaFxObservable.fromObservableValueChanges(spinner.valueProperty())
+                .map(change -> "OLD: " + change.getOldVal() + " NEW: " + change.getNewVal())
+                .subscribe(spinnerChangesLabel::setText);
+
     }
 
     @Override
@@ -168,8 +227,11 @@ public class RxJavaFXTest extends Application {
         gridPane.add(textInput,0,1);
         gridPane.add(fippedTextLabel, 1,1);
 
+        gridPane.add(spinner,0,2);
+        gridPane.add(spinnerChangesLabel,1,2);
+
         Scene scene = new Scene(gridPane);
-        primaryStage.setWidth(265);
+        primaryStage.setWidth(275);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -178,8 +240,9 @@ public class RxJavaFXTest extends Application {
     public void stop() throws Exception {
         super.stop();
 
-        sub1.unsubscribe();
-        sub2.unsubscribe();
+        binding1.dispose();
+        binding2.dispose();
+        subscription.unsubscribe();
     }
 }
 ```
