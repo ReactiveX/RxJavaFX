@@ -97,7 +97,7 @@ Subscription subscription = JavaFxObservable.fromObservableValueChanges(spinner.
 ```
 
 ###Binding
-You can convert an RxJava `Observable` into a JavaFX `Binding` by calling the `JavaFxSubscriber.toBinding()` factory. Calling the `dispose()` method on the `Binding` will handle the unsubscription from the `Observable`.  
+You can convert an RxJava `Observable` into a JavaFX `Binding` by calling the `JavaFxSubscriber.toBinding()` factory. Calling the `dispose()` method on the `Binding` will handle the unsubscription from the `Observable`.  You can then take this `Binding` to bind other control properties to it. 
 
 ```java
 Button incrementBttn = new Button("Increment");
