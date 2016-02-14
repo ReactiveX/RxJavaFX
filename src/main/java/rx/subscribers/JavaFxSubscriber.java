@@ -23,7 +23,7 @@ import rx.functions.Action1;
 public enum JavaFxSubscriber {
     ;//no instances
     /**
-     * Turns an Observable into a JavaFX Binding. Calling the dispose() method will handle the unsubscription. 
+     * Turns an Observable into a JavaFX Binding. Calling the Binding's dispose() method will handle the unsubscription. 
      */
     public static <T> Binding<T> toBinding(Observable<T> obs) {
         BindingSubscriber<T> bindingSubscriber = new BindingSubscriber<>(e -> {});
@@ -31,7 +31,7 @@ public enum JavaFxSubscriber {
         return bindingSubscriber;
     }
     /**
-     * Turns an Observable into a JavaFX Binding. Calling the dispose() method will handle the unsubscription. 
+     * Turns an Observable into a JavaFX Binding. Calling the Binding's dispose() method will handle the unsubscription. 
      */
     public static <T> Binding<T> toBinding(Observable<T> obs, Action1<Throwable> onErrorAction ) {
         BindingSubscriber<T> bindingSubscriber = new BindingSubscriber<>(onErrorAction);
