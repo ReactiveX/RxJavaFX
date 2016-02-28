@@ -147,8 +147,9 @@ fun <T> Observable<T>.observeOnFx() = this.observeOn(JavaFxScheduler.getInstance
 This allows you to better use Kotlin's features to interop JavaFX and RxJava much more cleanly.
 
 ```kotlin
-val sourceObservable = Observable.just("Alpha","Beta","Gamma")
-val lengthBinding = sourceObservable.map { it.length }.toBinding()
+val textField = TextField()
+val textInputs = textField.toObservable()
+val lengthBinding = textInputs.map { it.length }.toBinding()
 ```
 
 If you are doing JavaFX and Kotlin development, definitely check out [TornadoFX](https://github.com/edvin/tornadofx) as well to utilize type-safe builders and other features enabled by Kotlin.
