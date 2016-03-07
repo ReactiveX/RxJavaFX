@@ -20,10 +20,12 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.Event;
 import javafx.event.EventType;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import rx.Observable;
 import rx.javafx.sources.Change;
 import rx.javafx.sources.NodeEventSource;
 import rx.javafx.sources.ObservableValueSource;
+import rx.javafx.sources.SceneEventSource;
 
 
 public enum JavaFxObservable {
@@ -31,7 +33,7 @@ public enum JavaFxObservable {
 
 
     /**
-     * Creates an observable corresponding to javafx ui events.
+     * Creates an observable corresponding to javafx Node events.
      *
      * @param node      The target of the UI events.
      * @param eventType The type of the observed UI events
@@ -61,5 +63,15 @@ public enum JavaFxObservable {
      */
     public static <T> Observable<Change<T>> fromObservableValueChanges(final ObservableValue<T> fxObservable) {
         return ObservableValueSource.fromObservableValueChanges(fxObservable);
+    }
+    /**
+     * Creates an observable corresponding to javafx Scene events.
+     *
+     * @param scene      The target of the UI events.
+     * @param eventType The type of the observed UI events
+     * @return An Observable of UI events, appropriately typed
+     */
+    public static <T extends Event> Observable<T> fromSceneEvents(final Scene scene, final EventType<T> eventType) {
+        return SceneEventSource.fromSceneEvents(scene,eventType);
     }
 }
