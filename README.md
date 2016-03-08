@@ -91,7 +91,7 @@ Observable<ActionEvent> menuItemEvents =
 
 ###Other Event Factories
 
-There are also factories provided to convert events from a `Window` as well as a `Scene` into an `Observable`.
+There are also factories provided to convert events from a `Window` as well as a `Scene` into an `Observable`. If you would like to see factories for other components and event types, please let us know or put in a PR. 
 
 #####Emitting Mouse Movement Events
 
