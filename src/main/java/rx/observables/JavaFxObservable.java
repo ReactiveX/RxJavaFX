@@ -17,15 +17,15 @@ package rx.observables;
 
 
 import javafx.beans.value.ObservableValue;
+import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventType;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.ContextMenu;
+import javafx.scene.control.MenuItem;
 import rx.Observable;
-import rx.javafx.sources.Change;
-import rx.javafx.sources.NodeEventSource;
-import rx.javafx.sources.ObservableValueSource;
-import rx.javafx.sources.SceneEventSource;
+import rx.javafx.sources.*;
 
 
 public enum JavaFxObservable {
@@ -73,5 +73,35 @@ public enum JavaFxObservable {
      */
     public static <T extends Event> Observable<T> fromSceneEvents(final Scene scene, final EventType<T> eventType) {
         return SceneEventSource.fromSceneEvents(scene,eventType);
+    }
+
+    /**
+     * Creates an observable corresponding to javafx Node action events.
+     *
+     * @param node      The target of the ActionEvents
+     * @return An Observable of UI ActionEvents
+     */
+    public static Observable<ActionEvent> fromActionEvents(final Node node) {
+        return ActionEventSource.fromActionEvents(node);
+    }
+
+    /**
+     * Creates an observable corresponding to javafx ContextMenu action events.
+     *
+     * @param contextMenu      The target of the ActionEvents
+     * @return An Observable of UI ActionEvents
+     */
+    public static Observable<ActionEvent> fromActionEvents(final ContextMenu contextMenu) {
+        return ActionEventSource.fromActionEvents(contextMenu);
+    }
+
+    /**
+     * Creates an observable corresponding to javafx MenuItem action events.
+     *
+     * @param menuItem      The target of the ActionEvents
+     * @return An Observable of UI ActionEvents
+     */
+    public static Observable<ActionEvent> fromActionEvents(final MenuItem menuItem) {
+        return ActionEventSource.fromActionEvents(menuItem);
     }
 }

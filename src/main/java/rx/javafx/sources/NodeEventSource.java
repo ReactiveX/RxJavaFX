@@ -19,21 +19,11 @@ public class NodeEventSource {
         return Observable.create(new Observable.OnSubscribe<T>() {
             @Override
             public void call(final Subscriber<? super T> subscriber) {
-                final EventHandler<T> handler = new EventHandler<T>() {
-                    @Override
-                    public void handle(T t) {
-                        subscriber.onNext(t);
-                    }
-                };
+                final EventHandler<T> handler = subscriber::onNext;
 
                 source.addEventHandler(eventType, handler);
 
-                subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(new Action0() {
-                    @Override
-                    public void call() {
-                        source.removeEventHandler(eventType, handler);
-                    }
-                }));
+                subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeEventHandler(eventType, handler)));
             }
 
         }).subscribeOn(JavaFxScheduler.getInstance());
