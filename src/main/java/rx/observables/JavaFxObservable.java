@@ -78,17 +78,6 @@ public enum JavaFxObservable {
     }
 
     /**
-     * Creates an observable corresponding to javafx Window events.
-     *
-     * @param window      The target of the UI events.
-     * @param eventType The type of the observed UI events
-     * @return An Observable of UI events, appropriately typed
-     */
-    public static <T extends Event> Observable<T> fromSceneEvents(final Window window, final EventType<T> eventType) {
-        return WindowEventSource.fromWindowEvents(window,eventType);
-    }
-
-    /**
      * Creates an observable corresponding to javafx Node action events.
      *
      * @param node      The target of the ActionEvents
