@@ -24,6 +24,8 @@ import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
+import javafx.stage.Window;
+import javafx.stage.WindowEvent;
 import rx.Observable;
 import rx.javafx.sources.*;
 
@@ -73,6 +75,17 @@ public enum JavaFxObservable {
      */
     public static <T extends Event> Observable<T> fromSceneEvents(final Scene scene, final EventType<T> eventType) {
         return SceneEventSource.fromSceneEvents(scene,eventType);
+    }
+
+    /**
+     * Creates an observable corresponding to javafx Window events.
+     *
+     * @param window      The target of the UI events.
+     * @param eventType The type of the observed UI events
+     * @return An Observable of UI events, appropriately typed
+     */
+    public static <T extends Event> Observable<T> fromSceneEvents(final Window window, final EventType<T> eventType) {
+        return WindowEventSource.fromWindowEvents(window,eventType);
     }
 
     /**
