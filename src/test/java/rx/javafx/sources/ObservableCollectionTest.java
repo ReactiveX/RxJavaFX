@@ -16,13 +16,18 @@ public final class ObservableCollectionTest {
         Platform.runLater(() -> {
             ObservableList<String> items = FXCollections.observableArrayList();
 
-            ObservableListSource.fromObservableListAdds(items).subscribe(System.out::println, Throwable::printStackTrace);
+            ObservableListSource.fromObservableListDistinctChanges(items)
+                    .subscribe(System.out::println, Throwable::printStackTrace);
 
             items.add("ABQ");
             items.add("HOU");
             items.add("CHI");
             items.add("ABQ");
             items.add("HOU");
+
+            items.remove("ABQ");
+            items.remove("CHI");
+            items.remove("ABQ");
         });
 
         try {
