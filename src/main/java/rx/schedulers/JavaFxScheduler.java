@@ -15,117 +15,211 @@
  */
 package rx.schedulers;
 
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
-import javafx.util.Duration;
 import rx.Scheduler;
 import rx.Subscription;
 import rx.functions.Action0;
 import rx.subscriptions.BooleanSubscription;
 import rx.subscriptions.CompositeSubscription;
+import rx.subscriptions.SerialSubscription;
 import rx.subscriptions.Subscriptions;
 
+import java.awt.*;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
-import static java.lang.Math.max;
 
-/**
- * Executes work on the JavaFx UI thread.
- * This scheduler should only be used with actions that execute quickly.
- */
-public final class JavaFxScheduler extends Scheduler {
-    private static final JavaFxScheduler INSTANCE = new JavaFxScheduler();
+public final class JavaFXScheduler extends Scheduler {
+    private static final JavaFXScheduler INSTANCE = new JavaFXScheduler();
 
-    /* package for unit test */JavaFxScheduler() {
+    public static JavaFXScheduler getInstance() {
+        return INSTANCE;
     }
 
-    public static JavaFxScheduler getInstance() {
-        return INSTANCE;
+    /* package for unit test */JavaFXScheduler() {
     }
 
     @Override
     public Worker createWorker() {
-        return new InnerJavaFxScheduler();
+        return new InnerPlatformScheduler();
     }
 
-    private static class InnerJavaFxScheduler extends Worker {
+    private static class InnerPlatformScheduler extends Worker implements Runnable {
 
-        private final CompositeSubscription innerSubscription = new CompositeSubscription();
+        private final CompositeSubscription tracking = new CompositeSubscription();
+
+        /**
+         * Allows cheaper trampolining than invokeLater(). Accessed from EDT only.
+         */
+        private final Queue<Runnable> queue = new ConcurrentLinkedQueue<Runnable>();
+        /**
+         * Allows cheaper trampolining than invokeLater(). Accessed from EDT only.
+         */
+        private int wip;
 
         @Override
         public void unsubscribe() {
-            innerSubscription.unsubscribe();
+            tracking.unsubscribe();
         }
 
         @Override
         public boolean isUnsubscribed() {
-            return innerSubscription.isUnsubscribed();
+            return tracking.isUnsubscribed();
         }
 
         @Override
         public Subscription schedule(final Action0 action, long delayTime, TimeUnit unit) {
-            final BooleanSubscription s = BooleanSubscription.create();
+            long delay = Math.max(0, unit.toMillis(delayTime));
+            assertThatTheDelayIsValidForTheSwingTimer(delay);
 
-            final long delay = unit.toMillis(max(delayTime, 0));
-            final Timeline timeline = new Timeline(new KeyFrame(Duration.millis(delay), new EventHandler<ActionEvent>() {
+            class DualAction implements ActionListener, Subscription, Runnable {
+                private Timer timer;
+                final SerialSubscription subs = new SerialSubscription();
+                boolean nonDelayed;
+
+                private void setTimer(Timer timer) {
+                    this.timer = timer;
+                }
 
                 @Override
-                public void handle(ActionEvent event) {
-                    if (innerSubscription.isUnsubscribed() || s.isUnsubscribed()) {
-                        return;
+                public void actionPerformed(ActionEvent e) {
+                    run();
+                }
+
+                @Override
+                public void run() {
+                    if (nonDelayed) {
+                        try {
+                            if (tracking.isUnsubscribed() || isUnsubscribed()) {
+                                return;
+                            }
+                            action.call();
+                        } finally {
+                            subs.unsubscribe();
+                        }
+                    } else {
+                        timer.stop();
+                        timer = null;
+                        nonDelayed = true;
+                        trampoline(this);
                     }
-                    action.call();
-                    innerSubscription.remove(s);
+                }
+
+                @Override
+                public boolean isUnsubscribed() {
+                    return subs.isUnsubscribed();
+                }
+
+                @Override
+                public void unsubscribe() {
+                    subs.unsubscribe();
+                }
+
+                public void set(Subscription s) {
+                    subs.set(s);
+                }
+            }
+
+
+            final DualAction executeOnce = new DualAction();
+            tracking.add(executeOnce);
+
+            final Timer timer = new Timer((int) delay, executeOnce);
+            executeOnce.setTimer(timer);
+            timer.start();
+
+            executeOnce.set(Subscriptions.create(new Action0() {
+                @Override
+                public void call() {
+                    timer.stop();
+                    tracking.remove(executeOnce);
                 }
             }));
 
-            timeline.setCycleCount(1);
-            timeline.play();
-
-            innerSubscription.add(s);
-
-            // wrap for returning so it also removes it from the 'innerSubscription'
-            return Subscriptions.create(new Action0() {
-
-                @Override
-                public void call() {
-                    timeline.stop();
-                    s.unsubscribe();
-                    innerSubscription.remove(s);
-                }
-
-            });
+            return executeOnce;
         }
 
         @Override
         public Subscription schedule(final Action0 action) {
             final BooleanSubscription s = BooleanSubscription.create();
-            Platform.runLater(new Runnable() {
+
+            final Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
-                    if (innerSubscription.isUnsubscribed() || s.isUnsubscribed()) {
-                        return;
+                    try {
+                        if (tracking.isUnsubscribed() || s.isUnsubscribed()) {
+                            return;
+                        }
+                        action.call();
+                    } finally {
+                        tracking.remove(s);
                     }
-                    action.call();
-                    innerSubscription.remove(s);
                 }
-            });
+            };
+            tracking.add(s);
 
-            innerSubscription.add(s);
+            if (Platform.isFxApplicationThread()) {
+                if (trampoline(runnable)) {
+                    return Subscriptions.unsubscribed();
+                }
+            } else {
+                queue.offer(runnable);
+                EventQueue.invokeLater(this);
+            }
+
             // wrap for returning so it also removes it from the 'innerSubscription'
             return Subscriptions.create(new Action0() {
 
                 @Override
                 public void call() {
-                    s.unsubscribe();
-                    innerSubscription.remove(s);
+                    tracking.remove(s);
                 }
 
             });
         }
 
+        /**
+         * Uses a fast-path/slow path trampolining and tries to run
+         * the given runnable directly.
+         *
+         * @param runnable
+         * @return true if the fast path was taken
+         */
+        boolean trampoline(Runnable runnable) {
+            // fast path: if wip increments from 0 to 1
+            if (wip == 0) {
+                wip = 1;
+                runnable.run();
+                // but a recursive schedule happened
+                if (--wip > 0) {
+                    do {
+                        Runnable r = queue.poll();
+                        r.run();
+                    } while (--wip > 0);
+                }
+                return true;
+            }
+            queue.offer(runnable);
+            run();
+            return false;
+        }
+
+        @Override
+        public void run() {
+            if (wip++ == 0) {
+                do {
+                    Runnable r = queue.poll();
+                    r.run();
+                } while (--wip > 0);
+            }
+        }
+    }
+
+
+    private static void assertThatTheDelayIsValidForTheSwingTimer(long delay) {
+        if (delay < 0 || delay > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException(String.format("The swing timer only accepts non-negative delays up to %d milliseconds.", Integer.MAX_VALUE));
+        }
     }
 }
