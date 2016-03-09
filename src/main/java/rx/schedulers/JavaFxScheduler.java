@@ -28,7 +28,6 @@ import rx.subscriptions.BooleanSubscription;
 import rx.subscriptions.CompositeSubscription;
 import rx.subscriptions.Subscriptions;
 
-import java.lang.management.PlatformManagedObject;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.Math.max;
