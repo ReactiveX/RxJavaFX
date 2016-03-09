@@ -9,6 +9,16 @@ import java.util.HashSet;
 
 public final class ObservableListSource {
 
+    public static <T> Observable<ObservableList<T>> fromObservableListCurrent(final ObservableList<T> source) {
+
+        return Observable.create((Observable.OnSubscribe<ObservableList<T>>) subscriber -> {
+
+            source.addListener((ListChangeListener<T>) c -> {
+                subscriber.onNext(source);
+            });
+        }).subscribeOn(JavaFxScheduler.getInstance());
+    }
+
     public static <T> Observable<T> fromObservableListAdds(final ObservableList<T> source) {
 
         return Observable.create((Observable.OnSubscribe<T>) subscriber -> {
