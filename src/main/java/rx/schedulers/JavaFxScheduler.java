@@ -30,14 +30,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
 
-public final class JavaFXScheduler extends Scheduler {
-    private static final JavaFXScheduler INSTANCE = new JavaFXScheduler();
+public final class JavaFxScheduler extends Scheduler {
+    private static final JavaFxScheduler INSTANCE = new JavaFxScheduler();
 
-    public static JavaFXScheduler getInstance() {
+    public static JavaFxScheduler getInstance() {
         return INSTANCE;
     }
 
-    /* package for unit test */JavaFXScheduler() {
+    /* package for unit test */JavaFxScheduler() {
     }
 
     @Override
