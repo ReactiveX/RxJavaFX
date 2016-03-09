@@ -28,6 +28,7 @@ import rx.subscriptions.BooleanSubscription;
 import rx.subscriptions.CompositeSubscription;
 import rx.subscriptions.Subscriptions;
 
+import java.lang.management.PlatformManagedObject;
 import java.util.concurrent.TimeUnit;
 
 import static java.lang.Math.max;
@@ -103,17 +104,22 @@ public final class JavaFxScheduler extends Scheduler {
         @Override
         public Subscription schedule(final Action0 action) {
             final BooleanSubscription s = BooleanSubscription.create();
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
+
+            if (Platform.isFxApplicationThread()) {
+                if (!(innerSubscription.isUnsubscribed() && s.isUnsubscribed())) {
+                    action.call();
+                    innerSubscription.remove(s);
+                }
+            }
+            else{
+                Platform.runLater(() -> {
                     if (innerSubscription.isUnsubscribed() || s.isUnsubscribed()) {
                         return;
                     }
                     action.call();
                     innerSubscription.remove(s);
-                }
-            });
-
+                });
+            }
             innerSubscription.add(s);
             // wrap for returning so it also removes it from the 'innerSubscription'
             return Subscriptions.create(new Action0() {

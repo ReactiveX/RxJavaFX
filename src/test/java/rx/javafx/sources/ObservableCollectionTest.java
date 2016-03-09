@@ -1,5 +1,6 @@
 package rx.javafx.sources;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.JFXPanel;
@@ -12,14 +13,22 @@ public final class ObservableCollectionTest {
     public void testObservableList() {
         JFXPanel panel = new JFXPanel();
 
-        ObservableList<String> items = FXCollections.observableArrayList();
+        Platform.runLater(() -> {
+            ObservableList<String> items = FXCollections.observableArrayList();
 
-        ObservableListSource.fromObservableListAdds(items).subscribe(v -> System.out.println("ADDED: " + v));
-        ObservableListSource.fromObservableListRemovals(items).subscribe(v -> System.out.println("REMOVED: " + v));
+            ObservableListSource.fromObservableListAdds(items).subscribe(System.out::println, Throwable::printStackTrace);
 
-        items.add("ABQ");
-        items.add("HOU");
+            items.add("ABQ");
+            items.add("HOU");
+            items.add("CHI");
+            items.add("ABQ");
+            items.add("HOU");
+        });
 
-        items.setAll("LAX","PHX","FLL");
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
