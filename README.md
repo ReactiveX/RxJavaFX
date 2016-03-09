@@ -61,6 +61,7 @@ RxJavaFX has a lightweight set of features:
 
 ###Node Events
 You can get event emissions by calling `JavaFxObservable.fromNodeEvents()` and pass the JavaFX `Node` and the `EventType` you are interested in.  This will return an RxJava `Observable`. 
+
 ```java
 Button incrementBttn = new Button("Increment");
 
@@ -68,6 +69,46 @@ Observable<ActionEvent> bttnEvents =
         JavaFxObservable.fromNodeEvents(incrementBttn, ActionEvent.ACTION);
 ```
 
+###Action Events
+Action events are common and do not only apply to `Node` types. They also emit from `MenuItem` and `ContextMenu` instances, as well as a few other types. 
+
+Therefore, a few overloaded factories are provided to emit `ActionEvent` items from these controls
+
+#####Button ActionEvents
+```java
+Button incrementBttn = new Button("Increment");
+
+Observable<ActionEvent> bttnEvents =
+        JavaFxObservable.fromActionEvents(incrementBttn);
+```
+#####MenuItem ActionEvents
+```java
+MenuItem menuItem = new MenuItem("Select me");
+
+Observable<ActionEvent> menuItemEvents = 
+        JavaFxObservable.fromActionEvents(menuItem);
+```
+
+###Other Event Factories
+
+There are also factories provided to convert events from a `Window` as well as a `Scene` into an `Observable`. If you would like to see factories for other components and event types, please let us know or put in a PR. 
+
+#####Emitting Mouse Movement Events
+
+```java
+Observable<MouseEvent> sceneMouseMovements =
+     JavaFxObservable.fromSceneEvents(scene, MouseEvent.MOUSE_MOVED);
+
+sceneMouseMovements.subscribe(v -> System.out.println(v.getSceneX() + "," + v.getSceneY()));
+```
+
+#####Emitting Window Hiding Events
+```java
+ Observable<WindowEvent> windowHidingEvents =
+    JavaFxObservable.fromWindowEvents(primaryStage,WindowEvent.WINDOW_HIDING);
+
+windowHidingEvents.subscribe(v -> System.out.println("Hiding!"));
+```
 
 ###ObservableValue 
 Not to be confused with the RxJava `Observable`, the JavaFX `ObservableValue` can be converted into an RxJava `Observable` that emits the initial value and all value changes. 
@@ -170,9 +211,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
+import rx.Observable;
+import rx.Subscription;
 import rx.observables.JavaFxObservable;
-import rx.schedulers.JavaFxScheduler;
-import rx.schedulers.Schedulers;
 import rx.subscribers.JavaFxSubscriber;
 
 public class RxJavaFXTest extends Application {
@@ -182,7 +223,7 @@ public class RxJavaFXTest extends Application {
     private final Binding<String> binding1;
 
     private final TextField textInput;
-    private final Label fippedTextLabel;
+    private final Label flippedTextLabel;
     private final Binding<String> binding2;
 
     private final Spinner<Integer> spinner;
@@ -191,13 +232,13 @@ public class RxJavaFXTest extends Application {
 
     public RxJavaFXTest() {
 
-        //initialize increment demo
-        //Turns button events into Binding
+        //initialize increment
+        //demoTurns button events into Binding
         incrementBttn = new Button("Increment");
         incrementLabel =  new Label("");
 
         Observable<ActionEvent> bttnEvents =
-                JavaFxObservable.fromNodeEvents(incrementBttn, ActionEvent.ACTION);
+                JavaFxObservable.fromActionEvents(incrementBttn);
 
         binding1 = JavaFxSubscriber.toBinding(bttnEvents.map(e -> 1).scan(0,(x, y) -> x + y)
                 .map(Object::toString));
@@ -208,7 +249,7 @@ public class RxJavaFXTest extends Application {
         //Schedules on computation Scheduler for text flip calculation
         //Then resumes on JavaFxScheduler thread to update Binding
         textInput = new TextField();
-        fippedTextLabel = new Label();
+        flippedTextLabel = new Label();
 
         Observable<String> textInputs =
                 JavaFxObservable.fromObservableValue(textInput.textProperty());
@@ -217,7 +258,7 @@ public class RxJavaFXTest extends Application {
                 .map(s -> new StringBuilder(s).reverse().toString())
                 .observeOn(JavaFxScheduler.getInstance()));
 
-        fippedTextLabel.textProperty().bind(binding2);
+        flippedTextLabel.textProperty().bind(binding2);
 
         //initialize Spinner value changes
         //Emits Change items containing old and new value
@@ -246,12 +287,14 @@ public class RxJavaFXTest extends Application {
         gridPane.add(incrementLabel,1,0);
 
         gridPane.add(textInput,0,1);
-        gridPane.add(fippedTextLabel, 1,1);
+        gridPane.add(flippedTextLabel, 1,1);
 
         gridPane.add(spinner,0,2);
         gridPane.add(spinnerChangesLabel,1,2);
 
         Scene scene = new Scene(gridPane);
+
+
         primaryStage.setWidth(275);
         primaryStage.setScene(scene);
         primaryStage.show();
