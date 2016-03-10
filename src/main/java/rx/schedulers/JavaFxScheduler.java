@@ -15,7 +15,12 @@
  */
 package rx.schedulers;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
+import javafx.util.Duration;
 import rx.Scheduler;
 import rx.Subscription;
 import rx.functions.Action0;
@@ -29,33 +34,38 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 
-
+/**
+ * Executes work on the JavaFx UI thread.
+ * This scheduler should only be used with actions that execute quickly.
+ */
 public final class JavaFxScheduler extends Scheduler {
     private static final JavaFxScheduler INSTANCE = new JavaFxScheduler();
+
+    /* package for unit test */JavaFxScheduler() {
+    }
 
     public static JavaFxScheduler getInstance() {
         return INSTANCE;
     }
 
-    /* package for unit test */JavaFxScheduler() {
+    private static void assertThatTheDelayIsValidForTheJavaFxTimer(long delay) {
+        if (delay < 0 || delay > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException(String.format("The JavaFx timer only accepts non-negative delays up to %d milliseconds.", Integer.MAX_VALUE));
+        }
     }
 
     @Override
     public Worker createWorker() {
-        return new InnerPlatformScheduler();
+        return new InnerJavaFxScheduler();
     }
 
-    private static class InnerPlatformScheduler extends Worker implements Runnable {
+    private static class InnerJavaFxScheduler extends Worker implements Runnable {
 
         private final CompositeSubscription tracking = new CompositeSubscription();
 
-        /**
-         * Allows cheaper trampolining than invokeLater(). Accessed from EDT only.
-         */
-        private final Queue<Runnable> queue = new ConcurrentLinkedQueue<Runnable>();
-        /**
-         * Allows cheaper trampolining than invokeLater(). Accessed from EDT only.
-         */
+        /** Allows cheaper trampolining than invokeLater(). Accessed from EDT only. */
+        private final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
+        /** Allows cheaper trampolining than invokeLater(). Accessed from EDT only. */
         private int wip;
 
         @Override
@@ -70,20 +80,22 @@ public final class JavaFxScheduler extends Scheduler {
 
         @Override
         public Subscription schedule(final Action0 action, long delayTime, TimeUnit unit) {
-            long delay = Math.max(0, unit.toMillis(delayTime));
-            assertThatTheDelayIsValidForTheSwingTimer(delay);
+            long delay = unit.toMillis(delayTime);
+            assertThatTheDelayIsValidForTheJavaFxTimer(delay);
 
-            class DualAction implements ActionListener, Subscription, Runnable {
-                private Timer timer;
+            class DualAction implements EventHandler<ActionEvent>, Subscription, Runnable {
+
+                private Timeline timeline;
+
                 final SerialSubscription subs = new SerialSubscription();
                 boolean nonDelayed;
 
-                private void setTimer(Timer timer) {
-                    this.timer = timer;
+                private void setTimer(Timeline timeline) {
+                    this.timeline = timeline;
                 }
 
                 @Override
-                public void actionPerformed(ActionEvent e) {
+                public void handle(ActionEvent event) {
                     run();
                 }
 
@@ -99,8 +111,8 @@ public final class JavaFxScheduler extends Scheduler {
                             subs.unsubscribe();
                         }
                     } else {
-                        timer.stop();
-                        timer = null;
+                        timeline.stop();
+                        timeline = null;
                         nonDelayed = true;
                         trampoline(this);
                     }
@@ -115,26 +127,23 @@ public final class JavaFxScheduler extends Scheduler {
                 public void unsubscribe() {
                     subs.unsubscribe();
                 }
-
                 public void set(Subscription s) {
                     subs.set(s);
                 }
             }
 
-
             final DualAction executeOnce = new DualAction();
             tracking.add(executeOnce);
 
-            final Timer timer = new Timer((int) delay, executeOnce);
-            executeOnce.setTimer(timer);
-            timer.start();
+            //final Timeline timer = new Timeline((int) delay, executeOnce);
+            final Timeline timer = new Timeline(new KeyFrame(Duration.millis(delay)));
 
-            executeOnce.set(Subscriptions.create(new Action0() {
-                @Override
-                public void call() {
-                    timer.stop();
-                    tracking.remove(executeOnce);
-                }
+            executeOnce.setTimer(timer);
+            timer.play();
+
+            executeOnce.set(Subscriptions.create(() -> {
+                timer.stop();
+                tracking.remove(executeOnce);
             }));
 
             return executeOnce;
@@ -143,46 +152,34 @@ public final class JavaFxScheduler extends Scheduler {
         @Override
         public Subscription schedule(final Action0 action) {
             final BooleanSubscription s = BooleanSubscription.create();
-
-            final Runnable runnable = new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        if (tracking.isUnsubscribed() || s.isUnsubscribed()) {
-                            return;
-                        }
-                        action.call();
-                    } finally {
-                        tracking.remove(s);
-                    }
+            Runnable runnable = () -> {
+                if (tracking.isUnsubscribed() || s.isUnsubscribed()) {
+                    return;
                 }
+                action.call();
+                tracking.remove(s);
             };
-            tracking.add(s);
 
             if (Platform.isFxApplicationThread()) {
                 if (trampoline(runnable)) {
                     return Subscriptions.unsubscribed();
                 }
-            } else {
-                queue.offer(runnable);
-                EventQueue.invokeLater(this);
+                else {
+                    queue.offer(runnable);
+                    EventQueue.invokeLater(this);
+                }
             }
 
+            tracking.add(s);
             // wrap for returning so it also removes it from the 'innerSubscription'
-            return Subscriptions.create(new Action0() {
-
-                @Override
-                public void call() {
-                    tracking.remove(s);
-                }
-
+            return Subscriptions.create(() -> {
+                s.unsubscribe();
+                tracking.remove(s);
             });
         }
-
         /**
          * Uses a fast-path/slow path trampolining and tries to run
          * the given runnable directly.
-         *
          * @param runnable
          * @return true if the fast path was taken
          */
@@ -204,7 +201,6 @@ public final class JavaFxScheduler extends Scheduler {
             run();
             return false;
         }
-
         @Override
         public void run() {
             if (wip++ == 0) {
@@ -213,13 +209,6 @@ public final class JavaFxScheduler extends Scheduler {
                     r.run();
                 } while (--wip > 0);
             }
-        }
-    }
-
-
-    private static void assertThatTheDelayIsValidForTheSwingTimer(long delay) {
-        if (delay < 0 || delay > Integer.MAX_VALUE) {
-            throw new IllegalArgumentException(String.format("The swing timer only accepts non-negative delays up to %d milliseconds.", Integer.MAX_VALUE));
         }
     }
 }
