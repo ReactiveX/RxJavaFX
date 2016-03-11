@@ -14,10 +14,9 @@ public final class ObservableListSource {
     public static <T> Observable<ObservableList<T>> fromObservableList(final ObservableList<T> source) {
 
         return Observable.create((Observable.OnSubscribe<ObservableList<T>>) subscriber -> {
-
-            source.addListener((ListChangeListener<T>) c -> {
-                subscriber.onNext(source);
-            });
+            ListChangeListener<T> listener = c -> subscriber.onNext(source);
+            source.addListener(listener);
+            subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
         }).subscribeOn(JavaFxScheduler.getInstance());
     }
 
