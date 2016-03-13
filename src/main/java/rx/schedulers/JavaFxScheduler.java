@@ -26,11 +26,13 @@ import rx.Subscription;
 import rx.functions.Action0;
 import rx.subscriptions.BooleanSubscription;
 import rx.subscriptions.CompositeSubscription;
+import rx.subscriptions.SerialSubscription;
 import rx.subscriptions.Subscriptions;
 
+import java.awt.*;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
-
-import static java.lang.Math.max;
 
 /**
  * Executes work on the JavaFx UI thread.
@@ -46,86 +48,164 @@ public final class JavaFxScheduler extends Scheduler {
         return INSTANCE;
     }
 
+    private static void assertThatTheDelayIsValidForTheJavaFxTimer(long delay) {
+        if (delay < 0 || delay > Integer.MAX_VALUE) {
+            throw new IllegalArgumentException(String.format("The JavaFx timer only accepts non-negative delays up to %d milliseconds.", Integer.MAX_VALUE));
+        }
+    }
+
     @Override
     public Worker createWorker() {
         return new InnerJavaFxScheduler();
     }
 
-    private static class InnerJavaFxScheduler extends Worker {
+    private static class InnerJavaFxScheduler extends Worker implements Runnable {
 
-        private final CompositeSubscription innerSubscription = new CompositeSubscription();
+        private final CompositeSubscription tracking = new CompositeSubscription();
+
+        /** Allows cheaper trampolining than invokeLater(). Accessed from EDT only. */
+        private final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
+        /** Allows cheaper trampolining than invokeLater(). Accessed from EDT only. */
+        private int wip;
 
         @Override
         public void unsubscribe() {
-            innerSubscription.unsubscribe();
+            tracking.unsubscribe();
         }
 
         @Override
         public boolean isUnsubscribed() {
-            return innerSubscription.isUnsubscribed();
+            return tracking.isUnsubscribed();
         }
 
         @Override
         public Subscription schedule(final Action0 action, long delayTime, TimeUnit unit) {
-            final BooleanSubscription s = BooleanSubscription.create();
+            long delay = Math.max(0,unit.toMillis(delayTime));
+            assertThatTheDelayIsValidForTheJavaFxTimer(delay);
 
-            final long delay = unit.toMillis(max(delayTime, 0));
-            final Timeline timeline = new Timeline(new KeyFrame(Duration.millis(delay), new EventHandler<ActionEvent>() {
+            class DualAction implements EventHandler<ActionEvent>, Subscription, Runnable {
+                private Timeline timeline;
+                final SerialSubscription subs = new SerialSubscription();
+                boolean nonDelayed;
+
+                private void setTimer(Timeline timeline) {
+                    this.timeline = timeline;
+                }
 
                 @Override
                 public void handle(ActionEvent event) {
-                    if (innerSubscription.isUnsubscribed() || s.isUnsubscribed()) {
-                        return;
-                    }
-                    action.call();
-                    innerSubscription.remove(s);
+                    run();
                 }
-            }));
-
-            timeline.setCycleCount(1);
-            timeline.play();
-
-            innerSubscription.add(s);
-
-            // wrap for returning so it also removes it from the 'innerSubscription'
-            return Subscriptions.create(new Action0() {
 
                 @Override
-                public void call() {
-                    timeline.stop();
-                    s.unsubscribe();
-                    innerSubscription.remove(s);
+                public void run() {
+                    if (nonDelayed) {
+                        try {
+                            if (tracking.isUnsubscribed() || isUnsubscribed()) {
+                                return;
+                            }
+                            action.call();
+                        } finally {
+                            subs.unsubscribe();
+                        }
+                    } else {
+                        timeline.stop();
+                        timeline = null;
+                        nonDelayed = true;
+                        trampoline(this);
+                    }
                 }
 
-            });
+                @Override
+                public boolean isUnsubscribed() {
+                    return subs.isUnsubscribed();
+                }
+
+                @Override
+                public void unsubscribe() {
+                    subs.unsubscribe();
+                }
+                public void set(Subscription s) {
+                    subs.set(s);
+                }
+            }
+
+            final DualAction executeOnce = new DualAction();
+            tracking.add(executeOnce);
+
+            final Timeline timer = new Timeline(new KeyFrame(Duration.millis(delay), executeOnce));
+            executeOnce.setTimer(timer);
+
+            timer.play();
+
+            executeOnce.set(Subscriptions.create(() -> {
+                timer.stop();
+                tracking.remove(executeOnce);
+            }));
+
+            return executeOnce;
         }
 
         @Override
         public Subscription schedule(final Action0 action) {
             final BooleanSubscription s = BooleanSubscription.create();
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    if (innerSubscription.isUnsubscribed() || s.isUnsubscribed()) {
-                        return;
-                    }
-                    action.call();
-                    innerSubscription.remove(s);
+            Runnable runnable = () -> {
+                if (tracking.isUnsubscribed() || s.isUnsubscribed()) {
+                    return;
                 }
-            });
+                action.call();
+                tracking.remove(s);
+            };
 
-            innerSubscription.add(s);
+            if (Platform.isFxApplicationThread()) {
+                if (trampoline(runnable)) {
+                    return Subscriptions.unsubscribed();
+                }
+                else {
+                    queue.offer(runnable);
+                    EventQueue.invokeLater(this);
+                }
+            }
+
+            tracking.add(s);
             // wrap for returning so it also removes it from the 'innerSubscription'
-            return Subscriptions.create(new Action0() {
-
-                @Override
-                public void call() {
-                    s.unsubscribe();
-                    innerSubscription.remove(s);
-                }
-
+            return Subscriptions.create(() -> {
+                s.unsubscribe();
+                tracking.remove(s);
             });
         }
-
+        /**
+         * Uses a fast-path/slow path trampolining and tries to run
+         * the given runnable directly.
+         * @param runnable
+         * @return true if the fast path was taken
+         */
+        boolean trampoline(Runnable runnable) {
+            // fast path: if wip increments from 0 to 1
+            if (wip == 0) {
+                wip = 1;
+                runnable.run();
+                // but a recursive schedule happened
+                if (--wip > 0) {
+                    do {
+                        Runnable r = queue.poll();
+                        r.run();
+                    } while (--wip > 0);
+                }
+                return true;
+            }
+            queue.offer(runnable);
+            run();
+            return false;
+        }
+        @Override
+        public void run() {
+            if (wip++ == 0) {
+                do {
+                    Runnable r = queue.poll();
+                    r.run();
+                } while (--wip > 0);
+            }
+        }
     }
 }
