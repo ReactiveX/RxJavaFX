@@ -1,18 +1,3 @@
-/**
- * Copyright 2014 Netflix, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package rx.schedulers;
 
 import javafx.animation.KeyFrame;
@@ -29,7 +14,6 @@ import rx.subscriptions.CompositeSubscription;
 import rx.subscriptions.SerialSubscription;
 import rx.subscriptions.Subscriptions;
 
-import java.awt.*;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
@@ -80,13 +64,11 @@ public final class JavaFxScheduler extends Scheduler {
 
         @Override
         public Subscription schedule(final Action0 action, long delayTime, TimeUnit unit) {
-            long delay = unit.toMillis(delayTime);
+            long delay = Math.max(0,unit.toMillis(delayTime));
             assertThatTheDelayIsValidForTheJavaFxTimer(delay);
 
             class DualAction implements EventHandler<ActionEvent>, Subscription, Runnable {
-
                 private Timeline timeline;
-
                 final SerialSubscription subs = new SerialSubscription();
                 boolean nonDelayed;
 
@@ -135,9 +117,7 @@ public final class JavaFxScheduler extends Scheduler {
             final DualAction executeOnce = new DualAction();
             tracking.add(executeOnce);
 
-            //final Timeline timer = new Timeline((int) delay, executeOnce);
-            final Timeline timer = new Timeline(new KeyFrame(Duration.millis(delay)));
-
+            final Timeline timer = new Timeline(new KeyFrame(Duration.millis(delay), executeOnce));
             executeOnce.setTimer(timer);
             timer.play();
 
@@ -153,12 +133,16 @@ public final class JavaFxScheduler extends Scheduler {
         public Subscription schedule(final Action0 action) {
             final BooleanSubscription s = BooleanSubscription.create();
             Runnable runnable = () -> {
-                if (tracking.isUnsubscribed() || s.isUnsubscribed()) {
-                    return;
+                try {
+                    if (tracking.isUnsubscribed() || s.isUnsubscribed()) {
+                        return;
+                    }
+                    action.call();
+                } finally {
+                    tracking.remove(s);
                 }
-                action.call();
-                tracking.remove(s);
             };
+            tracking.add(s);
 
             if (Platform.isFxApplicationThread()) {
                 if (trampoline(runnable)) {
@@ -166,16 +150,12 @@ public final class JavaFxScheduler extends Scheduler {
                 }
                 else {
                     queue.offer(runnable);
-                    EventQueue.invokeLater(this);
+                    Platform.runLater(this);
                 }
             }
 
-            tracking.add(s);
             // wrap for returning so it also removes it from the 'innerSubscription'
-            return Subscriptions.create(() -> {
-                s.unsubscribe();
-                tracking.remove(s);
-            });
+            return Subscriptions.create(() -> tracking.remove(s));
         }
         /**
          * Uses a fast-path/slow path trampolining and tries to run
