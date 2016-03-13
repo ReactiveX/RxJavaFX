@@ -134,7 +134,6 @@ public final class JavaFxScheduler extends Scheduler {
 
             final Timeline timer = new Timeline(new KeyFrame(Duration.millis(delay), executeOnce));
             executeOnce.setTimer(timer);
-
             timer.play();
 
             executeOnce.set(Subscriptions.create(() -> {
@@ -171,9 +170,7 @@ public final class JavaFxScheduler extends Scheduler {
             }
 
             // wrap for returning so it also removes it from the 'innerSubscription'
-            return Subscriptions.create(() -> {
-                tracking.remove(s);
-            });
+            return Subscriptions.create(() -> tracking.remove(s));
         }
         /**
          * Uses a fast-path/slow path trampolining and tries to run
