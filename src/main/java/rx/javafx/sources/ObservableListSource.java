@@ -191,7 +191,11 @@ public final class ObservableListSource {
             Integer prev = counts.get(value);
             if (prev != null && prev > 0) {
                 int newVal = prev - 1;
-                counts.put(value, newVal);
+                if (newVal == 0) {
+                    counts.remove(value);
+                } else {
+                    counts.put(value, newVal);
+                }
                 return newVal;
             }
             else {

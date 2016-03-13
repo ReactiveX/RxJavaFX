@@ -17,6 +17,7 @@ package rx.observables;
 
 
 import javafx.beans.value.ObservableValue;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventType;
@@ -27,6 +28,7 @@ import javafx.scene.control.MenuItem;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import rx.Observable;
+import rx.functions.Func1;
 import rx.javafx.sources.*;
 
 
@@ -116,5 +118,32 @@ public enum JavaFxObservable {
      */
     public static Observable<ActionEvent> fromActionEvents(final MenuItem menuItem) {
         return ActionEventSource.fromActionEvents(menuItem);
+    }
+
+    public static <T> Observable<ObservableList<T>> fromObservableList(final ObservableList<T> source) {
+        return ObservableListSource.fromObservableList(source);
+    }
+
+    public static <T> Observable<T> fromObservableListAdds(final ObservableList<T> source) {
+        return ObservableListSource.fromObservableListAdds(source);
+    }
+
+    public static <T> Observable<T> fromObservableListRemovals(final ObservableList<T> source) {
+        return ObservableListSource.fromObservableListRemovals(source);
+    }
+
+    public static <T> Observable<T> fromObservableListUpdates(final ObservableList<T> source) {
+        return ObservableListSource.fromObservableListUpdates(source);
+    }
+
+    public static <T> Observable<ObservableListSource.ListChange<T>> fromObservableListChanges(final ObservableList<T> source) {
+        return ObservableListSource.fromObservableListChanges(source);
+    }
+
+    public static <T> Observable<ObservableListSource.ListChange<T>> fromObservableListDistinctChanges(final ObservableList<T> source) {
+        return ObservableListSource.fromObservableListDistinctChanges(source);
+    }
+    public static <T,R> Observable<ObservableListSource.ListChange<R>> fromObservableListDistinctMappings(final ObservableList<T> source, Func1<T,R> mapper) {
+        return ObservableListSource.fromObservableListDistinctMappings(source,mapper);
     }
 }
