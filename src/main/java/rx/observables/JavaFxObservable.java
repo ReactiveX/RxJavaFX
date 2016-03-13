@@ -136,14 +136,14 @@ public enum JavaFxObservable {
         return ObservableListSource.fromObservableListUpdates(source);
     }
 
-    public static <T> Observable<ObservableListSource.ListChange<T>> fromObservableListChanges(final ObservableList<T> source) {
+    public static <T> Observable<ListChange<T>> fromObservableListChanges(final ObservableList<T> source) {
         return ObservableListSource.fromObservableListChanges(source);
     }
 
-    public static <T> Observable<ObservableListSource.ListChange<T>> fromObservableListDistinctChanges(final ObservableList<T> source) {
+    public static <T> Observable<ListChange<T>> fromObservableListDistinctChanges(final ObservableList<T> source) {
         return ObservableListSource.fromObservableListDistinctChanges(source);
     }
-    public static <T,R> Observable<ObservableListSource.ListChange<R>> fromObservableListDistinctMappings(final ObservableList<T> source, Func1<T,R> mapper) {
+    public static <T,R> Observable<ListChange<R>> fromObservableListDistinctMappings(final ObservableList<T> source, Func1<T,R> mapper) {
         return ObservableListSource.fromObservableListDistinctMappings(source,mapper);
     }
 }
