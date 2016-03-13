@@ -29,7 +29,6 @@ import rx.subscriptions.CompositeSubscription;
 import rx.subscriptions.SerialSubscription;
 import rx.subscriptions.Subscriptions;
 
-import java.awt.*;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
@@ -150,12 +149,16 @@ public final class JavaFxScheduler extends Scheduler {
         public Subscription schedule(final Action0 action) {
             final BooleanSubscription s = BooleanSubscription.create();
             Runnable runnable = () -> {
-                if (tracking.isUnsubscribed() || s.isUnsubscribed()) {
-                    return;
+                try {
+                    if (tracking.isUnsubscribed() || s.isUnsubscribed()) {
+                        return;
+                    }
+                    action.call();
+                } finally {
+                    tracking.remove(s);
                 }
-                action.call();
-                tracking.remove(s);
             };
+            tracking.add(s);
 
             if (Platform.isFxApplicationThread()) {
                 if (trampoline(runnable)) {
@@ -163,14 +166,12 @@ public final class JavaFxScheduler extends Scheduler {
                 }
                 else {
                     queue.offer(runnable);
-                    EventQueue.invokeLater(this);
+                    Platform.runLater(this);
                 }
             }
 
-            tracking.add(s);
             // wrap for returning so it also removes it from the 'innerSubscription'
             return Subscriptions.create(() -> {
-                s.unsubscribe();
                 tracking.remove(s);
             });
         }
