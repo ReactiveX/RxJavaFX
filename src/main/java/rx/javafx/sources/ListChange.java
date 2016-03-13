@@ -1,5 +1,9 @@
 package rx.javafx.sources;
 
+/**
+ * Holds an ADDED, REMOVED, or UPDATED flag with the associated value
+ * @param <T>
+ */
 public final class ListChange<T> {
     private final T value;
     private final Flag flag;

@@ -120,29 +120,71 @@ public enum JavaFxObservable {
         return ActionEventSource.fromActionEvents(menuItem);
     }
 
+    /**
+     * Creates an observable that emits an ObservableList every time it is modified
+     *
+     * @param source      The target ObservableList of the ListChange events
+     * @return An Observable emitting the ObservableList each time it changes
+     */
     public static <T> Observable<ObservableList<T>> fromObservableList(final ObservableList<T> source) {
         return ObservableListSource.fromObservableList(source);
     }
-
+    /**
+     * Creates an observable that emits all additions to an ObservableList
+     *
+     * @param source      The target ObservableList for the item add events
+     * @return An Observable emitting items added to the ObservableList
+     */
     public static <T> Observable<T> fromObservableListAdds(final ObservableList<T> source) {
         return ObservableListSource.fromObservableListAdds(source);
     }
-
+    /**
+     * Creates an observable that emits all removal items from an ObservableList
+     *
+     * @param source      The target ObservableList for the item removal events
+     * @return An Observable emitting items removed from the ObservableList
+     */
     public static <T> Observable<T> fromObservableListRemovals(final ObservableList<T> source) {
         return ObservableListSource.fromObservableListRemovals(source);
     }
-
+    /**
+     * Creates an observable that emits all updated items from an ObservableList.
+     * If you declare an ObservableList that listens to one or more properties of each element,
+     * you can emit the changed items every time these properties are modified
+     * <pre>ObservableList<Person> sourceList = FXCollections.observableArrayList(user -> new javafx.beans.Observable[]{user.age} );</pre>
+     * @param source      The target ObservableList for the item update events
+     *
+     * @return An Observable emitting items updated in the ObservableList
+     */
     public static <T> Observable<T> fromObservableListUpdates(final ObservableList<T> source) {
         return ObservableListSource.fromObservableListUpdates(source);
     }
 
+    /**
+     * Emits all added, removed, and updated items from an ObservableList
+     * @param source
+     * @return An Observable emitting changed items with an ADDED, REMOVED, or UPDATED flags
+     */
     public static <T> Observable<ListChange<T>> fromObservableListChanges(final ObservableList<T> source) {
         return ObservableListSource.fromObservableListChanges(source);
     }
-
+    /**
+     * Emits distinctly  added and removed items from an ObservableList.
+     * If dupe items with identical hashcode/equals evaluations are added to an ObservableList, only the first one will fire an ADDED item.
+     * When the last dupe is removed, only then will it fire a REMOVED item.
+     * @param source
+     * @return An Observable emitting changed items with an ADDED, REMOVED, or UPDATED flags
+     */
     public static <T> Observable<ListChange<T>> fromObservableListDistinctChanges(final ObservableList<T> source) {
         return ObservableListSource.fromObservableListDistinctChanges(source);
     }
+    /**
+     * Emits distinctly  added and removed mappings of each item from an ObservableList.
+     * If dupe mapped items with identical hashcode/equals evaluations are added to an ObservableList, only the first one will fire an ADDED item.
+     * When the last dupe is removed, only then will it fire a REMOVED item.
+     * @param source
+     * @return An Observable emitting changed mapped items with an ADDED, REMOVED, or UPDATED flags
+     */
     public static <T,R> Observable<ListChange<R>> fromObservableListDistinctMappings(final ObservableList<T> source, Func1<T,R> mapper) {
         return ObservableListSource.fromObservableListDistinctMappings(source,mapper);
     }
