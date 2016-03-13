@@ -55,7 +55,7 @@ $ ./gradlew build
 ## Features
 
 RxJavaFX has a lightweight set of features:
-- Factories to turn `Node` and `ObservableValue` events into an RxJava `Observable`
+- Factories to turn `Node`, `ObservableValue`, and other component events into an RxJava `Observable`
 - Factories to turn an RxJava `Observable` into a JavaFX `Binding`. 
 - A scheduler for the JavaFX dispatch thread
 
@@ -93,7 +93,7 @@ Observable<ActionEvent> menuItemEvents =
 
 There are also factories provided to convert events from a `Window` as well as a `Scene` into an `Observable`. If you would like to see factories for other components and event types, please let us know or put in a PR. 
 
-#####Emitting Mouse Movement Events
+#####Emitting Scene Events
 
 ```java
 Observable<MouseEvent> sceneMouseMovements =
@@ -121,7 +121,7 @@ Observable<String> textInputs =
 ```
 Note that many Nodes in JavaFX will have an initial value, which sometimes can be `null`, and you might consider using RxJava's `skip()` operator to ignore this initial value. 
 
-###ObservableValue Changes
+#####ObservableValue Changes
 
 For every change to an `ObservableValue`, you can emit the old value and new value as a pair. The two values will be wrapped up in a `Change` class and you can access them via `getOldVal()` and `getNewVal()`. Just call the `JavaFxObservable.fromObservableValueChanges()` factory. 
 
@@ -173,6 +173,16 @@ sub2 = textInputs.observeOn(Schedulers.computation())
         .observeOn(JavaFxScheduler.getInstance())
         .subscribe(fippedTextLabel::setText);
 ```
+
+##Differences from ReactFX
+[ReactFX](https://github.com/TomasMikula/ReactFX) is a popular API to implement reactive patterns with JavaFX using the `EventStream`. However, RxJava uses an `Observable` and the two are not (directly) compatible with each other. 
+
+Although ReactFX has some asynchronous operators like `threadBridge`, ReactFX emphasizes *synchronous* behavior. This means it encourages keeping events on the JavaFX thread. RxJavaFX, which fully embraces RxJava and *asynchronous* design, can switch between threads and schedulers with ease.  As long as subscriptions affecting the UI are observed on the JavaFX thread, you can leverage the powerful operators and libraries of RxJava safely.
+
+If you are heavily dependent on RxJava, asynchronous processing, or do not want your entire reactive codebase to be UI-focused, you will probably want to use RxJavaFX. 
+
+
+
 ##Notes for Kotlin 
 If you are building your JavaFX application with [Kotlin](https://kotlinlang.org/), this library becomes even more useful with extension functions. These extension functions exist in the [RxKotlinFX](https://github.com/thomasnield/RxKotlinFX) project, but the API is so small it is not worth publishing at the moment. But you can simply add these extension functions below to your project and utilize Kotlin's fluent style.
 
@@ -181,7 +191,7 @@ fun <T> Observable<T>.toBinding() = JavaFxSubscriber.toBinding(this)
 fun <T> Observable<T>.toBinding(errorHandler: (Throwable) -> Unit) = JavaFxSubscriber.toBinding(this,errorHandler)
 fun <T> ObservableValue<T>.toObservable() = JavaFxObservable.fromObservableValue(this)
 fun <T> ObservableValue<T>.toObservableChanges() = JavaFxObservable.fromObservableValueChanges(this)
-fun <T : Event> Node.toNodeEvents(eventType: EventType<T>) = JavaFxObservable.fromNodeEvents(this, eventType)
+fun <T: Event> Node.toNodeEvents(eventType: EventType<T>) = JavaFxObservable.fromNodeEvents(this, eventType)
 fun <T> Observable<T>.observeOnFx() = this.observeOn(JavaFxScheduler.getInstance())
 ```
 This allows you to better use Kotlin's features to interop JavaFX and RxJava much more cleanly.
@@ -194,12 +204,6 @@ val lengthBinding = textInputs.map { it.length }.toBinding()
 
 If you are doing JavaFX and Kotlin development, definitely check out [TornadoFX](https://github.com/edvin/tornadofx) as well to utilize type-safe builders and other features enabled by Kotlin.
 
-##Differences from ReactFX
-[ReactFX](https://github.com/TomasMikula/ReactFX) is a popular API to implement reactive patterns with JavaFX using the `EventStream`. However, RxJava uses an `Observable` and the two are not (directly) compatible with each other. 
-
-Although ReactFX has some asynchronous operators like `threadBridge`, ReactFX emphasizes *synchronous* behavior. This means it encourages keeping events on the JavaFX thread. RxJavaFX, which fully embraces RxJava and *asynchronous* design, can switch between threads and schedulers with ease.  As long as subscriptions affecting the UI are observed on the JavaFX thread, you can leverage the powerful operators and libraries of RxJava safely.
-
-If you are heavily dependent on RxJava, asynchronous processing, or do not want your entire reactive codebase to be UI-focused, you will probably want to use RxJavaFX. 
 
 ## Comprehensive Example
 ```java
