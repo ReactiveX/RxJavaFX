@@ -148,10 +148,9 @@ public final class JavaFxScheduler extends Scheduler {
                 if (trampoline(runnable)) {
                     return Subscriptions.unsubscribed();
                 }
-                else {
-                    queue.offer(runnable);
-                    Platform.runLater(this);
-                }
+            }else {
+                queue.offer(runnable);
+                Platform.runLater(this);
             }
 
             // wrap for returning so it also removes it from the 'innerSubscription'
