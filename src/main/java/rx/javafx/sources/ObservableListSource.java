@@ -191,7 +191,11 @@ public final class ObservableListSource {
             Integer prev = counts.get(value);
             if (prev != null && prev > 0) {
                 int newVal = prev - 1;
-                counts.put(value, newVal);
+                if (newVal == 0) {
+                    counts.remove(value);
+                } else {
+                    counts.put(value, newVal);
+                }
                 return newVal;
             }
             else {
@@ -199,31 +203,5 @@ public final class ObservableListSource {
             }
         }
     }
-    public static final class ListChange<T> {
-        private final T value;
-        private final Flag flag;
 
-        private ListChange(T value, Flag flag) {
-            this.value = value;
-            this.flag = flag;
-        }
-        public static <T> ListChange<T> of(T value, Flag flag) {
-            return new ListChange<>(value, flag);
-        }
-        public T getValue() {
-            return value;
-        }
-        public Flag getFlag() {
-            return flag;
-        }
-        @Override
-        public String toString() {
-            return flag + " " + value;
-        }
-    }
-    public enum Flag {
-        ADDED,
-        REMOVED,
-        UPDATED;
-    }
 }

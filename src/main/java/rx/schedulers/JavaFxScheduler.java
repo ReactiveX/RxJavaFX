@@ -1,18 +1,3 @@
-/**
- * Copyright 2014 Netflix, Inc.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 package rx.schedulers;
 
 import javafx.animation.KeyFrame;
@@ -163,10 +148,9 @@ public final class JavaFxScheduler extends Scheduler {
                 if (trampoline(runnable)) {
                     return Subscriptions.unsubscribed();
                 }
-                else {
-                    queue.offer(runnable);
-                    Platform.runLater(this);
-                }
+            }else {
+                queue.offer(runnable);
+                Platform.runLater(this);
             }
 
             // wrap for returning so it also removes it from the 'innerSubscription'
