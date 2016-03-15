@@ -179,9 +179,19 @@ public enum JavaFxObservable {
         return ObservableListSource.fromObservableListDistinctChanges(source);
     }
     /**
-     * Emits distinctly  added and removed mappings of each item from an ObservableList.
-     * If dupe mapped items with identical hashcode/equals evaluations are added to an ObservableList, only the first one will fire an ADDED item.
-     * When the last dupe is removed, only then will it fire a REMOVED item.
+     * Emits distinctly added and removed T items from an ObservableList based on a mapping to an R value.
+     * If dupe mapped R items with identical hashcode/equals evaluations are added to an ObservableList, only the first one will fire an ADDED T item.
+     * When the last R dupe is removed, only then will it fire a REMOVED T item.
+     * @param source
+     * @return An Observable emitting changed items with an ADDED, REMOVED, or UPDATED flags
+     */
+    public static <T,R> Observable<ListChange<T>> fromObservableListDistinctChanges(final ObservableList<T> source, Func1<T,R> mapper) {
+        return ObservableListSource.fromObservableListDistinctChanges(source,mapper);
+    }
+    /**
+     * Emits distinctly added and removed mappings to each R item from an ObservableList.
+     * If dupe mapped R items with identical hashcode/equals evaluations are added to an ObservableList, only the first one will fire an ADDED R item.
+     * When the last dupe is removed, only then will it fire a REMOVED R item.
      * @param source
      * @return An Observable emitting changed mapped items with an ADDED, REMOVED, or UPDATED flags
      */
