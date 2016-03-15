@@ -2,7 +2,7 @@
 
 Learn more about RxJava on the <a href="https://github.com/ReactiveX/RxJava/wiki">Wiki Home</a> and the <a href="http://techblog.netflix.com/2013/02/rxjava-netflix-api.html">Netflix TechBlog post</a> where RxJava was introduced.
 
-RxJavaFX is a simple API to convert JavaFX events into RxJava Observables. It also has a scheduler to safely move emissions to the JavaFX Event Dispatch Thread. 
+RxJavaFX is a simple API to convert JavaFX events into RxJava Observables and vice versa. It also has a scheduler to safely move emissions to the JavaFX Event Dispatch Thread. 
 
 ## Master Build Status
 
@@ -55,7 +55,7 @@ $ ./gradlew build
 ## Features
 
 RxJavaFX has a lightweight set of features:
-- Factories to turn `Node`, `ObservableValue`, and other component events into an RxJava `Observable`
+- Factories to turn `Node`, `ObservableValue`, `ObservableList`, and other component events into an RxJava `Observable`
 - Factories to turn an RxJava `Observable` into a JavaFX `Binding`. 
 - A scheduler for the JavaFX dispatch thread
 
@@ -136,6 +136,32 @@ Subscription subscription = JavaFxObservable.fromObservableValueChanges(spinner.
         .map(change -> "OLD: " + change.getOldVal() + " NEW: " + change.getNewVal())
         .subscribe(spinnerChangesLabel::setText);
 ```
+
+###ObservableList
+
+There are eight factories in `JavaFxObservable` for turning an `ObservableList` into an `Observable` of some form based on a `ListChange` event. 
+
+```java
+public static <T> Observable<ObservableList<T>> fromObservableList(final ObservableList<T> source
+
+public static <T> Observable<T> fromObservableListAdds(final ObservableList<T> source)
+
+public static <T> Observable<T> fromObservableListRemovals(final ObservableList<T> source)
+
+public static <T> Observable<T> fromObservableListUpdates(final ObservableList<T> source)
+
+public static <T> Observable<ListChange<T>> fromObservableListChanges(final ObservableList<T> source)
+
+public static <T> Observable<ListChange<T>> fromObservableListDistinctChanges(final ObservableList<T> source)
+
+public static <T,R> Observable<ListChange<T>> fromObservableListDistinctChanges(final ObservableList<T> source, Func1<T,R> mapper)
+
+public static <T,R> Observable<ListChange<R>> fromObservableListDistinctMappings(final ObservableList<T> source, Func1<T,R> mapper)
+```  
+
+The first factory`fromObservableList()` will simply emit the entire `ObservableList` every time there is `ListChange` event fired. The rest of the factories fire only items impacted by the `ListChange` events. The last three emit only *distinct* additions and removals, which can be helpful to emit only the first item with a given `hashcode()`/`equals()` and ignore dupe additions. When the last item (meaning no more dupes) is removed, only then will it fire the removal. 
+
+See the JavaDocs for a more detailed description of each one. 
 
 ###Binding
 You can convert an RxJava `Observable` into a JavaFX `Binding` by calling the `JavaFxSubscriber.toBinding()` factory. Calling the `dispose()` method on the `Binding` will handle the unsubscription from the `Observable`.  You can then take this `Binding` to bind other control properties to it. 
