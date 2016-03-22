@@ -210,7 +210,7 @@ If you are heavily dependent on RxJava, asynchronous processing, or do not want 
 
 
 ##Notes for Kotlin 
-If you are building your JavaFX application with [Kotlin](https://kotlinlang.org/), this library becomes even more useful with extension functions. These extension functions exist in the [RxKotlinFX](https://github.com/thomasnield/RxKotlinFX) project, but the API is so small it is not worth publishing at the moment. But you can simply add these extension functions below to your project and utilize Kotlin's fluent style.
+If you are building your JavaFX application with [Kotlin](https://kotlinlang.org/), check out [RxKotlinFX](https://github.com/thomasnield/RxKotlinFX) to leverage this library through Kotlin extension functions.
 
 ```kotlin
 fun <T> Observable<T>.toBinding() = JavaFxSubscriber.toBinding(this)
