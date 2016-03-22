@@ -207,29 +207,8 @@ Although ReactFX has some asynchronous operators like `threadBridge`, ReactFX em
 
 If you are heavily dependent on RxJava, asynchronous processing, or do not want your entire reactive codebase to be UI-focused, you will probably want to use RxJavaFX. 
 
-
-
 ##Notes for Kotlin 
-If you are building your JavaFX application with [Kotlin](https://kotlinlang.org/), check out [RxKotlinFX](https://github.com/thomasnield/RxKotlinFX) to leverage this library through Kotlin extension functions.
-
-```kotlin
-fun <T> Observable<T>.toBinding() = JavaFxSubscriber.toBinding(this)
-fun <T> Observable<T>.toBinding(errorHandler: (Throwable) -> Unit) = JavaFxSubscriber.toBinding(this,errorHandler)
-fun <T> ObservableValue<T>.toObservable() = JavaFxObservable.fromObservableValue(this)
-fun <T> ObservableValue<T>.toObservableChanges() = JavaFxObservable.fromObservableValueChanges(this)
-fun <T: Event> Node.toNodeEvents(eventType: EventType<T>) = JavaFxObservable.fromNodeEvents(this, eventType)
-fun <T> Observable<T>.observeOnFx() = this.observeOn(JavaFxScheduler.getInstance())
-```
-This allows you to better use Kotlin's features to interop JavaFX and RxJava much more cleanly.
-
-```kotlin
-val textField = TextField()
-val textInputs = textField.toObservable()
-val lengthBinding = textInputs.map { it.length }.toBinding()
-```
-
-If you are doing JavaFX and Kotlin development, definitely check out [TornadoFX](https://github.com/edvin/tornadofx) as well to utilize type-safe builders and other features enabled by Kotlin.
-
+If you are building your JavaFX application with [Kotlin](https://kotlinlang.org/), check out [RxKotlinFX](https://github.com/thomasnield/RxKotlinFX) to leverage this library through Kotlin extension functions. Definitely check out [TornadoFX](https://github.com/edvin/tornadofx) as well to utilize type-safe builders and other patterns enabled by Kotlin.
 
 ## Comprehensive Example
 ```java
