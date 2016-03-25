@@ -172,9 +172,12 @@ Label incrementLabel =  new Label("");
 
 Observable<ActionEvent> bttnEvents =
         JavaFxObservable.fromNodeEvents(incrementBttn, ActionEvent.ACTION);
-
-Binding<String> binding = JavaFxSubscriber.toBinding(bttnEvents.map(e -> 1).scan(0,(x, y) -> x + y)
-        .map(Object::toString));
+        
+Observable<String> accumulations = bttnEvents.map(e -> 1)
+        .scan(0,(x, y) -> x + y)
+        .map(Object::toString);
+        
+Binding<String> binding = JavaFxSubscriber.toBinding(accumulations);
 
 incrementLabel.textProperty().bind(binding);
 
