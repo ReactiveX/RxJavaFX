@@ -186,6 +186,19 @@ binding.dispose();
 
 ```
 
+You also have the option to use a `CompositeBinding` to group multiple `Binding`s together, and `dispose()` them all at once. It is the JavaFX equivalent to `CompositeSubscription`. 
+
+```java
+Binding<Long> binding1 = ...
+bindings.add(binding1);
+
+Binding<Long> binding2 = ... 
+bindings.add(binding2);
+
+//do stuff on UI, and dispose() both bindings
+bindings.dispose();
+```        
+
 ### JavaFX Scheduler
 
 When you update any JavaFX control, it must be done on the JavaFX Event Dispatch Thread. Fortunately, the `JavaFxScheduler` makes it trivial to take work off the JavaFX thread and put it back when the results are ready.  Below we can use the `observeOn()` to pass text value emissions to a computation thread where the text will be flipped. Then we can pass `JavaFxScheduler.getInstance()` to another `observeOn()` afterwards to put it back on the JavaFX thread. From there it will update the `flippedTextLabel`.
