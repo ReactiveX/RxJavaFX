@@ -18,6 +18,7 @@ package rx.observables;
 
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventType;
@@ -30,6 +31,8 @@ import javafx.stage.WindowEvent;
 import rx.Observable;
 import rx.functions.Func1;
 import rx.javafx.sources.*;
+
+import java.util.Map;
 
 
 public enum JavaFxObservable {
@@ -163,7 +166,7 @@ public enum JavaFxObservable {
     /**
      * Emits all added, removed, and updated items from an ObservableList
      * @param source
-     * @return An Observable emitting changed items with an ADDED, REMOVED, or UPDATED flags
+     * @return An Observable emitting changed items with an ADDED, REMOVED, or UPDATED flag
      */
     public static <T> Observable<ListChange<T>> fromObservableListChanges(final ObservableList<T> source) {
         return ObservableListSource.fromObservableListChanges(source);
@@ -173,7 +176,7 @@ public enum JavaFxObservable {
      * If dupe items with identical hashcode/equals evaluations are added to an ObservableList, only the first one will fire an ADDED item.
      * When the last dupe is removed, only then will it fire a REMOVED item.
      * @param source
-     * @return An Observable emitting changed items with an ADDED, REMOVED, or UPDATED flags
+     * @return An Observable emitting changed items with an ADDED, REMOVED, or UPDATED flag
      */
     public static <T> Observable<ListChange<T>> fromObservableListDistinctChanges(final ObservableList<T> source) {
         return ObservableListSource.fromObservableListDistinctChanges(source);
@@ -183,7 +186,7 @@ public enum JavaFxObservable {
      * If dupe mapped R items with identical hashcode/equals evaluations are added to an ObservableList, only the first one will fire an ADDED T item.
      * When the last R dupe is removed, only then will it fire a REMOVED T item.
      * @param source
-     * @return An Observable emitting changed items with an ADDED, REMOVED, or UPDATED flags
+     * @return An Observable emitting changed items with an ADDED, REMOVED, or UPDATED flag
      */
     public static <T,R> Observable<ListChange<T>> fromObservableListDistinctChanges(final ObservableList<T> source, Func1<T,R> mapper) {
         return ObservableListSource.fromObservableListDistinctChanges(source,mapper);
@@ -193,9 +196,48 @@ public enum JavaFxObservable {
      * If dupe mapped R items with identical hashcode/equals evaluations are added to an ObservableList, only the first one will fire an ADDED R item.
      * When the last dupe is removed, only then will it fire a REMOVED R item.
      * @param source
-     * @return An Observable emitting changed mapped items with an ADDED, REMOVED, or UPDATED flags
+     * @return An Observable emitting changed mapped items with an ADDED, REMOVED, or UPDATED flag
      */
     public static <T,R> Observable<ListChange<R>> fromObservableListDistinctMappings(final ObservableList<T> source, Func1<T,R> mapper) {
         return ObservableListSource.fromObservableListDistinctMappings(source,mapper);
+    }
+
+    /**
+     * Creates an observable that emits an ObservableMap every time it is modified
+     *
+     * @param source      The target ObservableMap of the MapChange events
+     * @return An Observable emitting the ObservableMap each time it changes
+     */
+    public static <K,T> Observable<ObservableMap<K,T>> fromObservableMap(final ObservableMap<K,T> source) {
+        return ObservableMapSource.fromObservableMap(source);
+    }
+
+    /**
+     * Creates an observable that emits all additions to an ObservableMap
+     *
+     * @param source      The target ObservableMap for the item add events
+     * @return An Observable emitting Entry items added to the ObservableMap
+     */
+    public static <K,T> Observable<Map.Entry<K,T>> fromObservableMapAdds(final ObservableMap<K,T> source) {
+        return ObservableMapSource.fromObservableMapAdds(source);
+    }
+
+    /**
+     * Creates an observable that emits all removal items from an ObservableMap
+     *
+     * @param source      The target ObservableMap for the item removal events
+     * @return An Observable emitting items removed Entry items from the ObservableList
+     */
+    public static <K,T> Observable<Map.Entry<K,T>> fromObservableMapRemovals(final ObservableMap<K,T> source) {
+        return ObservableMapSource.fromObservableMapRemovals(source);
+    }
+
+    /**
+     * Emits all added, removed, and updated items from an ObservableMap
+     * @param source
+     * @return An Observable emitting changed entries with an ADDED, REMOVED, or UPDATED flag
+     */
+    public static <K,T> Observable<MapChange<K,T>> fromObservableMapChanges(final ObservableMap<K,T> source) {
+        return ObservableMapSource.fromObservableMapChanges(source);
     }
 }

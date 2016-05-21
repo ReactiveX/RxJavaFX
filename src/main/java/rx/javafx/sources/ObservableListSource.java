@@ -10,6 +10,7 @@ import rx.subscriptions.JavaFxSubscriptions;
 import java.util.HashMap;
 
 public final class ObservableListSource {
+    private ObservableListSource() {}
 
     public static <T> Observable<ObservableList<T>> fromObservableList(final ObservableList<T> source) {
 
