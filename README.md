@@ -2,7 +2,7 @@
 
 Learn more about RxJava on the <a href="https://github.com/ReactiveX/RxJava/wiki">Wiki Home</a> and the <a href="http://techblog.netflix.com/2013/02/rxjava-netflix-api.html">Netflix TechBlog post</a> where RxJava was introduced.
 
-RxJavaFX is a simple API to convert JavaFX events into RxJava Observables. It also has a scheduler to safely move emissions to the JavaFX Event Dispatch Thread. 
+RxJavaFX is a simple API to convert JavaFX events into RxJava Observables and vice versa. It also has a scheduler to safely move emissions to the JavaFX Event Dispatch Thread. 
 
 ## Master Build Status
 
@@ -55,7 +55,7 @@ $ ./gradlew build
 ## Features
 
 RxJavaFX has a lightweight set of features:
-- Factories to turn `Node`, `ObservableValue`, and other component events into an RxJava `Observable`
+- Factories to turn `Node`, `ObservableValue`, `ObservableList`, and other component events into an RxJava `Observable`
 - Factories to turn an RxJava `Observable` into a JavaFX `Binding`. 
 - A scheduler for the JavaFX dispatch thread
 
@@ -137,6 +137,32 @@ Subscription subscription = JavaFxObservable.fromObservableValueChanges(spinner.
         .subscribe(spinnerChangesLabel::setText);
 ```
 
+###ObservableList
+
+There are eight factories in `JavaFxObservable` for turning an `ObservableList` into an `Observable` of some form based on a `ListChange` event. 
+
+```java
+public static <T> Observable<ObservableList<T>> fromObservableList(final ObservableList<T> source
+
+public static <T> Observable<T> fromObservableListAdds(final ObservableList<T> source)
+
+public static <T> Observable<T> fromObservableListRemovals(final ObservableList<T> source)
+
+public static <T> Observable<T> fromObservableListUpdates(final ObservableList<T> source)
+
+public static <T> Observable<ListChange<T>> fromObservableListChanges(final ObservableList<T> source)
+
+public static <T> Observable<ListChange<T>> fromObservableListDistinctChanges(final ObservableList<T> source)
+
+public static <T,R> Observable<ListChange<T>> fromObservableListDistinctChanges(final ObservableList<T> source, Func1<T,R> mapper)
+
+public static <T,R> Observable<ListChange<R>> fromObservableListDistinctMappings(final ObservableList<T> source, Func1<T,R> mapper)
+```  
+
+The first factory`fromObservableList()` will simply emit the entire `ObservableList` every time there is `ListChange` event fired. The rest of the factories fire only items impacted by the `ListChange` events. The last three emit only *distinct* additions and removals, which can be helpful to emit only the first item with a given `hashcode()`/`equals()` and ignore dupe additions. When the last item (meaning no more dupes) is removed, only then will it fire the removal. 
+
+See the JavaDocs for a more detailed description of each one. 
+
 ###Binding
 You can convert an RxJava `Observable` into a JavaFX `Binding` by calling the `JavaFxSubscriber.toBinding()` factory. Calling the `dispose()` method on the `Binding` will handle the unsubscription from the `Observable`.  You can then take this `Binding` to bind other control properties to it. 
 
@@ -146,9 +172,12 @@ Label incrementLabel =  new Label("");
 
 Observable<ActionEvent> bttnEvents =
         JavaFxObservable.fromNodeEvents(incrementBttn, ActionEvent.ACTION);
-
-Binding<String> binding = JavaFxSubscriber.toBinding(bttnEvents.map(e -> 1).scan(0,(x, y) -> x + y)
-        .map(Object::toString));
+        
+Observable<String> accumulations = bttnEvents.map(e -> 1)
+        .scan(0,(x, y) -> x + y)
+        .map(Object::toString);
+        
+Binding<String> binding = JavaFxSubscriber.toBinding(accumulations);
 
 incrementLabel.textProperty().bind(binding);
 
@@ -156,6 +185,19 @@ incrementLabel.textProperty().bind(binding);
 binding.dispose();
 
 ```
+
+You also have the option to use a `CompositeBinding` to group multiple `Binding`s together, and `dispose()` them all at once. It is the JavaFX equivalent to `CompositeSubscription`. 
+
+```java
+Binding<Long> binding1 = ...
+bindings.add(binding1);
+
+Binding<Long> binding2 = ... 
+bindings.add(binding2);
+
+//do stuff on UI, and dispose() both bindings
+bindings.dispose();
+```        
 
 ### JavaFX Scheduler
 
@@ -181,29 +223,8 @@ Although ReactFX has some asynchronous operators like `threadBridge`, ReactFX em
 
 If you are heavily dependent on RxJava, asynchronous processing, or do not want your entire reactive codebase to be UI-focused, you will probably want to use RxJavaFX. 
 
-
-
 ##Notes for Kotlin 
-If you are building your JavaFX application with [Kotlin](https://kotlinlang.org/), this library becomes even more useful with extension functions. These extension functions exist in the [RxKotlinFX](https://github.com/thomasnield/RxKotlinFX) project, but the API is so small it is not worth publishing at the moment. But you can simply add these extension functions below to your project and utilize Kotlin's fluent style.
-
-```kotlin
-fun <T> Observable<T>.toBinding() = JavaFxSubscriber.toBinding(this)
-fun <T> Observable<T>.toBinding(errorHandler: (Throwable) -> Unit) = JavaFxSubscriber.toBinding(this,errorHandler)
-fun <T> ObservableValue<T>.toObservable() = JavaFxObservable.fromObservableValue(this)
-fun <T> ObservableValue<T>.toObservableChanges() = JavaFxObservable.fromObservableValueChanges(this)
-fun <T: Event> Node.toNodeEvents(eventType: EventType<T>) = JavaFxObservable.fromNodeEvents(this, eventType)
-fun <T> Observable<T>.observeOnFx() = this.observeOn(JavaFxScheduler.getInstance())
-```
-This allows you to better use Kotlin's features to interop JavaFX and RxJava much more cleanly.
-
-```kotlin
-val textField = TextField()
-val textInputs = textField.toObservable()
-val lengthBinding = textInputs.map { it.length }.toBinding()
-```
-
-If you are doing JavaFX and Kotlin development, definitely check out [TornadoFX](https://github.com/edvin/tornadofx) as well to utilize type-safe builders and other features enabled by Kotlin.
-
+If you are building your JavaFX application with [Kotlin](https://kotlinlang.org/), check out [RxKotlinFX](https://github.com/thomasnield/RxKotlinFX) to leverage this library through Kotlin extension functions.
 
 ## Comprehensive Example
 ```java
