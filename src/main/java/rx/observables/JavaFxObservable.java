@@ -19,6 +19,7 @@ package rx.observables;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
+import javafx.collections.ObservableSet;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.event.EventType;
@@ -226,18 +227,58 @@ public enum JavaFxObservable {
      * Creates an observable that emits all removal items from an ObservableMap
      *
      * @param source      The target ObservableMap for the item removal events
-     * @return An Observable emitting items removed Entry items from the ObservableList
+     * @return An Observable emitting items removed Entry items from the ObservableMap
      */
     public static <K,T> Observable<Map.Entry<K,T>> fromObservableMapRemovals(final ObservableMap<K,T> source) {
         return ObservableMapSource.fromObservableMapRemovals(source);
     }
 
     /**
-     * Emits all added, removed, and updated items from an ObservableMap
+     * Emits all added and removed items (including swaps) from an ObservableMap
      * @param source
-     * @return An Observable emitting changed entries with an ADDED, REMOVED, or UPDATED flag
+     * @return An Observable emitting changed entries with an ADDED or REMOVED flag
      */
     public static <K,T> Observable<MapChange<K,T>> fromObservableMapChanges(final ObservableMap<K,T> source) {
         return ObservableMapSource.fromObservableMapChanges(source);
+    }
+
+    /**
+     * Creates an observable that emits an ObservableSet every time it is modified
+     *
+     * @param source      The target ObservableSet of the SetChange events
+     * @return An Observable emitting the ObservableSet each time it changes
+     */
+    public static <T> Observable<ObservableSet<T>> fromObservableSet(final ObservableSet<T> source) {
+        return ObservableSetSource.fromObservableSet(source);
+    }
+
+    /**
+     * Creates an observable that emits all additions to an ObservableSet
+     *
+     * @param source      The target ObservableSet for the item add events
+     * @return An Observable emitting items added to the ObservableSet
+     */
+    public static <T> Observable<T> fromObservableSetAdds(final ObservableSet<T> source) {
+        return ObservableSetSource.fromObservableSetAdds(source);
+    }
+
+    /**
+     * Creates an observable that emits all removal items from an ObservableSet
+     *
+     * @param source      The target ObservableSet for the item removal events
+     * @return An Observable emitting items removed items from the ObservableSet
+     */
+    public static <T> Observable<T> fromObservableSetRemovals(final ObservableSet<T> source) {
+        return ObservableSetSource.fromObservableSetRemovals(source);
+    }
+
+
+    /**
+     * Emits all added and removed items (including swaps) from an ObservableSet
+     * @param source
+     * @return An Observable emitting changed entries with an ADDED or REMOVED flag
+     */
+    public static <T> Observable<SetChange<T>> fromObservableSetChanges(final ObservableSet<T> source) {
+        return ObservableSetSource.fromObservableSetChanges(source);
     }
 }
