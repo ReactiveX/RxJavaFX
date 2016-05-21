@@ -143,22 +143,23 @@ There are several factories to emit many useful `ObservableList`, `ObservableMap
 
 
 |Factory Method|Parameter Type|Return Type|Description|
-|---|---|---|
-|fromObservableList()|ObservableList&lt;T>|Observable&lt;ObservableList&lt;T>>|Emits the entire `ObservableList` every time it changes
-|fromObservableListAdds()|ObservableList&lt;T>|Observable&lt;T>|Emits additions to an `ObservableList`
-|fromfromObservableListRemovals()||ObservableList&lt;T>|Observable&lt;T>|Emits removals from an `ObservableList`
-|fromObservableListUpdates|ObservableList&lt;T>|Observable&lt;ListObservable&lt;ListChange&lt;T>>|Emits every item that was the result of a change to an `ObservableList`, with an `ADDED`, `REMOVED`, or `UPDATED` flag
-|fromObservableListDistinctChanges()|ObservableList&lt;T>| Observable&lt;ListChange&lt;R>>|Emits only *distinct* addtions and removals to an `ObservableList`
-|fromObservableListDistinctChanges()|ObservableList&lt;T>, Func1&lt;T,R>| Observable&lt;ListChange&lt;R>>|Emits only *distinct* additions and removals to an `ObservableList` and emits the mapping
-|fromObservableListDistinctChanges()|ObservableList&lt;T>, Func1&lt;T,R>| Observable&lt;ListChange&lt;R>>|Emits only *distinct* additions and removals to an `ObservableList` based on a mapping
-|fromObservableMap()|ObservableMap&lt;K,T>|Observable&lt;ObservableMap&lt;K,T>>|Emits the entire `ObservableMap` every time it changes
-|fromObservableMapAdds()|ObservableMap&lt;K,T>|Observable&lt;Map.Entry&lt;K,T>>|Emits every `Map.Entry<K,T>` added to an `ObservableMap`
-|fromObservableMapRemovals()|ObservableMap&lt;K,T>|Observable&lt;Map.Entry&lt;K,T>>|Emits every `Map.Entry<K,T>` removed from an `ObservableMap`
-|fromObservableMapChanges()|ObservableMap&lt;K,T>|Observable&lt;MapChange&lt;K,T>>|Emits every key/value pair with an `ADDED` or `REMOVED` flag. 
-|fromObservableSet()|ObservableSet&lt;T>|Observable&lt;ObservableSet&lt;T>>|Emits the entire `ObservableSet` every time it changes
-|fromObservableSetAdds()|ObservableSet&lt;T>|Observable&lt;T>|Emits every addition to an `ObservableSet`
-|fromObservableSetRemovals()|ObservableSet&lt;T>|Observable&lt;T>|Emits every removal to an `ObservableSet`
-|fromObservableSetChanges()|ObservableSet&lt;T>|Observable&lt;SetChange&lt;T>|Emits every item `ADDED` or `REMOVED` item from an `ObservableSet` with the corresponding flag
+|---|---|---|---
+|fromObservableList()|ObservableList&lt;T>|Observable&lt;ObservableList&lt;T>>|Emits the entire `ObservableList` every time it changes|
+|fromObservableListAdds()|ObservableList&lt;T>|Observable&lt;T>|Emits additions to an `ObservableList`|
+|fromfromObservableListRemovals()||ObservableList&lt;T>|Observable&lt;T>|Emits removals from an `ObservableList`|
+|fromObservableListUpdates|ObservableList&lt;T>|Observable&lt;ListObservable&lt;ListChange&lt;T>>|Emits every item that was the result of a change to an `ObservableList`, with an `ADDED`, `REMOVED`, or `UPDATED` flag|
+|fromObservableListDistinctChanges()|ObservableList&lt;T>| Observable&lt;ListChange&lt;R>>|Emits only *distinct* addtions and removals to an `ObservableList`|
+|fromObservableListDistinctChanges()|ObservableList&lt;T>, Func1&lt;T,R>| Observable&lt;ListChange&lt;R>>|Emits only *distinct* additions and removals to an `ObservableList` and emits the mapping|
+|fromObservableListDistinctChanges()|ObservableList&lt;T>, Func1&lt;T,R>| Observable&lt;ListChange&lt;R>>|Emits only *distinct* additions and removals to an `ObservableList` based on a mapping|
+|fromObservableMap()|ObservableMap&lt;K,T>|Observable&lt;ObservableMap&lt;K,T>>|Emits the entire `ObservableMap` every time it changes|
+|fromObservableMapAdds()|ObservableMap&lt;K,T>|Observable&lt;Map.Entry&lt;K,T>>|Emits every `Map.Entry<K,T>` added to an `ObservableMap`|
+|fromObservableMapRemovals()|ObservableMap&lt;K,T>|Observable&lt;Map.Entry&lt;K,T>>|Emits every `Map.Entry<K,T>` removed from an `ObservableMap`|
+|fromObservableMapChanges()|ObservableMap&lt;K,T>|Observable&lt;MapChange&lt;K,T>>|Emits every key/value pair with an `ADDED` or `REMOVED` flag.|
+|fromObservableSet()|ObservableSet&lt;T>|Observable&lt;ObservableSet&lt;T>>|Emits the entire `ObservableSet` every time it changes|
+|fromObservableSetAdds()|ObservableSet&lt;T>|Observable&lt;T>|Emits every addition to an `ObservableSet`|
+|fromObservableSetRemovals()|ObservableSet&lt;T>|Observable&lt;T>|Emits every removal to an `ObservableSet`|
+|fromObservableSetChanges()|ObservableSet&lt;T>|Observable&lt;SetChange&lt;T>|Emits every item `ADDED` or `REMOVED` item from an `ObservableSet` with the corresponding flag|
+
 
 ###Binding
 You can convert an RxJava `Observable` into a JavaFX `Binding` by calling the `JavaFxSubscriber.toBinding()` factory. Calling the `dispose()` method on the `Binding` will handle the unsubscription from the `Observable`.  You can then take this `Binding` to bind other control properties to it. 
