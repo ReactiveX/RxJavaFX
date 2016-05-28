@@ -28,7 +28,7 @@ public final class ObservableMapSource {
             MapChangeListener<K,T> listener = c -> {
 
                 if (c.wasAdded()) {
-                   subscriber.onNext(new SimpleEntry<>(c.getKey(),c.getValueAdded()));
+                   subscriber.onNext(new SimpleEntry<K,T>(c.getKey(),c.getValueAdded()));
                 }
 
             };
@@ -45,7 +45,7 @@ public final class ObservableMapSource {
             MapChangeListener<K,T> listener = c -> {
 
                 if (c.wasRemoved()) {
-                    subscriber.onNext(new SimpleEntry<>(c.getKey(),c.getValueRemoved()));
+                    subscriber.onNext(new SimpleEntry<K,T>(c.getKey(),c.getValueRemoved()));
                 }
 
             };
@@ -62,10 +62,10 @@ public final class ObservableMapSource {
             MapChangeListener<K,T> listener = c -> {
 
                 if (c.wasRemoved()) {
-                    subscriber.onNext(new MapChange<>(c.getKey(),c.getValueRemoved(),Flag.REMOVED));
+                    subscriber.onNext(new MapChange<K,T>(c.getKey(),c.getValueRemoved(),Flag.REMOVED));
                 }
                 if (c.wasAdded()) {
-                    subscriber.onNext(new MapChange<>(c.getKey(),c.getValueAdded(),Flag.ADDED));
+                    subscriber.onNext(new MapChange<K,T>(c.getKey(),c.getValueAdded(),Flag.ADDED));
                 }
 
             };

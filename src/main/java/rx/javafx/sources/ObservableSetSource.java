@@ -54,10 +54,10 @@ public final class ObservableSetSource {
 
             SetChangeListener<T> listener = c -> {
                 if (c.wasRemoved()) {
-                    subscriber.onNext(new SetChange<>(c.getElementRemoved(), Flag.REMOVED));
+                    subscriber.onNext(new SetChange<T>(c.getElementRemoved(), Flag.REMOVED));
                 }
                 if (c.wasAdded()) {
-                    subscriber.onNext(new SetChange<>(c.getElementAdded(), Flag.ADDED));
+                    subscriber.onNext(new SetChange<T>(c.getElementAdded(), Flag.ADDED));
                 }
             };
             source.addListener(listener);
