@@ -146,7 +146,7 @@ There are several factories to emit many useful `ObservableList`, `ObservableMap
 |---|---|---|---
 |fromObservableList()|ObservableList&lt;T>|Observable&lt;ObservableList&lt;T>>|Emits the entire `ObservableList` every time it changes|
 |fromObservableListAdds()|ObservableList&lt;T>|Observable&lt;T>|Emits additions to an `ObservableList`|
-|fromfromObservableListRemovals()||ObservableList&lt;T>|Observable&lt;T>|Emits removals from an `ObservableList`|
+|fromfromObservableListRemovals()|ObservableList&lt;T>|Observable&lt;T>|Emits removals from an `ObservableList`|
 |fromObservableListUpdates|ObservableList&lt;T>|Observable&lt;ListChange&lt;T>>|Emits every item that was the result of a change to an `ObservableList`, with an `ADDED`, `REMOVED`, or `UPDATED` flag|
 |fromObservableListDistinctChanges()|ObservableList&lt;T>| Observable&lt;ListChange&lt;R>>|Emits only *distinct* addtions and removals to an `ObservableList`|
 |fromObservableListDistinctChanges()|ObservableList&lt;T>, Func1&lt;T,R>| Observable&lt;ListChange&lt;R>>|Emits only *distinct* additions and removals to an `ObservableList` and emits the mapping|
