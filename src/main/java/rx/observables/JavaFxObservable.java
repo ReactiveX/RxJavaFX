@@ -16,6 +16,9 @@
 package rx.observables;
 
 
+import javafx.animation.Animation;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 import javafx.collections.ObservableMap;
@@ -29,9 +32,12 @@ import javafx.scene.control.ContextMenu;
 import javafx.scene.control.MenuItem;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
+import javafx.util.Duration;
 import rx.Observable;
 import rx.functions.Func1;
+import java.util.concurrent.atomic.AtomicLong;
 import rx.javafx.sources.*;
+import rx.subscriptions.JavaFxSubscriptions;
 
 import java.util.Map;
 
@@ -280,5 +286,12 @@ public enum JavaFxObservable {
      */
     public static <T> Observable<SetChange<T>> fromObservableSetChanges(final ObservableSet<T> source) {
         return ObservableSetSource.fromObservableSetChanges(source);
+    }
+
+    /**
+     * Returns an Observable that emits a 0L  and ever increasing numbers after each duration of time thereafter
+     */
+    public static <T> Observable<Long> interval(final Duration duration) {
+       return TimerSource.interval(duration);
     }
 }

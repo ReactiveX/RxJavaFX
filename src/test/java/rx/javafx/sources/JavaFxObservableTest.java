@@ -22,6 +22,7 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.JFXPanel;
+import javafx.util.Duration;
 import org.junit.Test;
 import rx.Observable;
 import rx.observables.JavaFxObservable;
@@ -34,6 +35,22 @@ import java.util.concurrent.CountDownLatch;
 import static org.junit.Assert.assertTrue;
 
 public final class JavaFxObservableTest {
+
+    @Test
+    public void testIntervalSource() {
+        new JFXPanel();
+
+        final CountDownLatch latch = new CountDownLatch(5);
+
+        JavaFxObservable.interval(Duration.millis(1000)).take(5)
+                .subscribe(v -> latch.countDown());
+
+        try {
+            latch.await();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Test
     public void testRxObservableListAdds() {
