@@ -16,7 +16,6 @@
 
 package rx.subscribers;
 
-import com.sun.javafx.binding.ExpressionHelper;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Binding;
 import javafx.beans.value.ChangeListener;
@@ -30,7 +29,6 @@ final class LazyBindingSubscriber<T> implements ObservableValue<T>, Binding<T> {
 
     private final Observable<T> observable;
     private final BindingSubscriber<T> binding;
-    private ExpressionHelper<T> helper;
     private Subscription subscription;
 
     LazyBindingSubscriber(Observable<T> observable, BindingSubscriber<T> binding) {
@@ -46,12 +44,12 @@ final class LazyBindingSubscriber<T> implements ObservableValue<T>, Binding<T> {
     }
     @Override
     public boolean isValid() {
-        return true;
+        return binding.isValid();
     }
 
     @Override
     public void invalidate() {
-        //does nothing
+        binding.invalidate();
     }
 
     @Override
@@ -71,7 +69,7 @@ final class LazyBindingSubscriber<T> implements ObservableValue<T>, Binding<T> {
      */
     @Override
     public void addListener(InvalidationListener listener) {
-        helper = ExpressionHelper.addListener(helper, this, listener);
+        binding.addListener(listener);
     }
 
     /**
@@ -79,7 +77,7 @@ final class LazyBindingSubscriber<T> implements ObservableValue<T>, Binding<T> {
      */
     @Override
     public void addListener(ChangeListener<? super T> listener) {
-        helper = ExpressionHelper.addListener(helper, this, listener);
+        binding.addListener(listener);
     }
 
     /**
@@ -87,7 +85,7 @@ final class LazyBindingSubscriber<T> implements ObservableValue<T>, Binding<T> {
      */
     @Override
     public void removeListener(InvalidationListener listener) {
-        helper = ExpressionHelper.removeListener(helper, listener);
+        binding.removeListener(listener);
     }
 
     /**
@@ -95,7 +93,7 @@ final class LazyBindingSubscriber<T> implements ObservableValue<T>, Binding<T> {
      */
     @Override
     public void removeListener(ChangeListener<? super T> listener) {
-        helper = ExpressionHelper.removeListener(helper, listener);
+        binding.removeListener(listener);
     }
 
     /**
@@ -106,6 +104,6 @@ final class LazyBindingSubscriber<T> implements ObservableValue<T>, Binding<T> {
      * the following call to fireValueChangedEvent.
      */
     protected void fireValueChangedEvent() {
-        ExpressionHelper.fireValueChangedEvent(helper);
+        binding.fireValueChangedEvent();
     }
 }
