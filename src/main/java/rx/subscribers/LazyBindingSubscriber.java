@@ -54,14 +54,12 @@ final class LazyBindingSubscriber<T> implements ObservableValue<T>, Binding<T> {
 
     @Override
     public ObservableList<?> getDependencies() {
-        throw new UnsupportedOperationException();
+        return binding.getDependencies();
     }
 
     @Override
     public void dispose() {
-        if (subscription != null) {
-            binding.dispose();
-        }
+        binding.dispose();
     }
 
     /**
