@@ -26,17 +26,13 @@ public enum JavaFxSubscriber {
      * Turns an Observable into an eager JavaFX Binding that subscribes immediately to the Observable. Calling the Binding's dispose() method will handle the unsubscription.
      */
     public static <T> Binding<T> toBinding(Observable<T> obs) {
-        BindingSubscriber<T> bindingSubscriber = new BindingSubscriber<>(e -> {});
-        obs.subscribe(bindingSubscriber);
-        return bindingSubscriber;
+        return BindingSubscriber.forObservable(obs, e -> {}, false);
     }
     /**
      * Turns an Observable into an eager JavaFX Binding that subscribes immediately to the Observable. Calling the Binding's dispose() method will handle the unsubscription.
      */
     public static <T> Binding<T> toBinding(Observable<T> obs, Action1<Throwable> onErrorAction ) {
-        BindingSubscriber<T> bindingSubscriber = new BindingSubscriber<>(onErrorAction);
-        obs.subscribe(bindingSubscriber);
-        return bindingSubscriber;
+        return BindingSubscriber.forObservable(obs, onErrorAction, false);
     }
 
     /**
@@ -50,7 +46,6 @@ public enum JavaFxSubscriber {
      * Turns an Observable into a lazy JavaFX Binding that subscribes to the Observable the first time the Binding's getValue() method is called. Calling the Binding's dispose() method will handle the unsubscription.
      */
     public static <T> Binding<T> toLazyBinding(Observable<T> obs, Action1<Throwable> onErrorAction ) {
-        BindingSubscriber<T> bindingSubscriber = new BindingSubscriber<>(onErrorAction);
-        return new LazyBindingSubscriber<>(obs, bindingSubscriber);
+        return BindingSubscriber.forObservable(obs, onErrorAction, true);
     }
 }

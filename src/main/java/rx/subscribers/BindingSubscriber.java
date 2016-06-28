@@ -22,6 +22,7 @@ import javafx.beans.binding.Binding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
+import rx.Observable;
 import rx.Subscriber;
 import rx.Subscription;
 import rx.functions.Action1;
@@ -29,12 +30,28 @@ import rx.functions.Action1;
 
 final class BindingSubscriber<T> extends Subscriber<T> implements ObservableValue<T>, Binding<T>, Subscription {
 
+    private final Observable<T> observable;
     private final Action1<Throwable> onError;
+    private Subscription subscription;
     private ExpressionHelper<T> helper;
     private T value;
 
-    BindingSubscriber(final Action1<Throwable> onError) {
+    private BindingSubscriber(Observable<T> observable, Action1<Throwable> onError) {
+        this.observable = observable;
         this.onError = onError;
+    }
+
+    public static <T> BindingSubscriber<T> forObservable(Observable<T> observable, Action1<Throwable> onError, boolean isLazy) {
+        BindingSubscriber<T> bindingSubscriber = new BindingSubscriber<>(observable, onError);
+
+        if (!isLazy) {
+            bindingSubscriber.connect();
+        }
+
+        return bindingSubscriber;
+    }
+    private void connect() {
+        subscription = observable.subscribe(this);
     }
     @Override
     public void onCompleted() {
@@ -53,6 +70,9 @@ final class BindingSubscriber<T> extends Subscriber<T> implements ObservableValu
     }
     @Override
     public T getValue() {
+        if (subscription == null) {
+            connect();
+        }
         return value;
     }
     @Override
