@@ -28,7 +28,7 @@ import rx.Subscription;
 import rx.functions.Action1;
 
 
-final class BindingSubscriber<T> extends Subscriber<T> implements ObservableValue<T>, Binding<T>, Subscription {
+final class BindingSubscriber<T> extends Subscriber<T> implements ObservableValue<T>, Binding<T> {
 
     private final Observable<T> observable;
     private final Action1<Throwable> onError;
@@ -92,6 +92,9 @@ final class BindingSubscriber<T> extends Subscriber<T> implements ObservableValu
 
     @Override
     public void dispose() {
+        if (subscription != null) {
+            subscription.unsubscribe();
+        }
         this.unsubscribe();
     }
 
