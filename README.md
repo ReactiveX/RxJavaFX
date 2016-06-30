@@ -184,6 +184,24 @@ binding.dispose();
 
 ```
 
+It is usually good practice to specify an `onError` to the `Binding`, just like a normal `Subscriber` so you can handle any errors that are communicated up the chain. 
+
+```
+incrementLabel.textProperty().bind(binding, e -> e.printStackTrace());
+```
+
+
+###Lazy Binding
+
+The `toBinding()` factory above will eagerly subscribe the `Observable` to the `Binding` implementation. But if you want to delay the subscription to the `Observable` until the `Binding` is actually used (specifically when its `getValue()` is called), use `toLazyBinding()` instead. 
+
+```java
+Binding<String> lazyBinding = JavaFxSubscriber.toBinding(myObservable);
+```
+This can be handy for data controls like `TableView`, which will only request values for records that are visible. Using the `toLazyBinding()` to feed column values will cause subscriptions to only happen with visible records. 
+
+###CompositeBinding
+
 You also have the option to use a `CompositeBinding` to group multiple `Binding`s together, and `dispose()` them all at once. It is the JavaFX equivalent to `CompositeSubscription`. 
 
 ```java
@@ -196,6 +214,7 @@ bindings.add(binding2);
 //do stuff on UI, and dispose() both bindings
 bindings.dispose();
 ```        
+
 
 ### JavaFX Scheduler
 
@@ -212,6 +231,14 @@ sub2 = textInputs.observeOn(Schedulers.computation())
         .map(s -> new StringBuilder(s).reverse().toString())
         .observeOn(JavaFxScheduler.getInstance())
         .subscribe(fippedTextLabel::setText);
+```
+
+###JavaFX Interval
+
+There is a JavaFX equivalent to `Observable.interval()` that will emit on the JavaFX thread instead. Calling `JavaFxObservable.interval()` will push consecutive `Long` values at the specified `Duration`. 
+
+```java
+Observable<Long> everySecond = JavaFxObservable.interval(Duration.millis(1000));
 ```
 
 ##Differences from ReactFX
