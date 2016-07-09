@@ -12,10 +12,10 @@ public final class ObservableSetSource {
     public static <T> Observable<ObservableSet<T>> fromObservableSet(final ObservableSet<T> source) {
 
         return Observable.create((Observable.OnSubscribe<ObservableSet<T>>) subscriber -> {
+            subscriber.onNext(source);
             SetChangeListener<T> listener = c -> subscriber.onNext(source);
-            source.addListener(listener);
             subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
-        }).subscribeOn(JavaFxScheduler.getInstance());
+        }).startWith(source).subscribeOn(JavaFxScheduler.getInstance());
     }
 
     public static <T> Observable<T> fromObservableSetAdds(final ObservableSet<T> source) {

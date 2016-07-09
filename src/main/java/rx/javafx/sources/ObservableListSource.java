@@ -33,7 +33,7 @@ public final class ObservableListSource {
             ListChangeListener<T> listener = c -> subscriber.onNext(source);
             source.addListener(listener);
             subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
-        }).subscribeOn(JavaFxScheduler.getInstance());
+        }).startWith(source).subscribeOn(JavaFxScheduler.getInstance());
     }
 
     public static <T> Observable<T> fromObservableListAdds(final ObservableList<T> source) {

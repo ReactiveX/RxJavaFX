@@ -18,7 +18,7 @@ public final class ObservableMapSource {
             MapChangeListener<K,T> listener = c -> subscriber.onNext(source);
             source.addListener(listener);
             subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
-        }).subscribeOn(JavaFxScheduler.getInstance());
+        }).startWith(source).subscribeOn(JavaFxScheduler.getInstance());
     }
 
     public static <K,T> Observable<Entry<K,T>> fromObservableMapAdds(final ObservableMap<K,T> source) {
