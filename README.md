@@ -196,7 +196,7 @@ incrementLabel.textProperty().bind(binding, e -> e.printStackTrace());
 The `toBinding()` factory above will eagerly subscribe the `Observable` to the `Binding` implementation. But if you want to delay the subscription to the `Observable` until the `Binding` is actually used (specifically when its `getValue()` is called), use `toLazyBinding()` instead. 
 
 ```java
-Binding<String> lazyBinding = JavaFxSubscriber.toBinding(myObservable);
+Binding<String> lazyBinding = JavaFxSubscriber.toLazyBinding(myObservable);
 ```
 This can be handy for data controls like `TableView`, which will only request values for records that are visible. Using the `toLazyBinding()` to feed column values will cause subscriptions to only happen with visible records. 
 
