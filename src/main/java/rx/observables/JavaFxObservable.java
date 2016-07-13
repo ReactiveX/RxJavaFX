@@ -29,6 +29,7 @@ import javafx.event.EventType;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ContextMenu;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.MenuItem;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
@@ -291,7 +292,14 @@ public enum JavaFxObservable {
     /**
      * Returns an Observable that emits a 0L  and ever increasing numbers after each duration of time thereafter
      */
-    public static <T> Observable<Long> interval(final Duration duration) {
+    public static Observable<Long> interval(final Duration duration) {
        return TimerSource.interval(duration);
+    }
+
+    /**
+     * Returns an Observable that emits the T response  of a Dialog. If no response was given then the Observable will be empty.
+     */
+    public static <T> Observable<T> fromDialog(Dialog<T> dialog) {
+        return DialogSource.fromDialogSource(dialog);
     }
 }
