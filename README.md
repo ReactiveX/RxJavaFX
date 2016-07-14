@@ -88,7 +88,18 @@ MenuItem menuItem = new MenuItem("Select me");
 Observable<ActionEvent> menuItemEvents = 
         JavaFxObservable.fromActionEvents(menuItem);
 ```
+####Dialogs and Alerts
+```java
+Alert alert = new Alert(AlertType.CONFIRMATION);
+alert.setTitle("Confirmation");
+alert.setHeaderText("Please confirm your action");
+alert.setContentText("Are you ok with this?");
 
+
+JavaFxObservable.fromDialog(alert)
+    .filter(response -> response.equals(ButtonType.OK))
+    .subscribe(System.out::println,Throwable::printStackTrace);
+```
 ###Other Event Factories
 
 There are also factories provided to convert events from a `Window` as well as a `Scene` into an `Observable`. If you would like to see factories for other components and event types, please let us know or put in a PR. 
