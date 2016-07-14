@@ -14,4 +14,5 @@ public final class DialogSource {
                 .filter(Optional::isPresent)
                 .map(Optional::get);
     }
+
 }
