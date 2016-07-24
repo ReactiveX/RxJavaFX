@@ -22,35 +22,36 @@ import rx.observables.JavaFxObservable;
 
 /**
  * A CompositeObservable can merge multiple Observables that can be added/removed at any time,
- * affecting all Subscribers regardless of when they subscribed. This is especailly helpful for merging
+ * affecting all Subscribers regardless of when they subscribed. This is especially helpful for merging
  * multiple UI event sources.
+ *
  * @param <T>
  */
 public final class CompositeObservable<T> {
 
     private final ObservableList<Observable<T>> sources;
-    private final Observable<T> observable;
+    private final int initialCapacity;
 
     public CompositeObservable() {
         this(-1);
     }
 
     public CompositeObservable(int initialCapacity) {
+        this.initialCapacity = initialCapacity;
         sources = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
-
-        Observable<T> observable = JavaFxObservable.fromObservableList(sources)
-                .switchMap(list -> Observable.from(list).flatMap((Observable<T> obs) -> obs));
-
-        if (initialCapacity > 0) {
-            this.observable = observable.cacheWithInitialCapacity(initialCapacity);
-        }
-        else {
-            this.observable = observable;
-        }
     }
 
     public Observable<T> toObservable() {
-        return observable;
+        Observable<T> updatingSource = Observable.merge(
+                Observable.from(sources).flatMap(obs -> obs.takeWhile(v -> sources.contains(obs))),
+                JavaFxObservable.fromObservableListAdds(sources).flatMap(obs -> obs.takeWhile(v -> sources.contains(obs)))
+        );
+
+        if (initialCapacity > 0) {
+            return updatingSource.cacheWithInitialCapacity(initialCapacity);
+        } else {
+            return updatingSource;
+        }
     }
 
     public void add(Observable<T> observable) {

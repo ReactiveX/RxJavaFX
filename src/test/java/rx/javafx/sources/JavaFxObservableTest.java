@@ -28,8 +28,11 @@ import rx.Observable;
 import rx.observables.JavaFxObservable;
 import rx.schedulers.JavaFxScheduler;
 import rx.schedulers.Schedulers;
+import rx.subjects.PublishSubject;
 
 import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import static org.junit.Assert.assertTrue;
@@ -289,6 +292,90 @@ public final class JavaFxObservableTest {
 
         try {
             gate.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testcompositeObservableInfinite() {
+
+        new JFXPanel();
+
+        CountDownLatch latch = new CountDownLatch(1);
+
+        Platform.runLater(() -> {
+            final List<String> emissions = new ArrayList<>();
+            CompositeObservable<String> compositeObservable = new CompositeObservable<>();
+
+            PublishSubject<String> source1 = PublishSubject.create();
+            PublishSubject<String> source2 = PublishSubject.create();
+            PublishSubject<String> source3 = PublishSubject.create();
+
+            compositeObservable.add(source1);
+            compositeObservable.add(source2);
+            compositeObservable.add(source3);
+
+            compositeObservable.toObservable().subscribe(emissions::add);
+
+            source1.onNext("Alpha");
+            assertTrue(emissions.get(0).equals("Alpha"));
+
+            source2.onNext("Beta");
+            assertTrue(emissions.get(1).equals("Beta"));
+
+            source3.onNext("Gamma");
+            assertTrue(emissions.get(2).equals("Gamma"));
+
+            source1.onNext("Delta");
+            assertTrue(emissions.get(3).equals("Delta"));
+
+            compositeObservable.remove(source2);
+
+            source2.onNext("Epsilon");
+            assertTrue(emissions.size() == 4);
+
+            latch.countDown();
+        });
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testcompositeObservableFinite() {
+
+        new JFXPanel();
+
+        CountDownLatch latch = new CountDownLatch(1);
+
+        Platform.runLater(() -> {
+            final List<String> emissions = new ArrayList<>();
+            CompositeObservable<String> compositeObservable = new CompositeObservable<>();
+
+            Observable<String> source1 = Observable.just("Alpha","Beta");
+            Observable<String> source2 = Observable.just("Gamma","Delta");
+
+            compositeObservable.add(source1);
+
+            compositeObservable.toObservable().subscribe(emissions::add);
+
+            compositeObservable.add(source2);
+
+            assertTrue(emissions.size() == 4);
+
+            compositeObservable.remove(source2);
+
+            assertTrue(emissions.size() == 4);
+
+            latch.countDown();
+        });
+
+        try {
+            latch.await();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
