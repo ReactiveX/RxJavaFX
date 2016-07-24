@@ -371,6 +371,10 @@ public final class JavaFxObservableTest {
 
             assertTrue(emissions.size() == 4);
 
+            compositeObservable.add(source2);
+
+            assertTrue(emissions.size() == 6);
+
             latch.countDown();
         });
 
