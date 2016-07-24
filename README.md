@@ -229,6 +229,85 @@ bindings.add(binding2);
 bindings.dispose();
 ```        
 
+###CompositeObservable
+
+In UI development, it is not uncommon to have an event triggered in multiple places, or have inputs coming from multiple UI controls. Let's say you want to make a `refresh()` method callable from a `Button`, a `MenuItem`, and a <kbd>CTRL</kbd> + <kbd>R</kbd> hotkey combination. 
+
+```java
+//make refresh Button
+Button button = new Button("Refresh");
+Observable<ActionEvent> buttonClicks = JavaFxObservable.fromActionEvents(button);
+
+//make refresh MenuItem 
+MenuItem menuItem = new MenuItem("Refresh");
+Observable<ActionEvent> menuItemClicks = JavaFxObservable.fromActionEvents(menuItem);
+
+//CTRL + R hotkeys on a TableView
+TableView<MyType> tableView = new TableView<>();
+Observable<ActionEvent> hotKeyPresses =
+		JavaFxObservable.fromNodeEvents(tableView, KeyEvent.KEY_PRESSED)
+			.filter(ke -> ke.isControlDown() && ke.getCode().equals(KeyCode.R))
+			.map(ke -> new ActionEvent());
+			
+```
+
+If you have all three components accessible in advance, you could use `Observable.merge()` to merge them all together. 
+
+```java
+Observable.merge(buttonClicks, menuItemClicks, hotKeyPresses)
+		.subscribe(ae -> refresh());
+```
+
+But this is preferable only if all the declarations are easily accessible. If they are in separate places throughout your UI code, this is problematic. Complex UI's are likely to be highly decoupled and have a model backing all the event flows. You cannot "add" and "remove" Observables in an `Observable.merge()` operation, and this can make designing the model rather frustrating. 
+
+At this point, you may be tempted to resort to a `Subject` to act as a sort of [event bus](https://github.com/google/guava/wiki/EventBusExplained) accepting inputs from any number of sources and outputs to any number of subscribers. Although this is a valid use case, Subjects are prone to abuse and can introduce many antipatterns. 
+
+Introducing the `CompositeObservable`. It is a tighter, safer alternative to a `Subject` or an event bus. You can `add()` and `remove()` Observables at any time from a `CompositeObservable`, and this is useful to put in an event model backing the application. 
+
+```java
+class MyEventModel {
+    
+    private final CompositeObservable<ActionEvent> refreshRequests = new CompositeObservable<>();
+    
+    public CompositeObservable<ActionEvent> getRefreshRequests() {
+        return refreshRequests;
+    }
+}
+```
+
+Wherever the three controls are declared, you can `add()` the `Observable<ActionEvent>` from each control to the `CompositeObservable<ActionEvent>`. It will then merge them. You can then call the `toObservable()` to subscribe wherever those events are needed. 
+
+```java
+//make refresh Button
+Button button = new Button("Refresh");
+Observable<ActionEvent> buttonClicks = JavaFxObservable.fromActionEvents(button);
+myEventModel.getRefreshRequests().add(buttonClicks);
+
+
+//make refresh MenuItem
+MenuItem menuItem = new MenuItem("Refresh");
+Observable<ActionEvent> menuItemClicks = JavaFxObservable.fromActionEvents(menuItem);
+myEventModel.getRefreshRequests().add(menuItemClicks);
+
+
+//CTRL + R hotkeys on a TableView
+TableView<MyType> tableView = new TableView<>();
+
+Observable<ActionEvent> hotKeyPresses =
+    JavaFxObservable.fromNodeEvents(tableView, KeyEvent.KEY_PRESSED)
+        .filter(ke -> ke.isControlDown() && ke.getCode().equals(KeyCode.R))
+        .map(ke -> new ActionEvent());
+
+myEventModel.getRefreshRequests().add(hotKeyPresses);
+
+//subscribe to refresh events
+myEventModel.getRefreshRequests().subscribe(ae -> refresh());
+```
+
+Every time you `add()` or `remove()` an `Observable` to a `CompositeObservable`, it will affect all existing Subscribers. For UI development, this is good because there is no sensitivity to the order of adding Observables and subscribing. 
+
+Of course, you can pass around any type `T` in a `CompositeObservable<T>` and not just `ActionEvent`. It can be = helpful to pass around entire data structures, such as `CompositeObservable<Set<MyType>>`, to relay requests and inputs between controls.
+			
 
 ### JavaFX Scheduler
 
