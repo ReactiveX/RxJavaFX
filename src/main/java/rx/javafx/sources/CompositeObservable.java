@@ -16,6 +16,7 @@
 package rx.javafx.sources;
 
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
 import rx.Observable;
 import rx.observables.JavaFxObservable;
@@ -71,5 +72,7 @@ public final class CompositeObservable<T> {
     public void clear() {
         sources.clear();
     }
-
+    public ObservableSet<Observable<T>> getBackingSet() {
+        return FXCollections.unmodifiableObservableSet(sources);
+    }
 }
