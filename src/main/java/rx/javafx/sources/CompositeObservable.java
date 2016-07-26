@@ -16,9 +16,11 @@
 package rx.javafx.sources;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
+import javafx.collections.ObservableSet;
 import rx.Observable;
 import rx.observables.JavaFxObservable;
+import java.util.HashSet;
+import java.util.Arrays;
 
 /**
  * A CompositeObservable can merge multiple Observables that can be added/removed at any time,
@@ -29,7 +31,7 @@ import rx.observables.JavaFxObservable;
  */
 public final class CompositeObservable<T> {
 
-    private final ObservableList<Observable<T>> sources;
+    private final ObservableSet<Observable<T>> sources;
     private final int initialCapacity;
 
     public CompositeObservable() {
@@ -38,13 +40,13 @@ public final class CompositeObservable<T> {
 
     public CompositeObservable(int initialCapacity) {
         this.initialCapacity = initialCapacity;
-        sources = FXCollections.synchronizedObservableList(FXCollections.observableArrayList());
+        sources = FXCollections.synchronizedObservableSet(FXCollections.observableSet(new HashSet<>()));
     }
 
     public Observable<T> toObservable() {
         Observable<T> updatingSource = Observable.merge(
                 Observable.from(sources).flatMap(obs -> obs.takeWhile(v -> sources.contains(obs))),
-                JavaFxObservable.fromObservableListAdds(sources).flatMap(obs -> obs.takeWhile(v -> sources.contains(obs)))
+                JavaFxObservable.fromObservableSetAdds(sources).flatMap(obs -> obs.takeWhile(v -> sources.contains(obs)))
         );
 
         if (initialCapacity > 0) {
@@ -57,7 +59,17 @@ public final class CompositeObservable<T> {
     public void add(Observable<T> observable) {
         sources.add(observable);
     }
+    public void addAll(Observable<T>... observables) {
+        Arrays.stream(observables).forEach(this::add);
+    }
     public void remove(Observable<T> observable) {
         sources.remove(observable);
     }
+    public void removeAll(Observable<T>... observables) {
+        Arrays.stream(observables).forEach(this::remove);
+    }
+    public void clear() {
+        sources.clear();
+    }
+
 }
