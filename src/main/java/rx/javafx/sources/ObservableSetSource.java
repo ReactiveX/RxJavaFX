@@ -13,6 +13,7 @@ public final class ObservableSetSource {
 
         return Observable.create((Observable.OnSubscribe<ObservableSet<T>>) subscriber -> {
             SetChangeListener<T> listener = c -> subscriber.onNext(source);
+            source.addListener(listener);
             subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
         }).startWith(source).subscribeOn(JavaFxScheduler.getInstance());
     }
