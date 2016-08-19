@@ -4,14 +4,14 @@ Learn more about RxJava on the <a href="https://github.com/ReactiveX/RxJava/wiki
 
 RxJavaFX is a simple API to convert JavaFX events into RxJava Observables and vice versa. It also has a scheduler to safely move emissions to the JavaFX Event Dispatch Thread. 
 
-**DOCUMENTATION:** [Learning RxJava with JavaFX (EAP)](https://www.gitbook.com/book/thomasnield/rxjavafx-guide/details)
-
-
 **NOTE**: To use with [Kotlin](http://kotlinlang.org/), check out [RxKotlinFX](https://github.com/thomasnield/RxKotlinFX) to leverage this library with extension functions and additional operators. 
 
 ## Master Build Status
 
 <a href='https://travis-ci.org/ReactiveX/RxJavaFX/builds'><img src='https://travis-ci.org/ReactiveX/RxJavaFX.svg?branch=0.x'></a>
+
+##Documentation
+[Learning RxJava with JavaFX (EAP)](https://www.gitbook.com/book/thomasnield/rxjavafx-guide/details)
 
 ## Communication
 
