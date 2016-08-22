@@ -1,3 +1,5 @@
+![](http://i.imgur.com/x7rmXke.png)
+
 # RxJavaFX: JavaFX bindings for RxJava
 
 Learn more about RxJava on the <a href="https://github.com/ReactiveX/RxJava/wiki">Wiki Home</a> and the <a href="http://techblog.netflix.com/2013/02/rxjava-netflix-api.html">Netflix TechBlog post</a> where RxJava was introduced.
