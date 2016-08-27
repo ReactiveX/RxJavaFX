@@ -15,13 +15,12 @@
  */
 package rx.javafx.sources;
 
+import io.reactivex.Observable;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
 import javafx.scene.Node;
-import rx.Observable;
-import rx.Subscriber;
-import rx.functions.Action0;
+import org.reactivestreams.Subscriber;
 import rx.schedulers.JavaFxScheduler;
 import rx.subscriptions.JavaFxSubscriptions;
 

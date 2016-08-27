@@ -15,10 +15,10 @@
  */
 package rx.javafx.sources;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableOnSubscribe;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import rx.Observable;
-import rx.functions.Func1;
 import rx.schedulers.JavaFxScheduler;
 import rx.subscriptions.JavaFxSubscriptions;
 
@@ -29,7 +29,7 @@ public final class ObservableListSource {
 
     public static <T> Observable<ObservableList<T>> fromObservableList(final ObservableList<T> source) {
 
-        return Observable.create((Observable.OnSubscribe<ObservableList<T>>) subscriber -> {
+        return Observable.create((ObservableOnSubscribe<ObservableList<T>>) subscriber -> {
             ListChangeListener<T> listener = c -> subscriber.onNext(source);
             source.addListener(listener);
             subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
@@ -38,7 +38,7 @@ public final class ObservableListSource {
 
     public static <T> Observable<T> fromObservableListAdds(final ObservableList<T> source) {
 
-        return Observable.create((Observable.OnSubscribe<T>) subscriber -> {
+        return Observable.create((ObservableOnSubscribe<T>) subscriber -> {
 
             ListChangeListener<T> listener = c -> {
                 while (c.next()) {
@@ -54,7 +54,7 @@ public final class ObservableListSource {
     }
     public static <T> Observable<T> fromObservableListRemovals(final ObservableList<T> source) {
 
-        return Observable.create((Observable.OnSubscribe<T>) subscriber -> {
+        return Observable.create((ObservableOnSubscribe<T>) subscriber -> {
 
             ListChangeListener<T> listener = c -> {
                 while (c.next()) {
@@ -71,7 +71,7 @@ public final class ObservableListSource {
     }
     public static <T> Observable<T> fromObservableListUpdates(final ObservableList<T> source) {
 
-        return Observable.create((Observable.OnSubscribe<T>) subscriber -> {
+        return Observable.create((ObservableOnSubscribe<T>) subscriber -> {
 
             ListChangeListener<T> listener = c -> {
                 while (c.next()) {
@@ -88,7 +88,7 @@ public final class ObservableListSource {
         }).subscribeOn(JavaFxScheduler.getInstance());
     }
     public static <T> Observable<ListChange<T>> fromObservableListChanges(final ObservableList<T> source) {
-        return Observable.create((Observable.OnSubscribe<ListChange<T>>) subscriber -> {
+        return Observable.create((ObservableOnSubscribe<ListChange<T>>) subscriber -> {
 
             ListChangeListener<T> listener = c -> {
                 while (c.next()) {
@@ -113,10 +113,10 @@ public final class ObservableListSource {
 
     public static <T> Observable<ListChange<T>> fromObservableListDistinctChanges(final ObservableList<T> source) {
 
-        return Observable.create((Observable.OnSubscribe<ListChange<T>>) subscriber -> {
+        return Observable.create((ObservableOnSubscribe<ListChange<T>>) subscriber -> {
 
             final DupeCounter<T> dupeCounter = new DupeCounter<>();
-            source.stream().forEach(dupeCounter::add);
+            source.forEach(dupeCounter::add);
 
             ListChangeListener<T> listener = c -> {
 
@@ -138,7 +138,7 @@ public final class ObservableListSource {
     }
     public static <T,R> Observable<ListChange<T>> fromObservableListDistinctChanges(final ObservableList<T> source, Func1<T,R> mapper) {
 
-        return Observable.create((Observable.OnSubscribe<ListChange<T>>) subscriber -> {
+        return Observable.create((ObservableOnSubscribe<ListChange<T>>) subscriber -> {
 
             final DupeCounter<R> dupeCounter = new DupeCounter<>();
             source.stream().map(mapper::call).forEach(dupeCounter::add);
@@ -162,7 +162,7 @@ public final class ObservableListSource {
     }
     public static <T,R> Observable<ListChange<R>> fromObservableListDistinctMappings(final ObservableList<T> source, Func1<T,R> mapper) {
 
-        return Observable.create((Observable.OnSubscribe<ListChange<R>>) subscriber -> {
+        return Observable.create((ObservableOnSubscribe<ListChange<R>>) subscriber -> {
 
             final DupeCounter<R> dupeCounter = new DupeCounter<>();
             source.stream().map(mapper::call).forEach(dupeCounter::add);

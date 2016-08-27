@@ -17,31 +17,30 @@
 package rx.subscribers;
 
 import com.sun.javafx.binding.ExpressionHelper;
+import io.reactivex.Observable;
+import io.reactivex.functions.Consumer;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Binding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
-import rx.Observable;
-import rx.Subscriber;
-import rx.Subscription;
-import rx.functions.Action1;
-
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 
 final class BindingSubscriber<T> extends Subscriber<T> implements ObservableValue<T>, Binding<T> {
 
     private final Observable<T> observable;
-    private final Action1<Throwable> onError;
+    private final Consumer<Throwable> onError;
     private Subscription subscription;
     private ExpressionHelper<T> helper;
     private T value;
 
-    private BindingSubscriber(Observable<T> observable, Action1<Throwable> onError) {
+    private BindingSubscriber(Observable<T> observable, Consumer<Throwable> onError) {
         this.observable = observable;
         this.onError = onError;
     }
 
-    public static <T> BindingSubscriber<T> forObservable(Observable<T> observable, Action1<Throwable> onError, boolean isLazy) {
+    static <T> BindingSubscriber<T> forObservable(Observable<T> observable, Consumer<Throwable> onError, boolean isLazy) {
         BindingSubscriber<T> bindingSubscriber = new BindingSubscriber<>(observable, onError);
 
         if (!isLazy) {

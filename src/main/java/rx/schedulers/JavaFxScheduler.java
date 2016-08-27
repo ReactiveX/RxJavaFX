@@ -15,19 +15,14 @@
  */
 package rx.schedulers;
 
+import io.reactivex.Scheduler;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.util.Duration;
-import rx.Scheduler;
-import rx.Subscription;
-import rx.functions.Action0;
-import rx.subscriptions.BooleanSubscription;
-import rx.subscriptions.CompositeSubscription;
-import rx.subscriptions.SerialSubscription;
-import rx.subscriptions.Subscriptions;
+import org.reactivestreams.Subscription;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;

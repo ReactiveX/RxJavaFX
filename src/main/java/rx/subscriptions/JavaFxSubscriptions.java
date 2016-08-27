@@ -17,9 +17,8 @@ package rx.subscriptions;
 
 
 import javafx.application.Platform;
-import rx.Scheduler.Worker;
-import rx.Subscription;
-import rx.functions.Action0;
+import javafx.concurrent.Worker;
+import org.reactivestreams.Subscription;
 import rx.schedulers.JavaFxScheduler;
 
 public final class JavaFxSubscriptions {
@@ -34,7 +33,7 @@ public final class JavaFxSubscriptions {
      * @param unsubscribe the action to be performed in the ui thread at un-subscription
      * @return an Subscription that always runs <code>unsubscribe</code> in the event dispatch thread.
      */
-    public static Subscription unsubscribeInEventDispatchThread(final Action0 unsubscribe) {
+    public static Subscription unsubscribeInEventDispatchThread(final Runnable unsubscribe) {
         return Subscriptions.create(new Action0() {
             @Override
             public void call() {

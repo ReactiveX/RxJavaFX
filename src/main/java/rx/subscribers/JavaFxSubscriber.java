@@ -16,10 +16,9 @@
 
 package rx.subscribers;
 
+import io.reactivex.Observable;
+import io.reactivex.functions.Consumer;
 import javafx.beans.binding.Binding;
-import rx.Observable;
-import rx.functions.Action1;
-
 public enum JavaFxSubscriber {
     ;//no instances
     /**
@@ -31,7 +30,7 @@ public enum JavaFxSubscriber {
     /**
      * Turns an Observable into an eager JavaFX Binding that subscribes immediately to the Observable. Calling the Binding's dispose() method will handle the unsubscription.
      */
-    public static <T> Binding<T> toBinding(Observable<T> obs, Action1<Throwable> onErrorAction ) {
+    public static <T> Binding<T> toBinding(Observable<T> obs, Consumer<Throwable> onErrorAction ) {
         return BindingSubscriber.forObservable(obs, onErrorAction, false);
     }
 
@@ -45,7 +44,7 @@ public enum JavaFxSubscriber {
     /**
      * Turns an Observable into a lazy JavaFX Binding that subscribes to the Observable the first time the Binding's getValue() method is called. Calling the Binding's dispose() method will handle the unsubscription.
      */
-    public static <T> Binding<T> toLazyBinding(Observable<T> obs, Action1<Throwable> onErrorAction ) {
+    public static <T> Binding<T> toLazyBinding(Observable<T> obs, Consumer<Throwable> onErrorAction ) {
         return BindingSubscriber.forObservable(obs, onErrorAction, true);
     }
 }
