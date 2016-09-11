@@ -16,47 +16,65 @@
 package rx.javafx.sources;
 
 import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.collections.ObservableSet;
 import rx.Observable;
+import rx.annotations.Beta;
 import rx.observables.JavaFxObservable;
-import java.util.HashSet;
+
 import java.util.Arrays;
+import java.util.HashSet;
+
 
 /**
  * A CompositeObservable can merge multiple Observables that can be added/removed at any time,
  * affecting all Subscribers regardless of when they subscribed. This is especially helpful for merging
- * multiple UI event sources.
+ * multiple UI event sources. You can also pass a Transformer to perform
+ * further operations on the combined Observable that is returned
  *
  * @param <T>
  */
+@Beta
 public final class CompositeObservable<T> {
 
     private final ObservableSet<Observable<T>> sources;
-    private final int initialCapacity;
+    private final Observable<T> output;
 
+    /**
+     *  Creates a new CompositeObservable
+     */
     public CompositeObservable() {
-        this(-1);
+        this(null);
     }
 
-    public CompositeObservable(int initialCapacity) {
-        this.initialCapacity = initialCapacity;
+    /**
+     * Creates a new CompositeObservable with the provided transformations applied to the returned Observable
+     * yield from `toObservable()`. For instance, you can pass `obs -> obs.replay(1).refCount()` to make this CompositeObservable
+     * replay one emission or `obs -> obs.share()` to multicast it.
+     * @param transformer
+     */
+    public CompositeObservable(Observable.Transformer<T,T> transformer) {
         sources = FXCollections.synchronizedObservableSet(FXCollections.observableSet(new HashSet<>()));
-    }
 
-    public Observable<T> toObservable() {
         Observable<T> updatingSource = Observable.merge(
                 Observable.from(sources).flatMap(obs -> obs.takeWhile(v -> sources.contains(obs))),
                 JavaFxObservable.fromObservableSetAdds(sources).flatMap(obs -> obs.takeWhile(v -> sources.contains(obs)))
         );
 
-        if (initialCapacity > 0) {
-            return updatingSource.cacheWithInitialCapacity(initialCapacity);
+        if (transformer == null) {
+            output = updatingSource;
         } else {
-            return updatingSource;
+            output = updatingSource.compose(transformer);
         }
     }
 
+    /**
+     * Returns the `Observable` combining all the source Observables, with any transformations that were specified
+     * on construction.
+     * @return
+     */
+    public Observable<T> toObservable() {
+        return output;
+    }
     public void add(Observable<T> observable) {
         sources.add(observable);
     }
@@ -72,7 +90,7 @@ public final class CompositeObservable<T> {
     public void clear() {
         sources.clear();
     }
-    public ObservableSet<Observable<T>> getBackingSet() {
+    public ObservableSet<Observable<T>> getSources() {
         return FXCollections.unmodifiableObservableSet(sources);
     }
 }
