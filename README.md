@@ -313,6 +313,11 @@ Every time you `add()` or `remove()` an `Observable` to a `CompositeObservable`,
 
 Of course, you can pass around any type `T` in a `CompositeObservable<T>` and not just `ActionEvent`. It can be = helpful to pass around entire data structures, such as `CompositeObservable<Set<MyType>>`, to relay requests and inputs between controls.
 			
+You also have the option to pass a `Transformer` to the `CompositeObservable` constructor, and this will be applied to the `Observable` returned from `toObservable()`. This is helpful to apply multicasting or replaying behaviors. 
+
+```java
+CompositeObservable<String> valueChanges = CompositeObservable<>(obs -> obs.replay(1).refCount());
+```
 
 ### JavaFX Scheduler
 
