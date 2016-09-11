@@ -236,7 +236,7 @@ bindings.dispose();
 
 ###CompositeObservable
 
-In UI development, it is not uncommon to have an event triggered in multiple places, or have inputs coming from multiple UI controls. Let's say you want to make a `refresh()` method callable from a `Button`, a `MenuItem`, and a <kbd>CTRL</kbd> + <kbd>R</kbd> hotkey combination. 
+In UI development, it is not uncommon to have an event triggered in multiple places, or have inputs coming from multiple UI controls.b You may also want to leverage code separation patterns like MVC, and have the Observables completely separated from their Subscribers in modular fashion. Let's say you want to make a `refresh()` operation callable from a `Button`, a `MenuItem`, and a <kbd>CTRL</kbd> + <kbd>R</kbd> hotkey combination. 
 
 ```java
 //make refresh Button
