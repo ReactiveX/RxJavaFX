@@ -22,6 +22,8 @@ import rx.subjects.PublishSubject;
 import rx.subjects.SerializedSubject;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -73,7 +75,7 @@ public final class CompositeObservable<T> {
     public Subscription add(Observable<T> observable) {
         return observable.subscribe(subject);
     }
-    public void addAll(Observable<T>... observables) {
-        Arrays.stream(observables).forEach(this::add);
+    public List<Subscription> addAll(Observable<T>... observables) {
+        return Arrays.stream(observables).map(this::add).collect(Collectors.toList());
     }
 }
