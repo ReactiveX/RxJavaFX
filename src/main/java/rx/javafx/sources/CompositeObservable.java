@@ -15,18 +15,17 @@
  */
 package rx.javafx.sources;
 
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableSet;
 import rx.Observable;
+import rx.Subscription;
 import rx.annotations.Beta;
-import rx.observables.JavaFxObservable;
+import rx.subjects.PublishSubject;
+import rx.subjects.SerializedSubject;
 
 import java.util.Arrays;
-import java.util.HashSet;
 
 
 /**
- * A CompositeObservable can merge multiple Observables that can be added/removed at any time,
+ * A CompositeObservable can merge multiple event source Observables that can be added/removed at any time,
  * affecting all Subscribers regardless of when they subscribed. This is especially helpful for merging
  * multiple UI event sources. You can also pass a Transformer to perform
  * further operations on the combined Observable that is returned
@@ -36,7 +35,7 @@ import java.util.HashSet;
 @Beta
 public final class CompositeObservable<T> {
 
-    private final ObservableSet<Observable<T>> sources;
+    private final SerializedSubject<T,T> subject;
     private final Observable<T> output;
 
     /**
@@ -49,16 +48,12 @@ public final class CompositeObservable<T> {
     /**
      * Creates a new CompositeObservable with the provided transformations applied to the returned Observable
      * yield from `toObservable()`. For instance, you can pass `obs -> obs.replay(1).refCount()` to make this CompositeObservable
-     * replay one emission or `obs -> obs.share()` to multicast it.
      * @param transformer
      */
     public CompositeObservable(Observable.Transformer<T,T> transformer) {
-        sources = FXCollections.synchronizedObservableSet(FXCollections.observableSet(new HashSet<>()));
+        subject = PublishSubject.<T>create().toSerialized();
 
-        Observable<T> updatingSource = Observable.merge(
-                Observable.from(sources).flatMap(obs -> obs.takeWhile(v -> sources.contains(obs))),
-                JavaFxObservable.fromObservableSetAdds(sources).flatMap(obs -> obs.takeWhile(v -> sources.contains(obs)))
-        );
+        Observable<T> updatingSource = subject.asObservable();
 
         if (transformer == null) {
             output = updatingSource;
@@ -75,22 +70,10 @@ public final class CompositeObservable<T> {
     public Observable<T> toObservable() {
         return output;
     }
-    public void add(Observable<T> observable) {
-        sources.add(observable);
+    public Subscription add(Observable<T> observable) {
+        return observable.subscribe(subject);
     }
     public void addAll(Observable<T>... observables) {
         Arrays.stream(observables).forEach(this::add);
-    }
-    public void remove(Observable<T> observable) {
-        sources.remove(observable);
-    }
-    public void removeAll(Observable<T>... observables) {
-        Arrays.stream(observables).forEach(this::remove);
-    }
-    public void clear() {
-        sources.clear();
-    }
-    public ObservableSet<Observable<T>> getSources() {
-        return FXCollections.unmodifiableObservableSet(sources);
     }
 }
