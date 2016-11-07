@@ -20,6 +20,7 @@ import rx.Subscription;
 import rx.annotations.Beta;
 import rx.subjects.PublishSubject;
 import rx.subjects.SerializedSubject;
+import rx.subscriptions.CompositeSubscription;
 
 import java.util.Arrays;
 import java.util.List;
@@ -75,7 +76,9 @@ public final class CompositeObservable<T> {
     public Subscription add(Observable<T> observable) {
         return observable.subscribe(subject);
     }
-    public List<Subscription> addAll(Observable<T>... observables) {
-        return Arrays.stream(observables).map(this::add).collect(Collectors.toList());
+    public CompositeSubscription addAll(Observable<T>... observables) {
+        final CompositeSubscription subscriptions = new CompositeSubscription();
+        Arrays.stream(observables).map(this::add).forEach(subscriptions::add);
+        return subscriptions;
     }
 }
