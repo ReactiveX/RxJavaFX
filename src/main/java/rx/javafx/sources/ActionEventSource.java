@@ -16,6 +16,7 @@
 package rx.javafx.sources;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Node;
@@ -31,7 +32,8 @@ public final class ActionEventSource {
         return NodeEventSource.fromNodeEvents(node, ActionEvent.ACTION);
     }
     public static Observable<ActionEvent> fromActionEvents(final ContextMenu source) {
-        return Observable.create((Observable.OnSubscribe<ActionEvent>) subscriber -> {
+
+        return Observable.create((ObservableEmitter<ActionEvent> subscriber) ->  {
             final EventHandler<ActionEvent> handler = subscriber::onNext;
 
             source.addEventHandler(ActionEvent.ANY, handler);
@@ -40,7 +42,7 @@ public final class ActionEventSource {
         }).subscribeOn(JavaFxScheduler.getInstance());
     }
     public static Observable<ActionEvent> fromActionEvents(final MenuItem source) {
-        return Observable.create((Observable.OnSubscribe<ActionEvent>) subscriber -> {
+        return Observable.create((ObservableEmitter<ActionEvent> subscriber) -> {
             final EventHandler<ActionEvent> handler = subscriber::onNext;
 
             source.addEventHandler(ActionEvent.ANY, handler);

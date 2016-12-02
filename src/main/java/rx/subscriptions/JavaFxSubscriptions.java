@@ -21,6 +21,7 @@ import javafx.concurrent.Worker;
 import org.reactivestreams.Subscription;
 import rx.schedulers.JavaFxScheduler;
 
+
 public final class JavaFxSubscriptions {
 
     private JavaFxSubscriptions() {

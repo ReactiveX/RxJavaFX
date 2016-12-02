@@ -1,12 +1,7 @@
-buildscript {
-    repositories { jcenter() }
+repositories {
+    mavenCentral()
 }
 
-plugins {
-  id 'nebula.rxjava-project' version '3.0.0'
-}
-
-apply plugin: 'nebula.rxjava-project'
 apply plugin: 'java'
 
 task wrapper(type: Wrapper) {
@@ -18,9 +13,8 @@ sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
-    compile 'io.reactivex:rxjava:1.2.+'
+    compile 'io.reactivex.rxjava2:rxjava:2.0.1'
     testCompile 'junit:junit-dep:4.+'
     testCompile 'org.mockito:mockito-core:1.8.5'
 }
-
 
