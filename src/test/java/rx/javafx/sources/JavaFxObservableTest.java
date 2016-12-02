@@ -25,13 +25,14 @@ import javafx.embed.swing.JFXPanel;
 import javafx.util.Duration;
 import org.junit.Test;
 import rx.Observable;
+import rx.Subscription;
 import rx.observables.JavaFxObservable;
 import rx.schedulers.JavaFxScheduler;
 import rx.schedulers.Schedulers;
 import rx.subjects.PublishSubject;
 
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -312,9 +313,9 @@ public final class JavaFxObservableTest {
             PublishSubject<String> source2 = PublishSubject.create();
             PublishSubject<String> source3 = PublishSubject.create();
 
-            compositeObservable.add(source1);
-            compositeObservable.add(source2);
-            compositeObservable.add(source3);
+            Subscription sub1 = compositeObservable.add(source1);
+            Subscription sub2 = compositeObservable.add(source2);
+            Subscription sub3 = compositeObservable.add(source3);
 
             compositeObservable.toObservable().subscribe(emissions::add);
 
@@ -330,50 +331,10 @@ public final class JavaFxObservableTest {
             source1.onNext("Delta");
             assertTrue(emissions.get(3).equals("Delta"));
 
-            compositeObservable.remove(source2);
+            sub2.unsubscribe();
 
             source2.onNext("Epsilon");
             assertTrue(emissions.size() == 4);
-
-            latch.countDown();
-        });
-
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    @Test
-    public void testcompositeObservableFinite() {
-
-        new JFXPanel();
-
-        CountDownLatch latch = new CountDownLatch(1);
-
-        Platform.runLater(() -> {
-            final List<String> emissions = new ArrayList<>();
-            CompositeObservable<String> compositeObservable = new CompositeObservable<>();
-
-            Observable<String> source1 = Observable.just("Alpha","Beta");
-            Observable<String> source2 = Observable.just("Gamma","Delta");
-
-            compositeObservable.add(source1);
-
-            compositeObservable.toObservable().subscribe(emissions::add);
-
-            compositeObservable.add(source2);
-
-            assertTrue(emissions.size() == 4);
-
-            compositeObservable.remove(source2);
-
-            assertTrue(emissions.size() == 4);
-
-            compositeObservable.add(source2);
-
-            assertTrue(emissions.size() == 6);
 
             latch.countDown();
         });
