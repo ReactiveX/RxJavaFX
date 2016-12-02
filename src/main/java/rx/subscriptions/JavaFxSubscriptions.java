@@ -30,10 +30,10 @@ public final class JavaFxSubscriptions {
     }
 
     /**
-     * Create an Subscription that always runs <code>unsubscribe</code> in the event dispatch thread.
+     * Create a Disposable that always runs <code>unsubscribe</code> in the event dispatch thread.
      *
-     * @param unsubscribe the action to be performed in the ui thread at un-subscription
-     * @return an Subscription that always runs <code>unsubscribe</code> in the event dispatch thread.
+     * @param unsubscribe the runnable to be performed in the ui thread at un-subscription
+     * @return an Disposable that always runs <code>unsubscribe</code> in the event dispatch thread.
      */
     public static Disposable unsubscribeInEventDispatchThread(final Runnable unsubscribe) {
         return Disposables.fromRunnable(() -> {
