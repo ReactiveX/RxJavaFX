@@ -16,9 +16,10 @@
 package rx.subscriptions;
 
 
-import javafx.application.Platform;
-import javafx.concurrent.Worker;
-import org.reactivestreams.Subscription;
+import io.reactivex.Scheduler;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.disposables.Disposables;
+import javafx.application.Platform;;
 import rx.schedulers.JavaFxScheduler;
 
 
@@ -34,22 +35,16 @@ public final class JavaFxSubscriptions {
      * @param unsubscribe the action to be performed in the ui thread at un-subscription
      * @return an Subscription that always runs <code>unsubscribe</code> in the event dispatch thread.
      */
-    public static Subscription unsubscribeInEventDispatchThread(final Runnable unsubscribe) {
-        return Subscriptions.create(new Action0() {
-            @Override
-            public void call() {
-                if (Platform.isFxApplicationThread()) {
-                    unsubscribe.call();
-                } else {
-                    final Worker inner = JavaFxScheduler.getInstance().createWorker();
-                    inner.schedule(new Action0() {
-                        @Override
-                        public void call() {
-                            unsubscribe.call();
-                            inner.unsubscribe();
-                        }
-                    });
-                }
+    public static Disposable unsubscribeInEventDispatchThread(final Runnable unsubscribe) {
+        return Disposables.fromRunnable(() -> {
+            if (Platform.isFxApplicationThread()) {
+                unsubscribe.run();
+            } else {
+                final Scheduler.Worker inner = JavaFxScheduler.getInstance().createWorker();
+                inner.schedule(() -> {
+                    unsubscribe.run();
+                    inner.dispose();
+                });
             }
         });
     }
