@@ -16,6 +16,7 @@
 package rx.javafx.sources;
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
 import javafx.event.Event;
 import javafx.event.EventHandler;
 import javafx.event.EventType;
@@ -30,15 +31,12 @@ public class NodeEventSource {
      */
     public static <T extends Event> Observable<T> fromNodeEvents(final Node source, final EventType<T> eventType) {
 
-        return Observable.create(new Observable.OnSubscribe<T>() {
-            @Override
-            public void call(final Subscriber<? super T> subscriber) {
+        return Observable.create((ObservableEmitter<T> subscriber) -> {
                 final EventHandler<T> handler = subscriber::onNext;
 
                 source.addEventHandler(eventType, handler);
 
-                subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeEventHandler(eventType, handler)));
-            }
+                subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeEventHandler(eventType, handler)));
 
         }).subscribeOn(JavaFxScheduler.getInstance());
     }

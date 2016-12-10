@@ -23,6 +23,7 @@ import rx.schedulers.JavaFxScheduler;
 import rx.subscriptions.JavaFxSubscriptions;
 
 import java.util.HashMap;
+import java.util.function.Function;
 
 public final class ObservableListSource {
     private ObservableListSource() {}
@@ -32,7 +33,7 @@ public final class ObservableListSource {
         return Observable.create((ObservableOnSubscribe<ObservableList<T>>) subscriber -> {
             ListChangeListener<T> listener = c -> subscriber.onNext(source);
             source.addListener(listener);
-            subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
+            subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
         }).startWith(source).subscribeOn(JavaFxScheduler.getInstance());
     }
 
@@ -48,7 +49,7 @@ public final class ObservableListSource {
                 }
             };
             source.addListener(listener);
-            subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
+            subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
 
         }).subscribeOn(JavaFxScheduler.getInstance());
     }
@@ -65,7 +66,7 @@ public final class ObservableListSource {
             };
 
             source.addListener(listener);
-            subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
+            subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
 
         }).subscribeOn(JavaFxScheduler.getInstance());
     }
@@ -83,7 +84,7 @@ public final class ObservableListSource {
                 }
             };
             source.addListener(listener);
-            subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
+            subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
 
         }).subscribeOn(JavaFxScheduler.getInstance());
     }
@@ -107,7 +108,7 @@ public final class ObservableListSource {
             };
             source.addListener(listener);
 
-            subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
+            subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
         }).subscribeOn(JavaFxScheduler.getInstance());
     }
 
@@ -133,57 +134,57 @@ public final class ObservableListSource {
             };
             source.addListener(listener);
 
-            subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
+            subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
         }).subscribeOn(JavaFxScheduler.getInstance());
     }
-    public static <T,R> Observable<ListChange<T>> fromObservableListDistinctChanges(final ObservableList<T> source, Func1<T,R> mapper) {
+    public static <T,R> Observable<ListChange<T>> fromObservableListDistinctChanges(final ObservableList<T> source, Function<T,R> mapper) {
 
         return Observable.create((ObservableOnSubscribe<ListChange<T>>) subscriber -> {
 
             final DupeCounter<R> dupeCounter = new DupeCounter<>();
-            source.stream().map(mapper::call).forEach(dupeCounter::add);
+            source.stream().map(mapper).forEach(dupeCounter::add);
 
             ListChangeListener<T> listener = c -> {
 
                 while (c.next()) {
                     if (c.wasAdded()) {
-                        c.getAddedSubList().stream().filter(v -> dupeCounter.add(mapper.call(v)) == 1)
+                        c.getAddedSubList().stream().filter(v -> dupeCounter.add(mapper.apply(v)) == 1)
                                 .forEach(v -> subscriber.onNext(ListChange.of(v,Flag.ADDED)));
                     }
                     if (c.wasRemoved()) {
-                        c.getRemoved().stream().filter(v -> dupeCounter.remove(mapper.call(v)) == 0)
+                        c.getRemoved().stream().filter(v -> dupeCounter.remove(mapper.apply(v)) == 0)
                                 .forEach(v -> subscriber.onNext(ListChange.of(v,Flag.REMOVED)));
                     }
                 }
             };
             source.addListener(listener);
-            subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
+            subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
         }).subscribeOn(JavaFxScheduler.getInstance());
     }
-    public static <T,R> Observable<ListChange<R>> fromObservableListDistinctMappings(final ObservableList<T> source, Func1<T,R> mapper) {
+    public static <T,R> Observable<ListChange<R>> fromObservableListDistinctMappings(final ObservableList<T> source, Function<T,R> mapper) {
 
         return Observable.create((ObservableOnSubscribe<ListChange<R>>) subscriber -> {
 
             final DupeCounter<R> dupeCounter = new DupeCounter<>();
-            source.stream().map(mapper::call).forEach(dupeCounter::add);
+            source.stream().map(mapper).forEach(dupeCounter::add);
 
             ListChangeListener<T> listener = c -> {
 
                 while (c.next()) {
                     if (c.wasAdded()) {
-                        c.getAddedSubList().stream().map(mapper::call)
+                        c.getAddedSubList().stream().map(mapper)
                                 .filter(v -> dupeCounter.add(v) == 1)
                                 .forEach(v -> subscriber.onNext(ListChange.of(v,Flag.ADDED)));
                     }
                     if (c.wasRemoved()) {
-                        c.getRemoved().stream().map(mapper::call)
+                        c.getRemoved().stream().map(mapper)
                                 .filter(v -> dupeCounter.remove(v) == 0)
                                 .forEach(v -> subscriber.onNext(ListChange.of(v,Flag.REMOVED)));
                     }
                 }
             };
             source.addListener(listener);
-            subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
+            subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
 
         }).subscribeOn(JavaFxScheduler.getInstance());
     }

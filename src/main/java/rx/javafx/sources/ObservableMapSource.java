@@ -1,8 +1,10 @@
 package rx.javafx.sources;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableMap;
-import rx.Observable;
 import rx.schedulers.JavaFxScheduler;
 import rx.subscriptions.JavaFxSubscriptions;
 
@@ -14,16 +16,16 @@ public final class ObservableMapSource {
     private ObservableMapSource() {}
 
     public static <K,T> Observable<ObservableMap<K,T>> fromObservableMap(final ObservableMap<K,T> source) {
-        return Observable.create((Observable.OnSubscribe<ObservableMap<K,T>>) subscriber -> {
+        return Observable.create((ObservableOnSubscribe<ObservableMap<K,T>>) subscriber -> {
             MapChangeListener<K,T> listener = c -> subscriber.onNext(source);
             source.addListener(listener);
-            subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
+            subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
         }).startWith(source).subscribeOn(JavaFxScheduler.getInstance());
     }
 
     public static <K,T> Observable<Entry<K,T>> fromObservableMapAdds(final ObservableMap<K,T> source) {
 
-        return Observable.create((Observable.OnSubscribe<Entry<K,T>>) subscriber -> {
+        return Observable.create((ObservableOnSubscribe<Entry<K,T>>) subscriber -> {
 
             MapChangeListener<K,T> listener = c -> {
 
@@ -33,14 +35,14 @@ public final class ObservableMapSource {
 
             };
             source.addListener(listener);
-            subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
+            subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
 
         }).subscribeOn(JavaFxScheduler.getInstance());
     }
 
     public static <K,T> Observable<Entry<K,T>> fromObservableMapRemovals(final ObservableMap<K,T> source) {
 
-        return Observable.create((Observable.OnSubscribe<Entry<K,T>>) subscriber -> {
+        return Observable.create((ObservableOnSubscribe<Entry<K,T>>) subscriber -> {
 
             MapChangeListener<K,T> listener = c -> {
 
@@ -50,14 +52,14 @@ public final class ObservableMapSource {
 
             };
             source.addListener(listener);
-            subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
+            subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
 
         }).subscribeOn(JavaFxScheduler.getInstance());
     }
 
     public static <K,T> Observable<MapChange<K,T>> fromObservableMapChanges(final ObservableMap<K,T> source) {
 
-        return Observable.create((Observable.OnSubscribe<MapChange<K,T>>) subscriber -> {
+        return Observable.create((ObservableOnSubscribe<MapChange<K,T>>) subscriber -> {
 
             MapChangeListener<K,T> listener = c -> {
 
@@ -70,7 +72,7 @@ public final class ObservableMapSource {
 
             };
             source.addListener(listener);
-            subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
+            subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
 
         }).subscribeOn(JavaFxScheduler.getInstance());
     }

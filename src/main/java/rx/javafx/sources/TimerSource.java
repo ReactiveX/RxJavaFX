@@ -1,12 +1,11 @@
 package rx.javafx.sources;
 
+import io.reactivex.Observable;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
-import rx.Observable;
 import rx.subscriptions.JavaFxSubscriptions;
-
 import java.util.concurrent.atomic.AtomicLong;
 
 public final class TimerSource {
@@ -21,7 +20,7 @@ public final class TimerSource {
             timeline.setCycleCount(Animation.INDEFINITE);
             timeline.play();
 
-            sub.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(timeline::stop));
+            sub.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(timeline::stop));
         });
     }
 }

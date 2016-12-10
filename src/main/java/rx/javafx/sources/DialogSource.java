@@ -1,8 +1,8 @@
 package rx.javafx.sources;
 
+import io.reactivex.Observable;
 import javafx.scene.control.Dialog;
 import java.util.Optional;
-import rx.Observable;
 import rx.schedulers.JavaFxScheduler;
 
 public final class DialogSource {
