@@ -16,6 +16,11 @@
 package rx.schedulers;
 
 import io.reactivex.Scheduler;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.disposables.Disposables;
+import io.reactivex.disposables.SerialDisposable;
+import io.reactivex.internal.subscriptions.BooleanSubscription;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -55,7 +60,7 @@ public final class JavaFxScheduler extends Scheduler {
 
     private static class InnerJavaFxScheduler extends Worker implements Runnable {
 
-        private final CompositeSubscription tracking = new CompositeSubscription();
+        private final CompositeDisposable tracking = new CompositeDisposable();
 
         /** Allows cheaper trampolining than invokeLater(). Accessed from EDT only. */
         private final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
@@ -63,23 +68,23 @@ public final class JavaFxScheduler extends Scheduler {
         private int wip;
 
         @Override
-        public void unsubscribe() {
-            tracking.unsubscribe();
+        public void dispose() {
+            tracking.dispose();
         }
 
         @Override
-        public boolean isUnsubscribed() {
-            return tracking.isUnsubscribed();
+        public boolean isDisposed() {
+            return tracking.isDisposed();
         }
 
         @Override
-        public Subscription schedule(final Action0 action, long delayTime, TimeUnit unit) {
+        public Disposable schedule(final Runnable action, long delayTime, TimeUnit unit) {
             long delay = Math.max(0,unit.toMillis(delayTime));
             assertThatTheDelayIsValidForTheJavaFxTimer(delay);
 
             class DualAction implements EventHandler<ActionEvent>, Subscription, Runnable {
                 private Timeline timeline;
-                final SerialSubscription subs = new SerialSubscription();
+                final SerialDisposable subs = new SerialDisposable();
                 boolean nonDelayed;
 
                 private void setTimer(Timeline timeline) {
@@ -95,12 +100,12 @@ public final class JavaFxScheduler extends Scheduler {
                 public void run() {
                     if (nonDelayed) {
                         try {
-                            if (tracking.isUnsubscribed() || isUnsubscribed()) {
+                            if (tracking.isDisposed() || isUnsubscribed()) {
                                 return;
                             }
-                            action.call();
+                            action.run();
                         } finally {
-                            subs.unsubscribe();
+                            subs.dispose();
                         }
                     } else {
                         timeline.stop();
@@ -112,14 +117,19 @@ public final class JavaFxScheduler extends Scheduler {
 
                 @Override
                 public boolean isUnsubscribed() {
-                    return subs.isUnsubscribed();
+                    return subs.isDisposed();
                 }
 
                 @Override
-                public void unsubscribe() {
-                    subs.unsubscribe();
+                public void request(long n) {
+                    //not quite sure what to do here
                 }
-                public void set(Subscription s) {
+
+                @Override
+                public void cancel() {
+                    subs.dispose();
+                }
+                public void set(Disposable s) {
                     subs.set(s);
                 }
             }
@@ -140,14 +150,14 @@ public final class JavaFxScheduler extends Scheduler {
         }
 
         @Override
-        public Subscription schedule(final Action0 action) {
-            final BooleanSubscription s = BooleanSubscription.create();
+        public Disposable schedule(final Runnable action) {
+            final BooleanSubscription s = new BooleanSubscription();
             Runnable runnable = () -> {
                 try {
-                    if (tracking.isUnsubscribed() || s.isUnsubscribed()) {
+                    if (tracking.isDisposed() || s.isCancelled()) {
                         return;
                     }
-                    action.call();
+                    action.run();
                 } finally {
                     tracking.remove(s);
                 }
@@ -156,7 +166,7 @@ public final class JavaFxScheduler extends Scheduler {
 
             if (Platform.isFxApplicationThread()) {
                 if (trampoline(runnable)) {
-                    return Subscriptions.unsubscribed();
+                    return Disposables.disposed();
                 }
             }else {
                 queue.offer(runnable);
