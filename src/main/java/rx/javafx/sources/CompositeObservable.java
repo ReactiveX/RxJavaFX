@@ -18,6 +18,7 @@ package rx.javafx.sources;
 
 
 import io.reactivex.Observable;
+import io.reactivex.ObservableTransformer;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.PublishSubject;
@@ -51,10 +52,10 @@ public final class CompositeObservable<T> {
      * yield from `toObservable()`. For instance, you can pass `obs -> obs.replay(1).refCount()` to make this CompositeObservable
      * @param transformer
      */
-    public CompositeObservable(Observable.Transformer<T,T> transformer) {
+    public CompositeObservable(ObservableTransformer<T,T> transformer) {
         subject = PublishSubject.<T>create().toSerialized();
 
-        Observable<T> updatingSource = subject.asObservable();
+        Observable<T> updatingSource = subject;
 
         if (transformer == null) {
             output = updatingSource;
@@ -72,7 +73,7 @@ public final class CompositeObservable<T> {
         return output;
     }
     public Disposable add(Observable<T> observable) {
-        return observable.subscribe(subject);
+        return observable.subscribeWith(subject);
     }
     public CompositeDisposable addAll(Observable<T>... observables) {
         final CompositeDisposable subscriptions = new CompositeDisposable();

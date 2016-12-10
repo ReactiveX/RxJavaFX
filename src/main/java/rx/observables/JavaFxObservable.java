@@ -36,6 +36,7 @@ import javafx.util.Duration;
 import rx.javafx.sources.*;
 
 import java.util.Map;
+import java.util.function.Function;
 
 
 public enum JavaFxObservable {
@@ -191,7 +192,7 @@ public enum JavaFxObservable {
      * @param source
      * @return An Observable emitting changed items with an ADDED, REMOVED, or UPDATED flag
      */
-    public static <T,R> Observable<ListChange<T>> fromObservableListDistinctChanges(final ObservableList<T> source, Func1<T,R> mapper) {
+    public static <T,R> Observable<ListChange<T>> fromObservableListDistinctChanges(final ObservableList<T> source, Function<T,R> mapper) {
         return ObservableListSource.fromObservableListDistinctChanges(source,mapper);
     }
     /**
@@ -201,7 +202,7 @@ public enum JavaFxObservable {
      * @param source
      * @return An Observable emitting changed mapped items with an ADDED, REMOVED, or UPDATED flag
      */
-    public static <T,R> Observable<ListChange<R>> fromObservableListDistinctMappings(final ObservableList<T> source, Func1<T,R> mapper) {
+    public static <T,R> Observable<ListChange<R>> fromObservableListDistinctMappings(final ObservableList<T> source, Function<T,R> mapper) {
         return ObservableListSource.fromObservableListDistinctMappings(source,mapper);
     }
 
