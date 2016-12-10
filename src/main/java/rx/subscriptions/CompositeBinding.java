@@ -1,8 +1,7 @@
 package rx.subscriptions;
 
+import io.reactivex.exceptions.Exceptions;
 import javafx.beans.binding.Binding;
-import rx.Subscription;
-import rx.exceptions.Exceptions;
 
 import java.util.*;
 
@@ -176,7 +175,7 @@ public final class CompositeBinding {
                 es.add(e);
             }
         }
-        Exceptions.throwIfAny(es);
+        Exceptions.throwIfFatal(es);
     }
     private static void unsubscribeFromAll(Collection<Binding> bindings) {
         if (bindings == null) {
