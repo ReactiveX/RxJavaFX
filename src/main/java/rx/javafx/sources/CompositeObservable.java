@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
  *
  * @param <T>
  */
-@Beta
+
 public final class CompositeObservable<T> {
 
     private final SerializedSubject<T,T> subject;
