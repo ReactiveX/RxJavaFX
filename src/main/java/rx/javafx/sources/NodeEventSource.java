@@ -26,21 +26,14 @@ import rx.schedulers.JavaFxScheduler;
 import rx.subscriptions.JavaFxSubscriptions;
 
 public class NodeEventSource {
-    /**
-     * @see rx.observables.JavaFxObservable#fromNodeEvents
-     */
     public static <T extends Event> Observable<T> fromNodeEvents(final Node source, final EventType<T> eventType) {
 
-        return Observable.create(new Observable.OnSubscribe<T>() {
-            @Override
-            public void call(final Subscriber<? super T> subscriber) {
-                final EventHandler<T> handler = subscriber::onNext;
+        return Observable.create((Observable.OnSubscribe<T>) subscriber -> {
+            final EventHandler<T> handler = subscriber::onNext;
 
-                source.addEventHandler(eventType, handler);
+            source.addEventHandler(eventType, handler);
 
-                subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeEventHandler(eventType, handler)));
-            }
-
+            subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeEventHandler(eventType, handler)));
         }).subscribeOn(JavaFxScheduler.getInstance());
     }
 }
