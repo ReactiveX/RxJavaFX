@@ -48,11 +48,8 @@ public final class JavaFxSchedulerTest {
     public ExpectedException exception = ExpectedException.none();
 
     private static void waitForEmptyEventQueue() throws Exception {
-        FXUtilities.runAndWait(new Runnable() {
-            @Override
-            public void run() {
-                // nothing to do, we're just waiting here for the event queue to be emptied
-            }
+        FXUtilities.runAndWait(() -> {
+            // nothing to do, we're just waiting here for the event queue to be emptied
         });
     }
 
@@ -77,15 +74,12 @@ public final class JavaFxSchedulerTest {
         final CountDownLatch latch = new CountDownLatch(4);
 
         final Action0 innerAction = mock(Action0.class);
-        final Action0 action = new Action0() {
-            @Override
-            public void call() {
-                try {
-                    innerAction.call();
-                    assertTrue(Platform.isFxApplicationThread());
-                } finally {
-                    latch.countDown();
-                }
+        final Action0 action = () -> {
+            try {
+                innerAction.call();
+                assertTrue(Platform.isFxApplicationThread());
+            } finally {
+                latch.countDown();
             }
         };
 
@@ -114,31 +108,22 @@ public final class JavaFxSchedulerTest {
         final Action0 thirdStepStart = mock(Action0.class);
         final Action0 thirdStepEnd = mock(Action0.class);
 
-        final Action0 firstAction = new Action0() {
-            @Override
-            public void call() {
-                assertTrue(Platform.isFxApplicationThread());
-                firstStepStart.call();
-                firstStepEnd.call();
-            }
+        final Action0 firstAction = () -> {
+            assertTrue(Platform.isFxApplicationThread());
+            firstStepStart.call();
+            firstStepEnd.call();
         };
-        final Action0 secondAction = new Action0() {
-            @Override
-            public void call() {
-                assertTrue(Platform.isFxApplicationThread());
-                secondStepStart.call();
-                inner.schedule(firstAction);
-                secondStepEnd.call();
-            }
+        final Action0 secondAction = () -> {
+            assertTrue(Platform.isFxApplicationThread());
+            secondStepStart.call();
+            inner.schedule(firstAction);
+            secondStepEnd.call();
         };
-        final Action0 thirdAction = new Action0() {
-            @Override
-            public void call() {
-                assertTrue(Platform.isFxApplicationThread());
-                thirdStepStart.call();
-                inner.schedule(secondAction);
-                thirdStepEnd.call();
-            }
+        final Action0 thirdAction = () -> {
+            assertTrue(Platform.isFxApplicationThread());
+            thirdStepStart.call();
+            inner.schedule(secondAction);
+            thirdStepEnd.call();
         };
 
         InOrder inOrder = inOrder(firstStepStart, firstStepEnd, secondStepStart, secondStepEnd, thirdStepStart, thirdStepEnd);
@@ -190,21 +175,17 @@ public final class JavaFxSchedulerTest {
                 final ThrowableWrapper throwableWrapper = new ThrowableWrapper();
                 lock.lock();
                 try {
-                    Platform.runLater(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            lock.lock();
+                    Platform.runLater(() -> {
+                        lock.lock();
+                        try {
+                            run.run();
+                        } catch (Throwable e) {
+                            throwableWrapper.t = e;
+                        } finally {
                             try {
-                                run.run();
-                            } catch (Throwable e) {
-                                throwableWrapper.t = e;
+                                condition.signal();
                             } finally {
-                                try {
-                                    condition.signal();
-                                } finally {
-                                    lock.unlock();
-                                }
+                                lock.unlock();
                             }
                         }
                     });

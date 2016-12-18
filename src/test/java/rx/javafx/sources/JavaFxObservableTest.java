@@ -61,7 +61,7 @@ public final class JavaFxObservableTest {
         new JFXPanel();
 
         ObservableList<String> sourceList = FXCollections.observableArrayList();
-        Observable<String> emissions = JavaFxObservable.fromObservableListAdds(sourceList);
+        Observable<String> emissions = JavaFxObservable.additionsOf(sourceList);
 
         CountDownLatch gate = new CountDownLatch(1);
 
@@ -91,7 +91,7 @@ public final class JavaFxObservableTest {
         new JFXPanel();
 
         ObservableList<String> sourceList = FXCollections.observableArrayList();
-        Observable<String> emissions = JavaFxObservable.fromObservableListRemovals(sourceList);
+        Observable<String> emissions = JavaFxObservable.removalsOf(sourceList);
 
         CountDownLatch gate = new CountDownLatch(1);
 
@@ -121,7 +121,7 @@ public final class JavaFxObservableTest {
         new JFXPanel();
 
         ObservableList<String> sourceList = FXCollections.observableArrayList();
-        Observable<ListChange<String>> emissions = JavaFxObservable.fromObservableListChanges(sourceList);
+        Observable<ListChange<String>> emissions = JavaFxObservable.changesOf(sourceList);
 
         CountDownLatch gate = new CountDownLatch(1);
 
@@ -165,7 +165,7 @@ public final class JavaFxObservableTest {
         new JFXPanel();
 
         ObservableList<String> sourceList = FXCollections.observableArrayList();
-        Observable<ListChange<Integer>> emissions = JavaFxObservable.fromObservableListDistinctMappings(sourceList, String::length);
+        Observable<ListChange<Integer>> emissions = JavaFxObservable.distinctMappingsOf(sourceList, String::length);
 
         CountDownLatch gate = new CountDownLatch(1);
 
@@ -211,7 +211,7 @@ public final class JavaFxObservableTest {
         new JFXPanel();
 
         ObservableList<String> sourceList = FXCollections.observableArrayList();
-        Observable<ListChange<String>> emissions = JavaFxObservable.fromObservableListDistinctChanges(sourceList);
+        Observable<ListChange<String>> emissions = JavaFxObservable.distinctChangesOf(sourceList);
 
         CountDownLatch gate = new CountDownLatch(1);
 
