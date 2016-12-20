@@ -15,47 +15,33 @@
  */
 package rx.javafx.sources;
 
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import rx.Observable;
-import rx.Subscriber;
 import rx.subscriptions.JavaFxSubscriptions;
 
 public class ObservableValueSource {
 
-    /**
-     * @see rx.observables.JavaFxObservable#fromObservableValue
-     */
     public static <T> Observable<T> fromObservableValue(final ObservableValue<T> fxObservable) {
-        return Observable.create(new Observable.OnSubscribe<T>() {
-            @Override
-            public void call(final Subscriber<? super T> subscriber) {
-                subscriber.onNext(fxObservable.getValue());
+        return Observable.create((ObservableEmitter<T> emitter) -> {
+            emitter.onNext(fxObservable.getValue());
 
-                final ChangeListener<T> listener = (observableValue, prev, current) -> subscriber.onNext(current);
+            final ChangeListener<T> listener = (observableValue, prev, current) -> emitter.onNext(current);
 
-                fxObservable.addListener(listener);
+            fxObservable.addListener(listener);
 
-                subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> fxObservable.removeListener(listener)));
-
-            }
+            emitter.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> fxObservable.removeListener(listener)));
         });
     }
-    /**
-     * @see rx.observables.JavaFxObservable#fromObservableValue
-     */
+
     public static <T> Observable<Change<T>> fromObservableValueChanges(final ObservableValue<T> fxObservable) {
-        return Observable.create(new Observable.OnSubscribe<Change<T>>() {
-            @Override
-            public void call(final Subscriber<? super Change<T>> subscriber) {
+        return Observable.create((ObservableEmitter<Change<T>> emitter) -> {
+            final ChangeListener<T> listener = (observableValue, prev, current) -> emitter.onNext(new Change<>(prev,current));
 
-                final ChangeListener<T> listener = (observableValue, prev, current) -> subscriber.onNext(new Change<>(prev,current));
+            fxObservable.addListener(listener);
 
-                fxObservable.addListener(listener);
-
-                subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> fxObservable.removeListener(listener)));
-
-            }
+            emitter.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> fxObservable.removeListener(listener)));
         });
     }
 
