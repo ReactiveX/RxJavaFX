@@ -2,7 +2,7 @@
 
 # RxJavaFX: JavaFX bindings for RxJava
 
-Read the [free eBook _Learning RxJava with JavaFX_ to learn how to get started]([Learning RxJava with JavaFX (EAP)](https://www.gitbook.com/book/thomasnield/rxjavafx-guide/details)).
+Read the [free eBook _Learning RxJava with JavaFX_ to learn how to get started](https://www.gitbook.com/book/thomasnield/rxjavafx-guide/details).
 
 Learn more about RxJava on the <a href="https://github.com/ReactiveX/RxJava/wiki">Wiki Home</a> and the <a href="http://techblog.netflix.com/2013/02/rxjava-netflix-api.html">Netflix TechBlog post</a> where RxJava was introduced.
 
