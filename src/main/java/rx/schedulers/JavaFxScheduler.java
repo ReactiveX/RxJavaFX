@@ -46,6 +46,9 @@ public final class JavaFxScheduler extends Scheduler {
     public static JavaFxScheduler getInstance() {
         return INSTANCE;
     }
+    public static JavaFxScheduler platform() {
+        return INSTANCE;
+    }
 
     private static void assertThatTheDelayIsValidForTheJavaFxTimer(long delay) {
         if (delay < 0 || delay > Integer.MAX_VALUE) {

@@ -2,6 +2,8 @@
 
 # RxJavaFX: JavaFX bindings for RxJava
 
+Read the free eBook [_Learning RxJava with JavaFX_](https://www.gitbook.com/book/thomasnield/rxjavafx-guide/details) to get started!
+
 Learn more about RxJava on the <a href="https://github.com/ReactiveX/RxJava/wiki">Wiki Home</a> and the <a href="http://techblog.netflix.com/2013/02/rxjava-netflix-api.html">Netflix TechBlog post</a> where RxJava was introduced.
 
 RxJavaFX is a simple API to convert JavaFX events into RxJava Observables and vice versa. It also has a scheduler to safely move emissions to the JavaFX Event Dispatch Thread. 
@@ -61,19 +63,19 @@ $ ./gradlew build
 
 ## Features
 
-RxJavaFX has a lightweight set of features:
+RxJavaFX has a comprehensive set of features to interop RxJava with JavaFX:
 - Factories to turn `Node`, `ObservableValue`, `ObservableList`, and other component events into an RxJava `Observable`
 - Factories to turn an RxJava `Observable` into a JavaFX `Binding`. 
 - A scheduler for the JavaFX dispatch thread
 
 ###Node Events
-You can get event emissions by calling `JavaFxObservable.fromNodeEvents()` and pass the JavaFX `Node` and the `EventType` you are interested in.  This will return an RxJava `Observable`. 
+You can get event emissions by calling `JavaFxObservable.eventsOf()` and pass the JavaFX `Node` and the `EventType` you are interested in.  This will return an RxJava `Observable`. 
 
 ```java
 Button incrementBttn = new Button("Increment");
 
 Observable<ActionEvent> bttnEvents =
-        JavaFxObservable.fromNodeEvents(incrementBttn, ActionEvent.ACTION);
+        JavaFxObservable.eventsOf(incrementBttn, ActionEvent.ACTION);
 ```
 
 ###Action Events
@@ -86,14 +88,14 @@ Therefore, a few overloaded factories are provided to emit `ActionEvent` items f
 Button incrementBttn = new Button("Increment");
 
 Observable<ActionEvent> bttnEvents =
-        JavaFxObservable.fromActionEvents(incrementBttn);
+        JavaFxObservable.actionEventsOf(incrementBttn);
 ```
 #####MenuItem ActionEvents
 ```java
 MenuItem menuItem = new MenuItem("Select me");
 
 Observable<ActionEvent> menuItemEvents = 
-        JavaFxObservable.fromActionEvents(menuItem);
+        JavaFxObservable.actionEventsOf(menuItem);
 ```
 
 ###Other Event Factories
@@ -116,7 +118,7 @@ JavaFxObservable.fromDialog(alert)
 
 ```java
 Observable<MouseEvent> sceneMouseMovements =
-     JavaFxObservable.fromSceneEvents(scene, MouseEvent.MOUSE_MOVED);
+     JavaFxObservable.eventsOf(scene, MouseEvent.MOUSE_MOVED);
 
 sceneMouseMovements.subscribe(v -> System.out.println(v.getSceneX() + "," + v.getSceneY()));
 ```
@@ -124,7 +126,7 @@ sceneMouseMovements.subscribe(v -> System.out.println(v.getSceneX() + "," + v.ge
 #####Emitting Window Hiding Events
 ```java
  Observable<WindowEvent> windowHidingEvents =
-    JavaFxObservable.fromWindowEvents(primaryStage,WindowEvent.WINDOW_HIDING);
+    JavaFxObservable.eventsOf(primaryStage,WindowEvent.WINDOW_HIDING);
 
 windowHidingEvents.subscribe(v -> System.out.println("Hiding!"));
 ```
@@ -136,13 +138,13 @@ Not to be confused with the RxJava `Observable`, the JavaFX `ObservableValue` ca
 TextField textInput = new TextField();
 
 Observable<String> textInputs =
-        JavaFxObservable.fromObservableValue(textInput.textProperty());
+        JavaFxObservable.valuesOf(textInput.textProperty());
 ```
 Note that many Nodes in JavaFX will have an initial value, which sometimes can be `null`, and you might consider using RxJava's `skip()` operator to ignore this initial value. 
 
 #####ObservableValue Changes
 
-For every change to an `ObservableValue`, you can emit the old value and new value as a pair. The two values will be wrapped up in a `Change` class and you can access them via `getOldVal()` and `getNewVal()`. Just call the `JavaFxObservable.fromObservableValueChanges()` factory. 
+For every change to an `ObservableValue`, you can emit the old value and new value as a pair. The two values will be wrapped up in a `Change` class and you can access them via `getOldVal()` and `getNewVal()`. Just call the `JavaFxObservable.valuesOfChanges()` factory. 
 
 ```java
 SpinnerValueFactory<Integer> svf = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100);
@@ -151,7 +153,7 @@ spinner.setValueFactory(svf);
 spinner.setEditable(true);
 
 Label spinnerChangesLabel = new Label();
-Subscription subscription = JavaFxObservable.fromObservableValueChanges(spinner.valueProperty())
+Subscription subscription = JavaFxObservable.changesOf(spinner.valueProperty())
         .map(change -> "OLD: " + change.getOldVal() + " NEW: " + change.getNewVal())
         .subscribe(spinnerChangesLabel::setText);
 ```
@@ -163,21 +165,21 @@ There are several factories to emit many useful `ObservableList`, `ObservableMap
 
 |Factory Method|Parameter Type|Return Type|Description|
 |---|---|---|---
-|fromObservableList()|ObservableList&lt;T>|Observable&lt;ObservableList&lt;T>>|Emits the entire `ObservableList` every time it changes|
-|fromObservableListAdds()|ObservableList&lt;T>|Observable&lt;T>|Emits additions to an `ObservableList`|
-|fromfromObservableListRemovals()|ObservableList&lt;T>|Observable&lt;T>|Emits removals from an `ObservableList`|
-|fromObservableListUpdates|ObservableList&lt;T>|Observable&lt;ListChange&lt;T>>|Emits every item that was the result of a change to an `ObservableList`, with an `ADDED`, `REMOVED`, or `UPDATED` flag|
-|fromObservableListDistinctChanges()|ObservableList&lt;T>| Observable&lt;ListChange&lt;R>>|Emits only *distinct* addtions and removals to an `ObservableList`|
-|fromObservableListDistinctChanges()|ObservableList&lt;T>, Func1&lt;T,R>| Observable&lt;ListChange&lt;R>>|Emits only *distinct* additions and removals to an `ObservableList` and emits the mapping|
-|fromObservableListDistinctChanges()|ObservableList&lt;T>, Func1&lt;T,R>| Observable&lt;ListChange&lt;R>>|Emits only *distinct* additions and removals to an `ObservableList` based on a mapping|
-|fromObservableMap()|ObservableMap&lt;K,T>|Observable&lt;ObservableMap&lt;K,T>>|Emits the entire `ObservableMap` every time it changes|
-|fromObservableMapAdds()|ObservableMap&lt;K,T>|Observable&lt;Map.Entry&lt;K,T>>|Emits every `Map.Entry<K,T>` added to an `ObservableMap`|
-|fromObservableMapRemovals()|ObservableMap&lt;K,T>|Observable&lt;Map.Entry&lt;K,T>>|Emits every `Map.Entry<K,T>` removed from an `ObservableMap`|
-|fromObservableMapChanges()|ObservableMap&lt;K,T>|Observable&lt;MapChange&lt;K,T>>|Emits every key/value pair with an `ADDED` or `REMOVED` flag.|
-|fromObservableSet()|ObservableSet&lt;T>|Observable&lt;ObservableSet&lt;T>>|Emits the entire `ObservableSet` every time it changes|
-|fromObservableSetAdds()|ObservableSet&lt;T>|Observable&lt;T>|Emits every addition to an `ObservableSet`|
-|fromObservableSetRemovals()|ObservableSet&lt;T>|Observable&lt;T>|Emits every removal to an `ObservableSet`|
-|fromObservableSetChanges()|ObservableSet&lt;T>|Observable&lt;SetChange&lt;T>|Emits every item `ADDED` or `REMOVED` item from an `ObservableSet` with the corresponding flag|
+|emitOnChanged()()|ObservableList&lt;T>|Observable&lt;ObservableList&lt;T>>|Emits the entire `ObservableList` every time it changes|
+|additionsOf()|ObservableList&lt;T>|Observable&lt;T>|Emits additions to an `ObservableList`|
+|removalsOf()|ObservableList&lt;T>|Observable&lt;T>|Emits removals from an `ObservableList`|
+|updatesOf()|ObservableList&lt;T>|Observable&lt;ListChange&lt;T>>|Emits every item that was the result of a change to an `ObservableList`, with an `ADDED`, `REMOVED`, or `UPDATED` flag|
+|distinctChangesOf()|ObservableList&lt;T>| Observable&lt;ListChange&lt;R>>|Emits only *distinct* addtions and removals to an `ObservableList`|
+|distinctMappingsOf()|ObservableList&lt;T>, Func1&lt;T,R>| Observable&lt;ListChange&lt;R>>|Emits only *distinct* additions and removals to an `ObservableList` and emits the mapping|
+|distinctChangesOf()|ObservableList&lt;T>, Func1&lt;T,R>| Observable&lt;ListChange&lt;R>>|Emits only *distinct* additions and removals to an `ObservableList` based on a mapping|
+|emitOnChanged()|ObservableMap&lt;K,T>|Observable&lt;ObservableMap&lt;K,T>>|Emits the entire `ObservableMap` every time it changes|
+|additionsOf()|ObservableMap&lt;K,T>|Observable&lt;Map.Entry&lt;K,T>>|Emits every `Map.Entry<K,T>` added to an `ObservableMap`|
+|removalsOf()|ObservableMap&lt;K,T>|Observable&lt;Map.Entry&lt;K,T>>|Emits every `Map.Entry<K,T>` removed from an `ObservableMap`|
+|changesOf()|ObservableMap&lt;K,T>|Observable&lt;MapChange&lt;K,T>>|Emits every key/value pair with an `ADDED` or `REMOVED` flag.|
+|emitOnChanged()|ObservableSet&lt;T>|Observable&lt;ObservableSet&lt;T>>|Emits the entire `ObservableSet` every time it changes|
+|additionsOf()|ObservableSet&lt;T>|Observable&lt;T>|Emits every addition to an `ObservableSet`|
+|removalsOf()|ObservableSet&lt;T>|Observable&lt;T>|Emits every removal to an `ObservableSet`|
+|changesOf()|ObservableSet&lt;T>|Observable&lt;SetChange&lt;T>|Emits every item `ADDED` or `REMOVED` item from an `ObservableSet` with the corresponding flag|
 
 
 ###Binding
@@ -188,7 +190,7 @@ Button incrementBttn = new Button("Increment");
 Label incrementLabel =  new Label("");
 
 Observable<ActionEvent> bttnEvents =
-        JavaFxObservable.fromNodeEvents(incrementBttn, ActionEvent.ACTION);
+        JavaFxObservable.eventsOf(incrementBttn, ActionEvent.ACTION);
         
 Observable<String> accumulations = bttnEvents.map(e -> 1)
         .scan(0,(x, y) -> x + y)
@@ -241,16 +243,16 @@ In UI development, it is not uncommon to have an event triggered in multiple pla
 ```java
 //make refresh Button
 Button button = new Button("Refresh");
-Observable<ActionEvent> buttonClicks = JavaFxObservable.fromActionEvents(button);
+Observable<ActionEvent> buttonClicks = JavaFxObservable.actionEventsOf(button);
 
 //make refresh MenuItem 
 MenuItem menuItem = new MenuItem("Refresh");
-Observable<ActionEvent> menuItemClicks = JavaFxObservable.fromActionEvents(menuItem);
+Observable<ActionEvent> menuItemClicks = JavaFxObservable.actionEventsOf(menuItem);
 
 //CTRL + R hotkeys on a TableView
 TableView<MyType> tableView = new TableView<>();
 Observable<ActionEvent> hotKeyPresses =
-		JavaFxObservable.fromNodeEvents(tableView, KeyEvent.KEY_PRESSED)
+		JavaFxObservable.eventsOf(tableView, KeyEvent.KEY_PRESSED)
 			.filter(ke -> ke.isControlDown() && ke.getCode().equals(KeyCode.R))
 			.map(ke -> new ActionEvent());
 			
@@ -285,13 +287,13 @@ Wherever the three controls are declared, you can `add()` the `Observable<Action
 ```java
 //make refresh Button
 Button button = new Button("Refresh");
-Observable<ActionEvent> buttonClicks = JavaFxObservable.fromActionEvents(button);
+Observable<ActionEvent> buttonClicks = JavaFxObservable.actionEventsOf(button);
 myEventModel.getRefreshRequests().add(buttonClicks);
 
 
 //make refresh MenuItem
 MenuItem menuItem = new MenuItem("Refresh");
-Observable<ActionEvent> menuItemClicks = JavaFxObservable.fromActionEvents(menuItem);
+Observable<ActionEvent> menuItemClicks = JavaFxObservable.actionEventsOf(menuItem);
 myEventModel.getRefreshRequests().add(menuItemClicks);
 
 
@@ -299,7 +301,7 @@ myEventModel.getRefreshRequests().add(menuItemClicks);
 TableView<MyType> tableView = new TableView<>();
 
 Observable<ActionEvent> hotKeyPresses =
-    JavaFxObservable.fromNodeEvents(tableView, KeyEvent.KEY_PRESSED)
+    JavaFxObservable.eventsOf(tableView, KeyEvent.KEY_PRESSED)
         .filter(ke -> ke.isControlDown() && ke.getCode().equals(KeyCode.R))
         .map(ke -> new ActionEvent());
 
@@ -309,7 +311,7 @@ myEventModel.getRefreshRequests().add(hotKeyPresses);
 myEventModel.getRefreshRequests().subscribe(ae -> refresh());
 ```
 
-Every time you `add()` or `remove()` an `Observable` to a `CompositeObservable`, it will affect all existing Subscribers. For UI development, this is good because there is no sensitivity to the order of adding Observables and subscribing. 
+The `add()` method on a `CompositeObservable` returns a subscription which you can `unsubscribe()`, and this will affect all existing downstream Subscribers. For UI development, this is good because there is no sensitivity to the order of adding Observables and subscribing. 
 
 Of course, you can pass around any type `T` in a `CompositeObservable<T>` and not just `ActionEvent`. It can be = helpful to pass around entire data structures, such as `CompositeObservable<Set<MyType>>`, to relay requests and inputs between controls.
 			
@@ -328,7 +330,7 @@ TextField textInput = new TextField();
 Label fippedTextLabel = new Label();
 
 Observable<String> textInputs =
-        JavaFxObservable.fromObservableValue(textInput.textProperty());
+        JavaFxObservable.valuesOf(textInput.textProperty());
 
 sub2 = textInputs.observeOn(Schedulers.computation())
         .map(s -> new StringBuilder(s).reverse().toString())
@@ -391,7 +393,7 @@ public class RxJavaFXTest extends Application {
         incrementLabel =  new Label("");
 
         Observable<ActionEvent> bttnEvents =
-                JavaFxObservable.fromActionEvents(incrementBttn);
+                JavaFxObservable.actionEventsOf(incrementBttn);
 
         binding1 = JavaFxSubscriber.toBinding(bttnEvents.map(e -> 1).scan(0,(x, y) -> x + y)
                 .map(Object::toString));
@@ -405,7 +407,7 @@ public class RxJavaFXTest extends Application {
         flippedTextLabel = new Label();
 
         Observable<String> textInputs =
-                JavaFxObservable.fromObservableValue(textInput.textProperty());
+                JavaFxObservable.valuesOf(textInput.textProperty());
 
         binding2 = JavaFxSubscriber.toBinding(textInputs.observeOn(Schedulers.computation())
                 .map(s -> new StringBuilder(s).reverse().toString())
@@ -422,7 +424,7 @@ public class RxJavaFXTest extends Application {
         spinner.setEditable(true);
 
         spinnerChangesLabel = new Label();
-        subscription = JavaFxObservable.fromObservableValueChanges(spinner.valueProperty())
+        subscription = JavaFxObservable.changesOf(spinner.valueProperty())
                 .map(change -> "OLD: " + change.getOldVal() + " NEW: " + change.getNewVal())
                 .subscribe(spinnerChangesLabel::setText);
 
