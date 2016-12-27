@@ -308,7 +308,7 @@ Observable<ActionEvent> hotKeyPresses =
 myEventModel.getRefreshRequests().add(hotKeyPresses);
 
 //subscribe to refresh events
-myEventModel.getRefreshRequests().subscribe(ae -> refresh());
+myEventModel.getRefreshRequests().toObservable().subscribe(ae -> refresh());
 ```
 
 The `add()` method on a `CompositeObservable` returns a subscription which you can `unsubscribe()`, and this will affect all existing downstream Subscribers. For UI development, this is good because there is no sensitivity to the order of adding Observables and subscribing. 
