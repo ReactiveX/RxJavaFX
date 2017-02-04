@@ -27,7 +27,6 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.util.Duration;
-import org.reactivestreams.Subscription;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -85,7 +84,7 @@ public final class JavaFxScheduler extends Scheduler {
             long delay = Math.max(0,unit.toMillis(delayTime));
             assertThatTheDelayIsValidForTheJavaFxTimer(delay);
 
-            class DualAction implements EventHandler<ActionEvent>, Subscription, Runnable {
+            class DualAction implements EventHandler<ActionEvent>, Disposable, Runnable {
                 private Timeline timeline;
                 final SerialDisposable subs = new SerialDisposable();
                 boolean nonDelayed;
@@ -103,7 +102,7 @@ public final class JavaFxScheduler extends Scheduler {
                 public void run() {
                     if (nonDelayed) {
                         try {
-                            if (tracking.isDisposed() || isUnsubscribed()) {
+                            if (tracking.isDisposed() || isDisposed()) {
                                 return;
                             }
                             action.run();
@@ -119,19 +118,15 @@ public final class JavaFxScheduler extends Scheduler {
                 }
 
                 @Override
-                public boolean isUnsubscribed() {
+                public void dispose() {
+                    subs.dispose();
+                }
+
+                @Override
+                public boolean isDisposed() {
                     return subs.isDisposed();
                 }
 
-                @Override
-                public void request(long n) {
-                    //not quite sure what to do here
-                }
-
-                @Override
-                public void cancel() {
-                    subs.dispose();
-                }
                 public void set(Disposable s) {
                     subs.set(s);
                 }
@@ -144,7 +139,7 @@ public final class JavaFxScheduler extends Scheduler {
             executeOnce.setTimer(timer);
             timer.play();
 
-            executeOnce.set(Subscriptions.create(() -> {
+            executeOnce.set(Disposables.fromAction(() -> {
                 timer.stop();
                 tracking.remove(executeOnce);
             }));
@@ -177,7 +172,7 @@ public final class JavaFxScheduler extends Scheduler {
             }
 
             // wrap for returning so it also removes it from the 'innerSubscription'
-            return Subscriptions.create(() -> tracking.remove(s));
+            return Disposables.fromAction(() -> tracking.remove(s));
         }
         /**
          * Uses a fast-path/slow path trampolining and tries to run

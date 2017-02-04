@@ -15,16 +15,15 @@
  */
 package rx.javafx.sources;
 
-import rx.Observable;
-import rx.Subscription;
-import rx.annotations.Beta;
-import rx.subjects.PublishSubject;
-import rx.subjects.SerializedSubject;
-import rx.subscriptions.CompositeSubscription;
+
+import io.reactivex.Observable;
+import io.reactivex.ObservableTransformer;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
 
 import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 
 /**
@@ -35,10 +34,9 @@ import java.util.stream.Collectors;
  *
  * @param <T>
  */
-@Beta
 public final class CompositeObservable<T> {
 
-    private final SerializedSubject<T,T> subject;
+    private final Subject<T> subject;
     private final Observable<T> output;
 
     /**
@@ -53,15 +51,13 @@ public final class CompositeObservable<T> {
      * yield from `toObservable()`. For instance, you can pass `obs -> obs.replay(1).refCount()` to make this CompositeObservable
      * @param transformer
      */
-    public CompositeObservable(Observable.Transformer<T,T> transformer) {
+    public CompositeObservable(ObservableTransformer<T,T> transformer) {
         subject = PublishSubject.<T>create().toSerialized();
 
-        Observable<T> updatingSource = subject.asObservable();
-
         if (transformer == null) {
-            output = updatingSource;
+            output = subject;
         } else {
-            output = updatingSource.compose(transformer);
+            output = subject.compose(transformer);
         }
     }
 
@@ -73,12 +69,12 @@ public final class CompositeObservable<T> {
     public Observable<T> toObservable() {
         return output;
     }
-    public Subscription add(Observable<T> observable) {
-        return observable.subscribe(subject);
+    public Disposable add(Observable<T> observable) {
+        return observable.subscribeWith(subject);
     }
-    public CompositeSubscription addAll(Observable<T>... observables) {
-        final CompositeSubscription subscriptions = new CompositeSubscription();
-        Arrays.stream(observables).map(this::add).forEach(subscriptions::add);
-        return subscriptions;
+    public CompositeDisposable addAll(Observable<T>... observables) {
+        final CompositeDisposable disposables = new CompositeDisposable();
+        Arrays.stream(observables).map(this::add).forEach(disposables::add);
+        return disposables;
     }
 }

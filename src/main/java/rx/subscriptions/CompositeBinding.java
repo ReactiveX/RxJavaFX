@@ -41,7 +41,7 @@ public final class CompositeBinding {
      * disposed, {@code add} will indicate this by explicitly disposing the new {@code CompositeBinding} as
      * well.
      *
-     * @param b the {@link Subscription} to add
+     * @param b the {@link Binding} to add
      */
     public void add(final CompositeBinding b) {
         if (!disposedInd) {
@@ -60,7 +60,7 @@ public final class CompositeBinding {
      * disposed, {@code add} will indicate this by explicitly disposing the new {@code Binding} as
      * well.
      *
-     * @param b the {@link Subscription} to add
+     * @param b the {@link Binding} to add
      */
     public void add(final Binding b) {
         if (!disposedInd) {
@@ -175,7 +175,8 @@ public final class CompositeBinding {
                 es.add(e);
             }
         }
-        Exceptions.throwIfFatal(es);
+        if (es != null)
+            es.forEach(Exceptions::throwIfFatal);
     }
     private static void unsubscribeFromAll(Collection<Binding> bindings) {
         if (bindings == null) {
@@ -192,7 +193,8 @@ public final class CompositeBinding {
                 es.add(e);
             }
         }
-        Exceptions.throwIfAny(es);
+        if (es != null)
+            es.forEach(Exceptions::throwIfFatal);
     }
 
     /**
