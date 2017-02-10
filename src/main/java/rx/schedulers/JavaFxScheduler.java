@@ -149,18 +149,19 @@ public final class JavaFxScheduler extends Scheduler {
 
         @Override
         public Disposable schedule(final Runnable action) {
-            final BooleanSubscription s = new BooleanSubscription();
+            final Disposable s = Disposables.fromSubscription(new BooleanSubscription());
+
             Runnable runnable = () -> {
                 try {
-                    if (tracking.isDisposed() || s.isCancelled()) {
+                    if (tracking.isDisposed()/* || s.isCancelled()*/) {
                         return;
                     }
                     action.run();
                 } finally {
-                    tracking.remove(s);
+                    tracking.remove(s); //compile error
                 }
             };
-            tracking.add(s);
+            tracking.add(s); //compile error
 
             if (Platform.isFxApplicationThread()) {
                 if (trampoline(runnable)) {
@@ -172,7 +173,7 @@ public final class JavaFxScheduler extends Scheduler {
             }
 
             // wrap for returning so it also removes it from the 'innerSubscription'
-            return Disposables.fromAction(() -> tracking.remove(s));
+            return Disposables.fromAction(() -> tracking.remove(s)); //compile error
         }
         /**
          * Uses a fast-path/slow path trampolining and tries to run

@@ -17,49 +17,44 @@
 package rx.subscribers;
 
 import com.sun.javafx.binding.ExpressionHelper;
-import io.reactivex.Observable;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Binding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
 
-final class BindingSubscriber<T> extends Subscriber<T> implements ObservableValue<T>, Binding<T> {
 
-    private final Observable<T> observable;
+final class BindingSubscriber<T> implements Observer<T>, ObservableValue<T>, Binding<T> {
+
     private final Consumer<Throwable> onError;
-    private Subscription subscription;
+    private Disposable disposable;
     private ExpressionHelper<T> helper;
     private T value;
 
-    private BindingSubscriber(Observable<T> observable, Consumer<Throwable> onError) {
-        this.observable = observable;
+    BindingSubscriber(Consumer<Throwable> onError) {
         this.onError = onError;
     }
 
-    static <T> BindingSubscriber<T> forObservable(Observable<T> observable, Consumer<Throwable> onError, boolean isLazy) {
-        BindingSubscriber<T> bindingSubscriber = new BindingSubscriber<>(observable, onError);
-
-        if (!isLazy) {
-            bindingSubscriber.connect();
-        }
-
-        return bindingSubscriber;
-    }
-    private void connect() {
-        subscription = observable.subscribe(this);
-    }
     @Override
-    public void onCompleted() {
+    public void onSubscribe(Disposable d) {
+        this.disposable = d;
+    }
+
+    @Override
+    public void onComplete() {
         //do nothing
     }
 
     @Override
     public void onError(Throwable e) {
-        onError.call(e);
+        try {
+            onError.accept(e);
+        } catch (Throwable e1) {
+            e1.printStackTrace();
+        }
     }
 
     @Override
@@ -69,9 +64,6 @@ final class BindingSubscriber<T> extends Subscriber<T> implements ObservableValu
     }
     @Override
     public T getValue() {
-        if (subscription == null) {
-            connect();
-        }
         return value;
     }
     @Override
@@ -91,10 +83,9 @@ final class BindingSubscriber<T> extends Subscriber<T> implements ObservableValu
 
     @Override
     public void dispose() {
-        if (subscription != null) {
-            subscription.unsubscribe();
+        if (disposable != null) {
+            disposable.dispose();
         }
-        this.unsubscribe();
     }
 
     /**

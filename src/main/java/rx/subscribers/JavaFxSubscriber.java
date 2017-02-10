@@ -16,6 +16,7 @@
 
 package rx.subscribers;
 
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.functions.Consumer;
 import javafx.beans.binding.Binding;
@@ -25,13 +26,23 @@ public enum JavaFxSubscriber {
      * Turns an Observable into an eager JavaFX Binding that subscribes immediately to the Observable. Calling the Binding's dispose() method will handle the unsubscription.
      */
     public static <T> Binding<T> toBinding(Observable<T> obs) {
-        return BindingSubscriber.forObservable(obs, e -> {}, false);
+        BindingSubscriber<T> bindingSubscriber = new BindingSubscriber<>(e -> {});
+        obs.subscribe(bindingSubscriber);
+        return bindingSubscriber;
     }
     /**
      * Turns an Observable into an eager JavaFX Binding that subscribes immediately to the Observable. Calling the Binding's dispose() method will handle the unsubscription.
      */
     public static <T> Binding<T> toBinding(Observable<T> obs, Consumer<Throwable> onErrorAction ) {
-        return BindingSubscriber.forObservable(obs, onErrorAction, false);
+        BindingSubscriber<T> bindingSubscriber = new BindingSubscriber<>(onErrorAction);
+        obs.subscribe(bindingSubscriber);
+        return bindingSubscriber;
+    }
+
+    public static <T> Binding<T> toBinding(Flowable<T> obs) {
+        BindingSubscriber<T> bindingSubscriber = new BindingSubscriber<>(e -> {});
+        obs.subscribe(bindingSubscriber);
+        return bindingSubscriber;
     }
 
     /**

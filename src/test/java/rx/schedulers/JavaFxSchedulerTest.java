@@ -15,6 +15,7 @@
  */
 package rx.schedulers;
 
+import io.reactivex.Scheduler;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.embed.swing.JFXPanel;
@@ -24,8 +25,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.InOrder;
-import rx.Scheduler.Worker;
-import rx.functions.Action0;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -69,14 +68,14 @@ public final class JavaFxSchedulerTest {
     @Test
     public void testPeriodicScheduling() throws Exception {
         final JavaFxScheduler scheduler = new JavaFxScheduler();
-        final Worker inner = scheduler.createWorker();
+        final Scheduler.Worker inner = scheduler.createWorker();
 
         final CountDownLatch latch = new CountDownLatch(4);
 
-        final Action0 innerAction = mock(Action0.class);
-        final Action0 action = () -> {
+        final Runnable innerAction = mock(Runnable.class);
+        final Runnable action = () -> {
             try {
-                innerAction.call();
+                innerAction.run();
                 assertTrue(Platform.isFxApplicationThread());
             } finally {
                 latch.countDown();
@@ -89,41 +88,41 @@ public final class JavaFxSchedulerTest {
             fail("timed out waiting for tasks to execute");
         }
 
-        inner.unsubscribe();
+        inner.dispose();
         waitForEmptyEventQueue();
-        verify(innerAction, times(4)).call();
+        verify(innerAction, times(4)).run();
     }
 
     @Test
     public void testNestedActions() throws Exception {
         final JavaFxScheduler scheduler = new JavaFxScheduler();
-        final Worker inner = scheduler.createWorker();
+        final Scheduler.Worker inner = scheduler.createWorker();
 
-        final Action0 firstStepStart = mock(Action0.class);
-        final Action0 firstStepEnd = mock(Action0.class);
+        final Runnable firstStepStart = mock(Runnable.class);
+        final Runnable firstStepEnd = mock(Runnable.class);
 
-        final Action0 secondStepStart = mock(Action0.class);
-        final Action0 secondStepEnd = mock(Action0.class);
+        final Runnable secondStepStart = mock(Runnable.class);
+        final Runnable secondStepEnd = mock(Runnable.class);
 
-        final Action0 thirdStepStart = mock(Action0.class);
-        final Action0 thirdStepEnd = mock(Action0.class);
+        final Runnable thirdStepStart = mock(Runnable.class);
+        final Runnable thirdStepEnd = mock(Runnable.class);
 
-        final Action0 firstAction = () -> {
+        final Runnable firstAction = () -> {
             assertTrue(Platform.isFxApplicationThread());
-            firstStepStart.call();
-            firstStepEnd.call();
+            firstStepStart.run();
+            firstStepEnd.run();
         };
-        final Action0 secondAction = () -> {
+        final Runnable secondAction = () -> {
             assertTrue(Platform.isFxApplicationThread());
-            secondStepStart.call();
+            secondStepStart.run();
             inner.schedule(firstAction);
-            secondStepEnd.call();
+            secondStepEnd.run();
         };
-        final Action0 thirdAction = () -> {
+        final Runnable thirdAction = () -> {
             assertTrue(Platform.isFxApplicationThread());
-            thirdStepStart.call();
+            thirdStepStart.run();
             inner.schedule(secondAction);
-            thirdStepEnd.call();
+            thirdStepEnd.run();
         };
 
         InOrder inOrder = inOrder(firstStepStart, firstStepEnd, secondStepStart, secondStepEnd, thirdStepStart, thirdStepEnd);
@@ -131,12 +130,12 @@ public final class JavaFxSchedulerTest {
         inner.schedule(thirdAction);
         waitForEmptyEventQueue();
 
-        inOrder.verify(thirdStepStart, times(1)).call();
-        inOrder.verify(thirdStepEnd, times(1)).call();
-        inOrder.verify(secondStepStart, times(1)).call();
-        inOrder.verify(secondStepEnd, times(1)).call();
-        inOrder.verify(firstStepStart, times(1)).call();
-        inOrder.verify(firstStepEnd, times(1)).call();
+        inOrder.verify(thirdStepStart, times(1)).run();
+        inOrder.verify(thirdStepEnd, times(1)).run();
+        inOrder.verify(secondStepStart, times(1)).run();
+        inOrder.verify(secondStepEnd, times(1)).run();
+        inOrder.verify(firstStepStart, times(1)).run();
+        inOrder.verify(firstStepEnd, times(1)).run();
     }
 
     /*
