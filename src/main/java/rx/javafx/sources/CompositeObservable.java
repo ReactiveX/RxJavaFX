@@ -70,7 +70,7 @@ public final class CompositeObservable<T> {
         return output;
     }
     public Disposable add(Observable<T> observable) {
-        return observable.subscribeWith(subject);
+        return observable.subscribe(subject::onNext,subject::onError,subject::onComplete);
     }
     public CompositeDisposable addAll(Observable<T>... observables) {
         final CompositeDisposable disposables = new CompositeDisposable();
