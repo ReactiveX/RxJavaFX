@@ -17,25 +17,30 @@
 package rx.subscribers;
 
 import com.sun.javafx.binding.ExpressionHelper;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Binding;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
-import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
 
 
-final class BindingSubscriber<T> implements Subscriber<T>, ObservableValue<T>, Binding<T> {
+final class BindingObserver<T> implements Observer<T>, ObservableValue<T>, Binding<T> {
 
     private final Consumer<Throwable> onError;
-    private Subscription subscription;
+    private Disposable disposable;
     private ExpressionHelper<T> helper;
     private T value;
 
-    BindingSubscriber(Consumer<Throwable> onError) {
+    BindingObserver(Consumer<Throwable> onError) {
         this.onError = onError;
+    }
+
+    @Override
+    public void onSubscribe(Disposable d) {
+        this.disposable = d;
     }
 
     @Override
@@ -50,12 +55,6 @@ final class BindingSubscriber<T> implements Subscriber<T>, ObservableValue<T>, B
         } catch (Throwable e1) {
             e1.printStackTrace();
         }
-    }
-
-    @Override
-    public void onSubscribe(Subscription s) {
-        subscription = s;
-        subscription.request(Long.MAX_VALUE);
     }
 
     @Override
@@ -84,8 +83,8 @@ final class BindingSubscriber<T> implements Subscriber<T>, ObservableValue<T>, B
 
     @Override
     public void dispose() {
-        if (subscription != null) {
-            subscription.cancel();
+        if (disposable != null) {
+            disposable.dispose();
         }
     }
 
