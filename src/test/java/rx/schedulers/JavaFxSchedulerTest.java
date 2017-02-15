@@ -33,8 +33,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -93,50 +92,74 @@ public final class JavaFxSchedulerTest {
         verify(innerAction, times(4)).run();
     }
 
-    @Test
-    public void testNestedActions() throws Exception {
-        final JavaFxScheduler scheduler = new JavaFxScheduler();
-        final Scheduler.Worker inner = scheduler.createWorker();
 
-        final Runnable firstStepStart = mock(Runnable.class);
-        final Runnable firstStepEnd = mock(Runnable.class);
+	@Test
+	public void testNestedActions() throws Exception {
+		final JavaFxScheduler scheduler = new JavaFxScheduler();
+		final Scheduler.Worker inner = scheduler.createWorker();
 
-        final Runnable secondStepStart = mock(Runnable.class);
-        final Runnable secondStepEnd = mock(Runnable.class);
+		final Runnable actionAStepStart = mock(Runnable.class);
+		final Runnable actionAStepEnd = mock(Runnable.class);
 
-        final Runnable thirdStepStart = mock(Runnable.class);
-        final Runnable thirdStepEnd = mock(Runnable.class);
+		final Runnable actionBStepStart = mock(Runnable.class);
+		final Runnable actionBStepEnd = mock(Runnable.class);
 
-        final Runnable firstAction = () -> {
-            assertTrue(Platform.isFxApplicationThread());
-            firstStepStart.run();
-            firstStepEnd.run();
-        };
-        final Runnable secondAction = () -> {
-            assertTrue(Platform.isFxApplicationThread());
-            secondStepStart.run();
-            inner.schedule(firstAction);
-            secondStepEnd.run();
-        };
-        final Runnable thirdAction = () -> {
-            assertTrue(Platform.isFxApplicationThread());
-            thirdStepStart.run();
-            inner.schedule(secondAction);
-            thirdStepEnd.run();
-        };
+		final Runnable actionCStepStart = mock(Runnable.class);
+		final Runnable actionCStepEnd = mock(Runnable.class);
 
-        InOrder inOrder = inOrder(firstStepStart, firstStepEnd, secondStepStart, secondStepEnd, thirdStepStart, thirdStepEnd);
+		final Runnable actionDStepStart = mock(Runnable.class);
+		final Runnable actionDStepEnd = mock(Runnable.class);
 
-        inner.schedule(thirdAction);
-        waitForEmptyEventQueue();
+		final Runnable actionEStepStart = mock(Runnable.class);
+		final Runnable actionEStepEnd = mock(Runnable.class);
 
-        inOrder.verify(thirdStepStart, times(1)).run();
-        inOrder.verify(thirdStepEnd, times(1)).run();
-        inOrder.verify(secondStepStart, times(1)).run();
-        inOrder.verify(secondStepEnd, times(1)).run();
-        inOrder.verify(firstStepStart, times(1)).run();
-        inOrder.verify(firstStepEnd, times(1)).run();
-    }
+		final Runnable actionCAction = () -> {
+			assertTrue(Platform.isFxApplicationThread());
+			actionCStepStart.run();
+			actionCStepEnd.run();
+		};
+		final Runnable actionDAction = () -> {
+			assertTrue(Platform.isFxApplicationThread());
+			actionDStepStart.run();
+			actionDStepEnd.run();
+		};
+		final Runnable actionBAction = () -> {
+			assertTrue(Platform.isFxApplicationThread());
+			actionBStepStart.run();
+			inner.schedule(actionCAction);
+			inner.schedule(actionDAction);
+			actionBStepEnd.run();
+		};
+		final Runnable actionAAction = () -> {
+			assertTrue(Platform.isFxApplicationThread());
+			actionAStepStart.run();
+			inner.schedule(actionBAction);
+			actionAStepEnd.run();
+		};
+
+		final Runnable actionEAction = () -> {
+			assertTrue(Platform.isFxApplicationThread());
+			actionEStepStart.run();
+			actionEStepEnd.run();
+		};
+
+		InOrder inOrder = inOrder(actionAStepStart, actionAStepEnd, actionBStepStart, actionBStepEnd, actionCStepStart, actionCStepEnd, actionDStepStart, actionDStepEnd, actionEStepStart, actionEStepEnd);
+
+		inner.schedule(actionAAction);
+		inner.schedule(actionEAction);
+		waitForEmptyEventQueue();
+
+		inOrder.verify(actionAStepStart, times(1)).run();
+		inOrder.verify(actionAStepEnd, times(1)).run();
+		inOrder.verify(actionEStepStart, times(1)).run();
+		inOrder.verify(actionEStepEnd, times(1)).run();
+		inOrder.verify(actionBStepStart, times(1)).run();
+		inOrder.verify(actionBStepEnd, times(1)).run();
+		inOrder.verify(actionCStepStart, times(1)).run();
+		inOrder.verify(actionCStepEnd, times(1)).run();
+		inOrder.verify(actionDStepStart, times(1)).run();
+		inOrder.verify(actionDStepEnd, times(1)).run();
+	}
 
     /*
      * based on http://www.guigarage.com/2013/01/invokeandwait-for-javafx/
