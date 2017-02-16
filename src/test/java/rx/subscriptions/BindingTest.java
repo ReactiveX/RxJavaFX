@@ -1,16 +1,16 @@
 package rx.subscriptions;
 
+import io.reactivex.Observable;
 import javafx.beans.binding.Binding;
 import javafx.embed.swing.JFXPanel;
 import org.junit.Test;
-import rx.Observable;
 import rx.schedulers.JavaFxScheduler;
 import rx.subscribers.JavaFxSubscriber;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.*;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public final class BindingTest {
 
@@ -24,10 +24,10 @@ public final class BindingTest {
         Observable<Long> source = Observable.interval(1,TimeUnit.SECONDS);
         CountDownLatch unsbuscribeWait = new CountDownLatch(2);
 
-        Binding<Long> binding1 = JavaFxSubscriber.toBinding(source.doOnUnsubscribe(unsbuscribeWait::countDown).observeOn(JavaFxScheduler.getInstance()));
+        Binding<Long> binding1 = JavaFxSubscriber.toBinding(source.doOnDispose(unsbuscribeWait::countDown).observeOn(JavaFxScheduler.getInstance()));
         bindings.add(binding1);
 
-        Binding<Long> binding2 = JavaFxSubscriber.toBinding(source.doOnUnsubscribe(unsbuscribeWait::countDown).reduce(0L,(x,y) -> x + y).observeOn(JavaFxScheduler.getInstance()));
+        Binding<Long> binding2 = JavaFxSubscriber.toBinding(source.doOnDispose(unsbuscribeWait::countDown).reduce(0L,(x,y) -> x + y).observeOn(JavaFxScheduler.getInstance()).toObservable());
         bindings.add(binding2);
 
         try {

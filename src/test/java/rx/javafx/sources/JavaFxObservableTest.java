@@ -15,6 +15,10 @@
  */
 package rx.javafx.sources;
 
+import io.reactivex.Observable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subjects.PublishSubject;
 import javafx.application.Platform;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyStringWrapper;
@@ -24,19 +28,15 @@ import javafx.collections.ObservableList;
 import javafx.embed.swing.JFXPanel;
 import javafx.util.Duration;
 import org.junit.Test;
-import rx.Observable;
-import rx.Subscription;
 import rx.observables.JavaFxObservable;
 import rx.schedulers.JavaFxScheduler;
-import rx.schedulers.Schedulers;
-import rx.subjects.PublishSubject;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public final class JavaFxObservableTest {
 
@@ -69,6 +69,7 @@ public final class JavaFxObservableTest {
                 .observeOn(JavaFxScheduler.getInstance())
                 .take(3)
                 .toList()
+                .toObservable()
                 .subscribe(l -> assertTrue(l.containsAll(Arrays.asList("Alpha","Beta","Gamma"))),Throwable::printStackTrace,gate::countDown);
 
         Platform.runLater(() -> {
@@ -99,6 +100,7 @@ public final class JavaFxObservableTest {
                 .observeOn(JavaFxScheduler.getInstance())
                 .take(2)
                 .toSortedList()
+                .toObservable()
                 .subscribe(l -> assertTrue(l.equals(Arrays.asList("Alpha","Gamma"))),Throwable::printStackTrace,gate::countDown);
 
         Platform.runLater(() -> {
@@ -127,8 +129,8 @@ public final class JavaFxObservableTest {
 
         class FlagAndCount {
             final Flag flag;
-            final int count;
-            FlagAndCount(Flag flag, int count) {
+            final long count;
+            FlagAndCount(Flag flag, long count) {
                 this.flag = flag;
                 this.count = count;
             }
@@ -138,7 +140,7 @@ public final class JavaFxObservableTest {
                 .observeOn(JavaFxScheduler.getInstance())
                 .take(5)
                 .groupBy(ListChange::getFlag)
-                .flatMap(grp -> grp.count().map(ct -> new FlagAndCount(grp.getKey(),ct)))
+                .flatMapSingle(grp -> grp.count().map(ct -> new FlagAndCount(grp.getKey(),ct)))
                 .subscribe(l -> {
                     if (l.flag.equals(Flag.ADDED)) { assertTrue(l.count == 3); }
                     if (l.flag.equals(Flag.REMOVED)) { assertTrue(l.count == 2); }
@@ -171,8 +173,8 @@ public final class JavaFxObservableTest {
 
         class FlagAndCount {
             final Flag flag;
-            final int count;
-            FlagAndCount(Flag flag, int count) {
+            final long count;
+            FlagAndCount(Flag flag, long count) {
                 this.flag = flag;
                 this.count = count;
             }
@@ -182,7 +184,7 @@ public final class JavaFxObservableTest {
                 .observeOn(JavaFxScheduler.getInstance())
                 .take(3)
                 .groupBy(ListChange::getFlag)
-                .flatMap(grp -> grp.count().map(ct -> new FlagAndCount(grp.getKey(),ct)))
+                .flatMapSingle(grp -> grp.count().map(ct -> new FlagAndCount(grp.getKey(),ct)))
                 .subscribe(l -> {
                     if (l.flag.equals(Flag.ADDED)) { assertTrue(l.count == 2); }
                     if (l.flag.equals(Flag.REMOVED)) { assertTrue(l.count == 1); }
@@ -217,8 +219,8 @@ public final class JavaFxObservableTest {
 
         class FlagAndCount {
             final Flag flag;
-            final int count;
-            FlagAndCount(Flag flag, int count) {
+            final long count;
+            FlagAndCount(Flag flag, long count) {
                 this.flag = flag;
                 this.count = count;
             }
@@ -228,7 +230,7 @@ public final class JavaFxObservableTest {
                 .observeOn(JavaFxScheduler.getInstance())
                 .take(5)
                 .groupBy(ListChange::getFlag)
-                .flatMap(grp -> grp.count().map(ct -> new FlagAndCount(grp.getKey(),ct)))
+                .flatMapSingle(grp -> grp.count().map(ct -> new FlagAndCount(grp.getKey(),ct)))
                 .subscribe(l -> {
                     if (l.flag.equals(Flag.ADDED)) { assertTrue(l.count == 3); }
                     if (l.flag.equals(Flag.REMOVED)) { assertTrue(l.count == 2); }
@@ -275,7 +277,7 @@ public final class JavaFxObservableTest {
         Person person3 = new Person("Sally Reyes", 32);
 
         ObservableList<Person> sourceList = FXCollections.observableArrayList(user -> new javafx.beans.Observable[]{user.age} );
-        Observable<Person> emissions = JavaFxObservable.fromObservableListUpdates(sourceList);
+        Observable<Person> emissions = JavaFxObservable.updatesOf(sourceList);
 
         CountDownLatch gate = new CountDownLatch(1);
 
@@ -283,6 +285,7 @@ public final class JavaFxObservableTest {
                 .observeOn(JavaFxScheduler.getInstance())
                 .take(2)
                 .count()
+                .toObservable()
                 .subscribe(ct -> assertTrue(ct == 2),Throwable::printStackTrace,gate::countDown);
 
         Platform.runLater(() -> {
@@ -313,9 +316,9 @@ public final class JavaFxObservableTest {
             PublishSubject<String> source2 = PublishSubject.create();
             PublishSubject<String> source3 = PublishSubject.create();
 
-            Subscription sub1 = compositeObservable.add(source1);
-            Subscription sub2 = compositeObservable.add(source2);
-            Subscription sub3 = compositeObservable.add(source3);
+            Disposable sub1 = compositeObservable.add(source1);
+            Disposable sub2 = compositeObservable.add(source2);
+            Disposable sub3 = compositeObservable.add(source3);
 
             compositeObservable.toObservable().subscribe(emissions::add);
 
@@ -331,7 +334,7 @@ public final class JavaFxObservableTest {
             source1.onNext("Delta");
             assertTrue(emissions.get(3).equals("Delta"));
 
-            sub2.unsubscribe();
+            sub2.dispose();
 
             source2.onNext("Epsilon");
             assertTrue(emissions.size() == 4);
