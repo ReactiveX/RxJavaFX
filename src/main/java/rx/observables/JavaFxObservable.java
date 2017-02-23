@@ -121,7 +121,7 @@ public enum JavaFxObservable {
     }
 
     /**
-     * Emits a JavaFX Observable
+     * Emits a JavaFX Observable every time it is invalidated.
      * @param fxObservable
      * @return
      */

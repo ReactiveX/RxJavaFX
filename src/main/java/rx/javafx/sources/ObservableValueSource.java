@@ -49,19 +49,11 @@ public class ObservableValueSource {
         });
     }
 
-    public static <T> Observable<ObservableValue<T>> fromInvalidations(final ObservableValue<T> fxObservable) {
+    public static Observable<javafx.beans.Observable> fromInvalidations(javafx.beans.Observable fxObservable) {
         return Observable.create(subscriber -> {
-            final InvalidationListener listener = s -> subscriber.onNext(fxObservable);
+            final InvalidationListener listener = subscriber::onNext;
             fxObservable.addListener(listener);
             subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> fxObservable.removeListener(listener)));
-        });
-    }
-
-    public static <T> Observable<Property<T>> fromInvalidations(final Property<T> fxProperty) {
-        return Observable.create(subscriber -> {
-            final InvalidationListener listener = s -> subscriber.onNext(fxProperty);
-            fxProperty.addListener(listener);
-            subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> fxProperty.removeListener(listener)));
         });
     }
 }
