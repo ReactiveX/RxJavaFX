@@ -145,6 +145,37 @@ public final class JavaFxSchedulerTest {
 		TestAction.verifyOrder(a, b, a1n, async, a2n, a1n1, a1n2, a2n1, a2n2);
 	}
 
+    @Test
+    public void bombardScheduler() {
+        Scheduler.Worker w = JavaFxScheduler.platform().createWorker();
+
+        CountDownLatch cdl = new CountDownLatch(2);
+        int[] counter = { 0, 0 };
+
+        new Thread(() -> {
+            for (int i = 0; i < 1_000_000; i++) {
+                w.schedule(() -> counter[0]++);
+            }
+            w.schedule(cdl::countDown);
+        }).start();
+
+        for (int i = 0; i < 1_000_000; i++) {
+            w.schedule(() -> counter[1]++);
+        }
+        w.schedule(cdl::countDown);
+
+        try {
+            cdl.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        assertEquals(1_000_000, counter[0]);
+        assertEquals(1_000_000, counter[1]);
+
+        w.unsubscribe();
+    }
+
 	static class TestAction implements Action0 {
 		private final Runnable userRunnable;
 		private final Runnable start;
