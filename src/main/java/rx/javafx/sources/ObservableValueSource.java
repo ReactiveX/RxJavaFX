@@ -15,10 +15,11 @@
  */
 package rx.javafx.sources;
 
+import javafx.beans.InvalidationListener;
+import javafx.beans.property.Property;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import rx.Observable;
-import rx.Subscriber;
 import rx.subscriptions.JavaFxSubscriptions;
 
 public class ObservableValueSource {
@@ -48,4 +49,11 @@ public class ObservableValueSource {
         });
     }
 
+    public static Observable<javafx.beans.Observable> fromInvalidations(javafx.beans.Observable fxObservable) {
+        return Observable.create(subscriber -> {
+            final InvalidationListener listener = subscriber::onNext;
+            fxObservable.addListener(listener);
+            subscriber.add(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> fxObservable.removeListener(listener)));
+        });
+    }
 }

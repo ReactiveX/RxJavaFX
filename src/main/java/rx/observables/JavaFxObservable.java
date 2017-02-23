@@ -121,6 +121,15 @@ public enum JavaFxObservable {
     }
 
     /**
+     * Emits a JavaFX Observable every time it is invalidated.
+     * @param fxObservable
+     * @return
+     */
+    public static Observable<javafx.beans.Observable> invalidationsOf(final javafx.beans.Observable fxObservable) {
+        return ObservableValueSource.fromInvalidations(fxObservable);
+    }
+
+    /**
      * Creates an observable corresponding to javafx Scene events.
      *
      * @param scene      The target of the UI events.
