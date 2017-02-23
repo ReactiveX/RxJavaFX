@@ -24,18 +24,18 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.InOrder;
-import rx.Scheduler.Worker;
+import rx.Scheduler;
 import rx.functions.Action0;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 /**
@@ -69,7 +69,7 @@ public final class JavaFxSchedulerTest {
     @Test
     public void testPeriodicScheduling() throws Exception {
         final JavaFxScheduler scheduler = new JavaFxScheduler();
-        final Worker inner = scheduler.createWorker();
+        final Scheduler.Worker inner = scheduler.createWorker();
 
         final CountDownLatch latch = new CountDownLatch(4);
 
@@ -94,50 +94,93 @@ public final class JavaFxSchedulerTest {
         verify(innerAction, times(4)).call();
     }
 
-    @Test
-    public void testNestedActions() throws Exception {
-        final JavaFxScheduler scheduler = new JavaFxScheduler();
-        final Worker inner = scheduler.createWorker();
+	@Test
+	public void testNestedActions() throws Exception {
+		final JavaFxScheduler scheduler = new JavaFxScheduler();
+		final Scheduler.Worker inner = scheduler.createWorker();
 
-        final Action0 firstStepStart = mock(Action0.class);
-        final Action0 firstStepEnd = mock(Action0.class);
+		final CountDownLatch startAsync = new CountDownLatch(1);
+		final CountDownLatch asyncStarted = new CountDownLatch(1);
+		final AtomicBoolean directInvocation = new AtomicBoolean(false);
 
-        final Action0 secondStepStart = mock(Action0.class);
-        final Action0 secondStepEnd = mock(Action0.class);
+		TestAction a1n1 = TestAction.of("A1N1", () -> assertTrue(directInvocation.get()));
+		TestAction a1n2 = TestAction.of("A1N2", () -> assertTrue(directInvocation.get()));
+		TestAction a1n = TestAction.of("A1N", () -> {
+			assertTrue(directInvocation.get());
+			inner.schedule(a1n1);
+			inner.schedule(a1n2);
+		});
+		TestAction a2n1 = TestAction.of("A2N1", () -> assertTrue(directInvocation.get()));
+		TestAction a2n2 = TestAction.of("A2N2", () -> assertTrue(directInvocation.get()));
+		TestAction a2n = TestAction.of("A2N", () -> {
+			assertTrue(directInvocation.get());
+			inner.schedule(a2n1);
+			inner.schedule(a2n2);
+		});
+		TestAction a = TestAction.of("A", () -> {
+			directInvocation.set(true);
+			Platform.runLater(() -> directInvocation.set(false));
 
-        final Action0 thirdStepStart = mock(Action0.class);
-        final Action0 thirdStepEnd = mock(Action0.class);
+			inner.schedule(a1n);
+			startAsync.countDown();
+			try {
+				asyncStarted.await(1, TimeUnit.SECONDS);
+			} catch (Exception e) {
+				fail();
+			}
+			inner.schedule(a2n);
+		});
+		TestAction b = TestAction.of("B", () -> {});
+		TestAction async = TestAction.of("ASYNC", () -> {});
 
-        final Action0 firstAction = () -> {
-            assertTrue(Platform.isFxApplicationThread());
-            firstStepStart.call();
-            firstStepEnd.call();
-        };
-        final Action0 secondAction = () -> {
-            assertTrue(Platform.isFxApplicationThread());
-            secondStepStart.call();
-            inner.schedule(firstAction);
-            secondStepEnd.call();
-        };
-        final Action0 thirdAction = () -> {
-            assertTrue(Platform.isFxApplicationThread());
-            thirdStepStart.call();
-            inner.schedule(secondAction);
-            thirdStepEnd.call();
-        };
+		inner.schedule(a);
+		inner.schedule(b);
 
-        InOrder inOrder = inOrder(firstStepStart, firstStepEnd, secondStepStart, secondStepEnd, thirdStepStart, thirdStepEnd);
+		startAsync.await();
+		inner.schedule(async);
+		asyncStarted.countDown();
 
-        inner.schedule(thirdAction);
-        waitForEmptyEventQueue();
+		waitForEmptyEventQueue();
 
-        inOrder.verify(thirdStepStart, times(1)).call();
-        inOrder.verify(thirdStepEnd, times(1)).call();
-        inOrder.verify(secondStepStart, times(1)).call();
-        inOrder.verify(secondStepEnd, times(1)).call();
-        inOrder.verify(firstStepStart, times(1)).call();
-        inOrder.verify(firstStepEnd, times(1)).call();
-    }
+		TestAction.verifyOrder(a, b, a1n, async, a2n, a1n1, a1n2, a2n1, a2n2);
+	}
+
+	static class TestAction implements Action0 {
+		private final Runnable userRunnable;
+		private final Runnable start;
+		private final Runnable end;
+
+		public static TestAction of(String name, Runnable runnable) {
+			return new TestAction(name, runnable);
+		}
+
+		private TestAction(String name, Runnable userRunnable) {
+			this.userRunnable = userRunnable;
+			this.start = mock(Runnable.class, name + "-Start");
+			this.end = mock(Runnable.class, name + "-End");
+		}
+
+		@Override
+		public void call() {
+			assertTrue(Platform.isFxApplicationThread());
+			start.run();
+			userRunnable.run();
+			end.run();
+		}
+
+		public static void verifyOrder(TestAction... actions) {
+			Runnable[] runnables = new Runnable[actions.length * 2];
+			for (int i = 0; i < actions.length; i++) {
+				TestAction action = actions[i];
+				runnables[2 * i] = action.start;
+				runnables[2 * i + 1] = action.end;
+			}
+			InOrder inOrder = inOrder((Object[]) runnables);
+			for (Runnable runnable : runnables) {
+				inOrder.verify(runnable).run();
+			}
+		}
+	}
 
     /*
      * based on http://www.guigarage.com/2013/01/invokeandwait-for-javafx/
