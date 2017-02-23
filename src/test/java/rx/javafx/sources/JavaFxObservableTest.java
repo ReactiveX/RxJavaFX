@@ -36,7 +36,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 public final class JavaFxObservableTest {
 
@@ -82,7 +82,7 @@ public final class JavaFxObservableTest {
         try {
             gate.await();
         } catch (InterruptedException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
     }
