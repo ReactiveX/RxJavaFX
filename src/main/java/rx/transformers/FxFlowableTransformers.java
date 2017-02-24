@@ -1,18 +1,19 @@
 package rx.transformers;
 
-import io.reactivex.ObservableOperator;
-import io.reactivex.ObservableTransformer;
-import io.reactivex.Observer;
-import io.reactivex.disposables.Disposable;
+import io.reactivex.FlowableOperator;
+import io.reactivex.FlowableTransformer;
 import io.reactivex.exceptions.Exceptions;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
-import io.reactivex.observers.ResourceObserver;
+import io.reactivex.subscribers.ResourceSubscriber;
 import javafx.application.Platform;
+import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 
 
-public final class JavaFxTransformers {
-    private JavaFxTransformers() {}
+public class FxFlowableTransformers {
+
+    private FxFlowableTransformers() {}
 
     private static <T> void runOnFx(T t, Consumer<T> consumer)  {
         Platform.runLater(() -> {
@@ -24,6 +25,7 @@ public final class JavaFxTransformers {
                 }
         );
     }
+
     private static <T> void runOnFx(Action action)  {
         Platform.runLater(() -> {
                     try {
@@ -40,7 +42,7 @@ public final class JavaFxTransformers {
      * @param onNext
      * @param <T>
      */
-    public static <T> ObservableTransformer<T,T> doOnNextFx(Consumer<T> onNext) {
+    public static <T> FlowableTransformer<T,T> doOnNextFx(Consumer<T> onNext) {
         return obs -> obs.doOnNext(t -> runOnFx(t, onNext));
     }
 
@@ -49,7 +51,7 @@ public final class JavaFxTransformers {
      * @param onError
      * @param <T>
      */
-    public static <T> ObservableTransformer<T,T> doOnErrorFx(Consumer<Throwable> onError) {
+    public static <T> FlowableTransformer<T,T> doOnErrorFx(Consumer<Throwable> onError) {
         return obs -> obs.doOnError(e -> runOnFx(e,onError));
     }
 
@@ -58,7 +60,7 @@ public final class JavaFxTransformers {
      * @param onCompleted
      * @param <T>
      */
-    public static <T> ObservableTransformer<T,T> doOnCompleteFx(Action onCompleted) {
+    public static <T> FlowableTransformer<T,T> doOnCompleteFx(Action onCompleted) {
         return obs -> obs.doOnComplete(() -> runOnFx(onCompleted));
     }
 
@@ -67,7 +69,7 @@ public final class JavaFxTransformers {
      * @param subscribe
      * @param <T>
      */
-    public static <T> ObservableTransformer<T,T> doOnSubscribeFx(Consumer<Disposable> subscribe) {
+    public static <T> FlowableTransformer<T,T> doOnSubscribeFx(Consumer<Subscription> subscribe) {
         return obs -> obs.doOnSubscribe((d -> runOnFx(d,subscribe)));
     }
 
@@ -76,7 +78,7 @@ public final class JavaFxTransformers {
      * @param onTerminate
      * @param <T>
      */
-    public static <T> ObservableTransformer<T,T> doOnTerminateFx(Action onTerminate) {
+    public static <T> FlowableTransformer<T,T> doOnTerminateFx(Action onTerminate) {
         return obs -> obs.doOnTerminate(() -> runOnFx(onTerminate));
     }
 
@@ -85,8 +87,8 @@ public final class JavaFxTransformers {
      * @param onDipsose
      * @param <T>
      */
-    public static <T> ObservableTransformer<T,T> doOnDisposeFx(Action onDipsose) {
-        return obs -> obs.doOnDispose(() -> runOnFx(onDipsose));
+    public static <T> FlowableTransformer<T,T> doOnCancelFx(Action onDipsose) {
+        return obs -> obs.doOnCancel(() -> runOnFx(onDipsose));
     }
 
     /**
@@ -94,8 +96,8 @@ public final class JavaFxTransformers {
      * @param onNext
      * @param <T>
      */
-    public static <T> ObservableTransformer<T,T> doOnNextCount(Consumer<Integer> onNext) {
-        return obs -> obs.lift(new OperatorEmissionCounter<>(new CountObserver(onNext,null,null)));
+    public static <T> FlowableTransformer<T,T> doOnNextCount(Consumer<Integer> onNext) {
+        return obs -> obs.lift(new FlowableEmissionCounter<>(new CountObserver(onNext,null,null)));
     }
 
     /**
@@ -103,8 +105,8 @@ public final class JavaFxTransformers {
      * @param onComplete
      * @param <T>
      */
-    public static <T> ObservableTransformer<T,T> doOnCompleteCount(Consumer<Integer> onComplete) {
-        return obs -> obs.lift(new OperatorEmissionCounter<>(new CountObserver(null,onComplete,null)));
+    public static <T> FlowableTransformer<T,T> doOnCompleteCount(Consumer<Integer> onComplete) {
+        return obs -> obs.lift(new FlowableEmissionCounter<>(new CountObserver(null,onComplete,null)));
     }
 
     /**
@@ -112,8 +114,8 @@ public final class JavaFxTransformers {
      * @param onError
      * @param <T>
      */
-    public static <T> ObservableTransformer<T,T> doOnErrorCount(Consumer<Integer> onError) {
-        return obs -> obs.lift(new OperatorEmissionCounter<>(new CountObserver(null,null,onError)));
+    public static <T> FlowableTransformer<T,T> doOnErrorCount(Consumer<Integer> onError) {
+        return obs -> obs.lift(new FlowableEmissionCounter<>(new CountObserver(null,null,onError)));
     }
 
     /**
@@ -121,7 +123,7 @@ public final class JavaFxTransformers {
      * @param onNext
      * @param <T>
      */
-    public static <T> ObservableTransformer<T,T> doOnNextCountFx(Consumer<Integer> onNext) {
+    public static <T> FlowableTransformer<T,T> doOnNextCountFx(Consumer<Integer> onNext) {
         return obs -> obs.compose(doOnNextCount(i -> runOnFx(i,onNext)));
     }
 
@@ -130,7 +132,7 @@ public final class JavaFxTransformers {
      * @param onComplete
      * @param <T>
      */
-    public static <T> ObservableTransformer<T,T> doOnCompleteCountFx(Consumer<Integer> onComplete) {
+    public static <T> FlowableTransformer<T,T> doOnCompleteCountFx(Consumer<Integer> onComplete) {
         return obs -> obs.compose(doOnCompleteCount(i -> runOnFx(i,onComplete)));
     }
 
@@ -139,25 +141,31 @@ public final class JavaFxTransformers {
      * @param onError
      * @param <T>
      */
-    public static <T> ObservableTransformer<T,T> doOnErrorCountFx(Consumer<Integer> onError) {
+    public static <T> FlowableTransformer<T,T> doOnErrorCountFx(Consumer<Integer> onError) {
         return obs -> obs.compose(doOnErrorCount(i -> runOnFx(i,onError)));
     }
 
 
-    private static class OperatorEmissionCounter<T> implements ObservableOperator<T,T> {
+    private static class FlowableEmissionCounter<T> implements FlowableOperator<T,T> {
 
         private final CountObserver ctObserver;
 
-        OperatorEmissionCounter(CountObserver ctObserver) {
+        FlowableEmissionCounter(CountObserver ctObserver) {
             this.ctObserver = ctObserver;
         }
 
         @Override
-        public Observer<? super T> apply(Observer<? super T> child) {
+        public Subscriber<? super T> apply(Subscriber<? super T> child) {
 
-            return new ResourceObserver<T>() {
+            return new ResourceSubscriber<T>() {
                 private int count = 0;
                 private boolean done = false;
+
+                @Override
+                protected void onStart() {
+                    super.onStart();
+                    request(Long.MAX_VALUE);
+                }
 
                 @Override
                 public void onComplete() {
@@ -202,10 +210,12 @@ public final class JavaFxTransformers {
                         return;
                     }
                     child.onNext(t);
+                    request(Long.MAX_VALUE);
                 }
             };
         }
     }
+
     private static final class CountObserver {
         private final Consumer<Integer> doOnNextCountAction;
         private final Consumer<Integer> doOnCompletedCountAction;
@@ -217,4 +227,5 @@ public final class JavaFxTransformers {
             this.doOnErrorCountAction = doOnErrorCountAction;
         }
     }
+
 }
