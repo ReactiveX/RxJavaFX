@@ -66,7 +66,7 @@ public final class JavaFxObservableTest {
         CountDownLatch gate = new CountDownLatch(1);
 
         emissions.observeOn(Schedulers.io())
-                .observeOn(JavaFxScheduler.getInstance())
+                .observeOn(JavaFxScheduler.platform())
                 .take(3)
                 .toList()
                 .toObservable()
@@ -97,7 +97,7 @@ public final class JavaFxObservableTest {
         CountDownLatch gate = new CountDownLatch(1);
 
         emissions.observeOn(Schedulers.io())
-                .observeOn(JavaFxScheduler.getInstance())
+                .observeOn(JavaFxScheduler.platform())
                 .take(2)
                 .toSortedList()
                 .toObservable()
@@ -137,7 +137,7 @@ public final class JavaFxObservableTest {
 
         }
         emissions.observeOn(Schedulers.io())
-                .observeOn(JavaFxScheduler.getInstance())
+                .observeOn(JavaFxScheduler.platform())
                 .take(5)
                 .groupBy(ListChange::getFlag)
                 .flatMapSingle(grp -> grp.count().map(ct -> new FlagAndCount(grp.getKey(),ct)))
@@ -181,7 +181,7 @@ public final class JavaFxObservableTest {
 
         }
         emissions.observeOn(Schedulers.io())
-                .observeOn(JavaFxScheduler.getInstance())
+                .observeOn(JavaFxScheduler.platform())
                 .take(3)
                 .groupBy(ListChange::getFlag)
                 .flatMapSingle(grp -> grp.count().map(ct -> new FlagAndCount(grp.getKey(),ct)))
@@ -227,7 +227,7 @@ public final class JavaFxObservableTest {
 
         }
         emissions.observeOn(Schedulers.io())
-                .observeOn(JavaFxScheduler.getInstance())
+                .observeOn(JavaFxScheduler.platform())
                 .take(5)
                 .groupBy(ListChange::getFlag)
                 .flatMapSingle(grp -> grp.count().map(ct -> new FlagAndCount(grp.getKey(),ct)))
@@ -282,7 +282,7 @@ public final class JavaFxObservableTest {
         CountDownLatch gate = new CountDownLatch(1);
 
         emissions.observeOn(Schedulers.io())
-                .observeOn(JavaFxScheduler.getInstance())
+                .observeOn(JavaFxScheduler.platform())
                 .take(2)
                 .count()
                 .toObservable()

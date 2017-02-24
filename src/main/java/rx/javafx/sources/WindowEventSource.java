@@ -37,6 +37,6 @@ public final class WindowEventSource {
 
             subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeEventHandler(eventType, handler)));
 
-        }).subscribeOn(JavaFxScheduler.getInstance());
+        }).subscribeOn(JavaFxScheduler.platform());
     }
 }

@@ -39,7 +39,7 @@ public final class ActionEventSource {
             source.addEventHandler(ActionEvent.ANY, handler);
 
             subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeEventHandler(ActionEvent.ANY, handler)));
-        }).subscribeOn(JavaFxScheduler.getInstance());
+        }).subscribeOn(JavaFxScheduler.platform());
     }
     public static Observable<ActionEvent> fromActionEvents(final MenuItem source) {
         return Observable.create((ObservableEmitter<ActionEvent> subscriber) -> {
@@ -48,7 +48,7 @@ public final class ActionEventSource {
             source.addEventHandler(ActionEvent.ANY, handler);
 
             subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeEventHandler(ActionEvent.ANY, handler)));
-        }).subscribeOn(JavaFxScheduler.getInstance());
+        }).subscribeOn(JavaFxScheduler.platform());
     }
 
 }

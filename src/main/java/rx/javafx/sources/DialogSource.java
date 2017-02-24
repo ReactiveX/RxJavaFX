@@ -10,7 +10,7 @@ public final class DialogSource {
 
     public static <T> Observable<T> fromDialogSource(final Dialog<T> dialog) {
         return Observable.fromCallable(dialog::showAndWait)
-                .subscribeOn(JavaFxScheduler.getInstance())
+                .subscribeOn(JavaFxScheduler.platform())
                 .filter(Optional::isPresent)
                 .map(Optional::get);
     }

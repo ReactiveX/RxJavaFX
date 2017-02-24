@@ -40,7 +40,7 @@ public final class JavaFxSubscriptions {
             if (Platform.isFxApplicationThread()) {
                 unsubscribe.run();
             } else {
-                final Scheduler.Worker inner = JavaFxScheduler.getInstance().createWorker();
+                final Scheduler.Worker inner = JavaFxScheduler.platform().createWorker();
                 inner.schedule(() -> {
                     unsubscribe.run();
                     inner.dispose();

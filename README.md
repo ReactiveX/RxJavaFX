@@ -323,7 +323,7 @@ CompositeObservable<String> valueChanges = CompositeObservable<>(obs -> obs.repl
 
 ### JavaFX Scheduler
 
-When you update any JavaFX control, it must be done on the JavaFX Event Dispatch Thread. Fortunately, the `JavaFxScheduler` makes it trivial to take work off the JavaFX thread and put it back when the results are ready.  Below we can use the `observeOn()` to pass text value emissions to a computation thread where the text will be flipped. Then we can pass `JavaFxScheduler.getInstance()` to another `observeOn()` afterwards to put it back on the JavaFX thread. From there it will update the `flippedTextLabel`.
+When you update any JavaFX control, it must be done on the JavaFX Event Dispatch Thread. Fortunately, the `JavaFxScheduler` makes it trivial to take work off the JavaFX thread and put it back when the results are ready.  Below we can use the `observeOn()` to pass text value emissions to a computation thread where the text will be flipped. Then we can pass `JavaFxScheduler.platform()` to another `observeOn()` afterwards to put it back on the JavaFX thread. From there it will update the `flippedTextLabel`.
 
 ```java
 TextField textInput = new TextField();
@@ -334,7 +334,7 @@ Observable<String> textInputs =
 
 sub2 = textInputs.observeOn(Schedulers.computation())
         .map(s -> new StringBuilder(s).reverse().toString())
-        .observeOn(JavaFxScheduler.getInstance())
+        .observeOn(JavaFxScheduler.platform())
         .subscribe(fippedTextLabel::setText);
 ```
 
@@ -411,7 +411,7 @@ public class RxJavaFXTest extends Application {
 
         binding2 = JavaFxSubscriber.toBinding(textInputs.observeOn(Schedulers.computation())
                 .map(s -> new StringBuilder(s).reverse().toString())
-                .observeOn(JavaFxScheduler.getInstance()));
+                .observeOn(JavaFxScheduler.platform()));
 
         flippedTextLabel.textProperty().bind(binding2);
 

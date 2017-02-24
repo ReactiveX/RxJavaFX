@@ -33,6 +33,6 @@ public class NodeEventSource {
             source.addEventHandler(eventType, handler);
 
             emitter.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeEventHandler(eventType, handler)));
-        }).subscribeOn(JavaFxScheduler.getInstance());
+        }).subscribeOn(JavaFxScheduler.platform());
     }
 }

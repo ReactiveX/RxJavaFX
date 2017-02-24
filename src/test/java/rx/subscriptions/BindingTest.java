@@ -24,10 +24,10 @@ public final class BindingTest {
         Observable<Long> source = Observable.interval(1,TimeUnit.SECONDS);
         CountDownLatch unsubscribeWait = new CountDownLatch(2);
 
-        Binding<Long> binding1 = JavaFxSubscriber.toBinding(source.doOnDispose(unsubscribeWait::countDown).observeOn(JavaFxScheduler.getInstance()));
+        Binding<Long> binding1 = JavaFxSubscriber.toBinding(source.doOnDispose(unsubscribeWait::countDown).observeOn(JavaFxScheduler.platform()));
         bindings.add(binding1);
 
-        Binding<Long> binding2 = JavaFxSubscriber.toBinding(source.doOnDispose(unsubscribeWait::countDown).reduce(0L,(x,y) -> x + y).observeOn(JavaFxScheduler.getInstance()).toObservable());
+        Binding<Long> binding2 = JavaFxSubscriber.toBinding(source.doOnDispose(unsubscribeWait::countDown).reduce(0L,(x,y) -> x + y).observeOn(JavaFxScheduler.platform()).toObservable());
         bindings.add(binding2);
 
         try {
