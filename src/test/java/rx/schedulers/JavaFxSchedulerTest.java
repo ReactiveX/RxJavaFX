@@ -181,6 +181,38 @@ public final class JavaFxSchedulerTest {
 		}
 	}
 
+
+    @Test
+    public void bombardScheduler() {
+        Scheduler.Worker w = JavaFxScheduler.platform().createWorker();
+
+        CountDownLatch cdl = new CountDownLatch(2);
+        int[] counter = { 0, 0 };
+
+        new Thread(() -> {
+            for (int i = 0; i < 1_000_000; i++) {
+                w.schedule(() -> counter[0]++);
+            }
+            w.schedule(cdl::countDown);
+        }).start();
+
+        for (int i = 0; i < 1_000_000; i++) {
+            w.schedule(() -> counter[1]++);
+        }
+        w.schedule(cdl::countDown);
+
+        try {
+            cdl.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        assertEquals(1_000_000, counter[0]);
+        assertEquals(1_000_000, counter[1]);
+
+        w.dispose();
+    }
+
     /*
      * based on http://www.guigarage.com/2013/01/invokeandwait-for-javafx/
      * by hendrikebbers
