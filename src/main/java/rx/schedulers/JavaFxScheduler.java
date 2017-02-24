@@ -36,10 +36,6 @@ public final class JavaFxScheduler extends Scheduler {
     /* package for unit test */JavaFxScheduler() {
     }
 
-    public static JavaFxScheduler getInstance() {
-        return INSTANCE;
-    }
-
     public static JavaFxScheduler platform() {
         return INSTANCE;
     }
