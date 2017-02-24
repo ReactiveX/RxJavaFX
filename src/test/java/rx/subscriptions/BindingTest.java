@@ -22,12 +22,12 @@ public final class BindingTest {
         CompositeBinding bindings = new CompositeBinding();
 
         Observable<Long> source = Observable.interval(1,TimeUnit.SECONDS);
-        CountDownLatch unsbuscribeWait = new CountDownLatch(2);
+        CountDownLatch unsubscribeWait = new CountDownLatch(2);
 
-        Binding<Long> binding1 = JavaFxSubscriber.toBinding(source.doOnDispose(unsbuscribeWait::countDown).observeOn(JavaFxScheduler.getInstance()));
+        Binding<Long> binding1 = JavaFxSubscriber.toBinding(source.doOnDispose(unsubscribeWait::countDown).observeOn(JavaFxScheduler.getInstance()));
         bindings.add(binding1);
 
-        Binding<Long> binding2 = JavaFxSubscriber.toBinding(source.doOnDispose(unsbuscribeWait::countDown).reduce(0L,(x,y) -> x + y).observeOn(JavaFxScheduler.getInstance()).toObservable());
+        Binding<Long> binding2 = JavaFxSubscriber.toBinding(source.doOnDispose(unsubscribeWait::countDown).reduce(0L,(x,y) -> x + y).observeOn(JavaFxScheduler.getInstance()).toObservable());
         bindings.add(binding2);
 
         try {
@@ -40,7 +40,7 @@ public final class BindingTest {
         bindings.dispose();
 
         try {
-            unsbuscribeWait.await(10,TimeUnit.SECONDS);
+            unsubscribeWait.await(10,TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

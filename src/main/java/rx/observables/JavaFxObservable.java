@@ -36,6 +36,7 @@ import rx.javafx.sources.*;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 
 
@@ -59,7 +60,7 @@ public enum JavaFxObservable {
      *
      * @param fxObservable the observed ObservableValue
      * @param <T>          the type of the observed value
-     * @return an Observable emitting values as the wrapped ObservableValue changes
+     * @return an Observable emitting non-null values as the wrapped ObservableValue changes
      */
     public static <T> Observable<T> valuesOf(final ObservableValue<T> fxObservable) {
         return ObservableValueSource.fromObservableValue(fxObservable);
@@ -70,10 +71,10 @@ public enum JavaFxObservable {
      *
      * @param fxObservable the observed ObservableValue
      * @param <T>          the type of the observed value
-     * @return an Observable emitting non-null values as the wrapped ObservableValue changes
+     * @return an Observable emitting nullable values as the wrapped ObservableValue changes
      */
-    public static <T> Observable<T> nonNullValuesOf(final ObservableValue<T> fxObservable) {
-        return valuesOf(fxObservable).filter(Objects::nonNull);
+    public static <T> Observable<Optional<T>> nullableValuesOf(final ObservableValue<T> fxObservable) {
+        return ObservableValueSource.fromNullableObservableValue(fxObservable);
     }
 
     /**
@@ -96,6 +97,16 @@ public enum JavaFxObservable {
     public static <T> Observable<Change<T>> nonNullChangesOf(final ObservableValue<T> fxObservable) {
         return changesOf(fxObservable).filter(t -> t.getOldVal() != null && t.getNewVal() != null);
     }
+
+    /**
+     * Emits a JavaFX Observable every time it is invalidated.
+     * @param fxObservable
+     * @return
+     */
+    public static Observable<javafx.beans.Observable> invalidationsOf(final javafx.beans.Observable fxObservable) {
+        return ObservableValueSource.fromInvalidations(fxObservable);
+    }
+
 
     /**
      * Creates an observable corresponding to javafx Scene events.

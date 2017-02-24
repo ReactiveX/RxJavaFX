@@ -1,12 +1,12 @@
 /**
  * Copyright 2016 Netflix, Inc.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -16,21 +16,15 @@
 package rx.schedulers;
 
 import io.reactivex.Scheduler;
-import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.disposables.Disposables;
-import io.reactivex.disposables.SerialDisposable;
-import io.reactivex.internal.subscriptions.BooleanSubscription;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.util.Duration;
 
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Executes work on the JavaFx UI thread.
@@ -45,6 +39,7 @@ public final class JavaFxScheduler extends Scheduler {
     public static JavaFxScheduler getInstance() {
         return INSTANCE;
     }
+
     public static JavaFxScheduler platform() {
         return INSTANCE;
     }
@@ -57,155 +52,115 @@ public final class JavaFxScheduler extends Scheduler {
 
     @Override
     public Worker createWorker() {
-        return new InnerJavaFxScheduler();
+        return new JavaFxWorker();
     }
 
-    private static class InnerJavaFxScheduler extends Worker implements Runnable {
+    /**
+     * A Worker implementation which manages a queue of QueuedRunnable for execution on the Java FX Application thread
+     * For a simpler implementation the queue always contains at least one element.
+     * {@link #head} is the element, which is in execution or was last executed
+     * {@link #tail} is an atomic reference to the last element in the queue, or null when the worker was disposed
+     * Recursive actions are not preferred and inserted at the tail of the queue as any other action would be
+     * The Worker will only schedule a single job with {@link Platform#runLater(Runnable)} for when the queue was previously empty
+     */
+    private static class JavaFxWorker extends Worker implements Runnable {
+        private volatile QueuedRunnable                  head = new QueuedRunnable(null); /// only advanced in run(), initialised with a starter element
+        private final    AtomicReference<QueuedRunnable> tail = new AtomicReference<>(head); /// points to the last element, null when disposed
 
-        private final CompositeDisposable tracking = new CompositeDisposable();
+        private static class QueuedRunnable extends AtomicReference<QueuedRunnable> implements Disposable, Runnable {
+            private volatile Runnable action;
 
-        /** Allows cheaper trampolining than invokeLater(). Accessed from EDT only. */
-        private final Queue<Runnable> queue = new ConcurrentLinkedQueue<>();
-        /** Allows cheaper trampolining than invokeLater(). Accessed from EDT only. */
-        private int wip;
+            private QueuedRunnable(Runnable action) {
+                this.action = action;
+            }
+
+            @Override
+            public void dispose() {
+                action = null;
+            }
+
+            @Override
+            public boolean isDisposed() {
+                return action == null;
+            }
+
+            @Override
+            public void run() {
+                Runnable action = this.action;
+                if (action != null) {
+                    action.run();
+                }
+                this.action = null;
+            }
+        }
 
         @Override
         public void dispose() {
-            tracking.dispose();
+            tail.set(null);
+            QueuedRunnable qr = this.head;
+            while (qr != null) {
+                qr.dispose();
+                qr = qr.getAndSet(null);
+            }
         }
 
         @Override
         public boolean isDisposed() {
-            return tracking.isDisposed();
+            return tail.get() == null;
         }
 
         @Override
         public Disposable schedule(final Runnable action, long delayTime, TimeUnit unit) {
-            long delay = Math.max(0,unit.toMillis(delayTime));
+            long delay = Math.max(0, unit.toMillis(delayTime));
             assertThatTheDelayIsValidForTheJavaFxTimer(delay);
 
-            class DualAction implements EventHandler<ActionEvent>, Disposable, Runnable {
-                private Timeline timeline;
-                final SerialDisposable subs = new SerialDisposable();
-                boolean nonDelayed;
-
-                private void setTimer(Timeline timeline) {
-                    this.timeline = timeline;
-                }
-
-                @Override
-                public void handle(ActionEvent event) {
-                    run();
-                }
-
-                @Override
-                public void run() {
-                    if (nonDelayed) {
-                        try {
-                            if (tracking.isDisposed() || isDisposed()) {
-                                return;
-                            }
-                            action.run();
-                        } finally {
-                            subs.dispose();
-                        }
-                    } else {
-                        timeline.stop();
-                        timeline = null;
-                        nonDelayed = true;
-                        trampoline(this);
-                    }
-                }
-
-                @Override
-                public void dispose() {
-                    subs.dispose();
-                }
-
-                @Override
-                public boolean isDisposed() {
-                    return subs.isDisposed();
-                }
-
-                public void set(Disposable s) {
-                    subs.set(s);
-                }
+            final QueuedRunnable queuedRunnable = new QueuedRunnable(action);
+            if (delay == 0) { // delay is too small for the java fx timer, schedule it without delay
+                return schedule(queuedRunnable);
             }
 
-            final DualAction executeOnce = new DualAction();
-            tracking.add(executeOnce);
-
-            final Timeline timer = new Timeline(new KeyFrame(Duration.millis(delay), executeOnce));
-            executeOnce.setTimer(timer);
+            final Timeline timer = new Timeline(new KeyFrame(Duration.millis(delay), event -> schedule(queuedRunnable)));
             timer.play();
 
-            executeOnce.set(Disposables.fromAction(() -> {
+            return Disposables.fromRunnable(() -> {
+                queuedRunnable.dispose();
                 timer.stop();
-                tracking.remove(executeOnce);
-            }));
-
-            return executeOnce;
+            });
         }
 
         @Override
         public Disposable schedule(final Runnable action) {
-            final Disposable s = Disposables.fromSubscription(new BooleanSubscription());
+            if (isDisposed()) {
+                return Disposables.disposed();
+            }
 
-            Runnable runnable = () -> {
-                try {
-                    if (tracking.isDisposed()/* || s.isCancelled()*/) {
-                        return;
+            final QueuedRunnable queuedRunnable = action instanceof QueuedRunnable ? (QueuedRunnable) action : new QueuedRunnable(action);
+
+            QueuedRunnable tailPivot;
+            do {
+                tailPivot = tail.get();
+            } while (tailPivot != null && !tailPivot.compareAndSet(null, queuedRunnable));
+
+            if (tailPivot == null) {
+                queuedRunnable.dispose();
+            } else {
+                tail.compareAndSet(tailPivot, queuedRunnable); // can only fail with a concurrent dispose and we don't want to override the disposed value
+                if (tailPivot == head) {
+                    if (Platform.isFxApplicationThread()) {
+                        run();
+                    } else {
+                        Platform.runLater(this);
                     }
-                    action.run();
-                } finally {
-                    tracking.remove(s); //compile error
                 }
-            };
-            tracking.add(s); //compile error
-
-            if (Platform.isFxApplicationThread()) {
-                if (trampoline(runnable)) {
-                    return Disposables.disposed();
-                }
-            }else {
-                queue.offer(runnable);
-                Platform.runLater(this);
             }
+            return queuedRunnable;
+        }
 
-            // wrap for returning so it also removes it from the 'innerSubscription'
-            return Disposables.fromAction(() -> tracking.remove(s)); //compile error
-        }
-        /**
-         * Uses a fast-path/slow path trampolining and tries to run
-         * the given runnable directly.
-         * @param runnable
-         * @return true if the fast path was taken
-         */
-        boolean trampoline(Runnable runnable) {
-            // fast path: if wip increments from 0 to 1
-            if (wip == 0) {
-                wip = 1;
-                runnable.run();
-                // but a recursive schedule happened
-                if (--wip > 0) {
-                    do {
-                        Runnable r = queue.poll();
-                        r.run();
-                    } while (--wip > 0);
-                }
-                return true;
-            }
-            queue.offer(runnable);
-            run();
-            return false;
-        }
         @Override
         public void run() {
-            if (wip++ == 0) {
-                do {
-                    Runnable r = queue.poll();
-                    r.run();
-                } while (--wip > 0);
+            for (QueuedRunnable qr = head.get(); qr != null; qr = qr.get()) {
+                qr.run();
+                head = qr;
             }
         }
     }

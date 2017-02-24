@@ -17,17 +17,36 @@ package rx.javafx.sources;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableEmitter;
+import javafx.beans.InvalidationListener;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import rx.subscriptions.JavaFxSubscriptions;
+
+import java.util.Optional;
 
 public class ObservableValueSource {
 
     public static <T> Observable<T> fromObservableValue(final ObservableValue<T> fxObservable) {
         return Observable.create((ObservableEmitter<T> emitter) -> {
-            emitter.onNext(fxObservable.getValue());
+            if (fxObservable.getValue() != null)
+                emitter.onNext(fxObservable.getValue());
 
-            final ChangeListener<T> listener = (observableValue, prev, current) -> emitter.onNext(current);
+            final ChangeListener<T> listener = (observableValue, prev, current) -> {
+                if (current != null)
+                    emitter.onNext(current);
+            };
+
+            fxObservable.addListener(listener);
+
+            emitter.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> fxObservable.removeListener(listener)));
+        });
+    }
+
+    public static <T> Observable<Optional<T>> fromNullableObservableValue(final ObservableValue<T> fxObservable) {
+        return Observable.create((ObservableEmitter<Optional<T>> emitter) -> {
+            emitter.onNext(Optional.ofNullable(fxObservable.getValue()));
+
+            final ChangeListener<T> listener = (observableValue, prev, current) -> emitter.onNext(Optional.ofNullable(current));
 
             fxObservable.addListener(listener);
 
@@ -37,7 +56,10 @@ public class ObservableValueSource {
 
     public static <T> Observable<Change<T>> fromObservableValueChanges(final ObservableValue<T> fxObservable) {
         return Observable.create((ObservableEmitter<Change<T>> emitter) -> {
-            final ChangeListener<T> listener = (observableValue, prev, current) -> emitter.onNext(new Change<>(prev,current));
+            final ChangeListener<T> listener = (observableValue, prev, current) -> {
+                if (current != null)
+                    emitter.onNext(new Change<>(prev,current));
+            };
 
             fxObservable.addListener(listener);
 
@@ -45,4 +67,12 @@ public class ObservableValueSource {
         });
     }
 
+
+    public static Observable<javafx.beans.Observable> fromInvalidations(javafx.beans.Observable fxObservable) {
+        return Observable.create(emitter -> {
+            final InvalidationListener listener = emitter::onNext;
+            fxObservable.addListener(listener);
+            emitter.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> fxObservable.removeListener(listener)));
+        });
+    }
 }
