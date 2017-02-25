@@ -20,6 +20,7 @@ import com.sun.javafx.binding.ExpressionHelper;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
+import io.reactivex.observables.ConnectableObservable;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Binding;
 import javafx.beans.value.ChangeListener;
@@ -30,12 +31,19 @@ import javafx.collections.ObservableList;
 final class BindingObserver<T> implements Observer<T>, ObservableValue<T>, Binding<T> {
 
     private final Consumer<Throwable> onError;
+    private final ConnectableObservable<T> obs;
+    private boolean connected = false;
     private Disposable disposable;
     private ExpressionHelper<T> helper;
     private T value;
 
     BindingObserver(Consumer<Throwable> onError) {
         this.onError = onError;
+        this.obs = null;
+    }
+    BindingObserver(ConnectableObservable<T> obs, Consumer<Throwable> onError) {
+        this.onError = onError;
+        this.obs = obs;
     }
 
     @Override
@@ -64,6 +72,10 @@ final class BindingObserver<T> implements Observer<T>, ObservableValue<T>, Bindi
     }
     @Override
     public T getValue() {
+        if (!connected && obs != null) {
+            obs.connect();
+            connected = true;
+        }
         return value;
     }
     @Override

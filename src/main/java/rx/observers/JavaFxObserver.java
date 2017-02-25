@@ -18,6 +18,7 @@ package rx.observers;
 
 import io.reactivex.Observable;
 import io.reactivex.functions.Consumer;
+import io.reactivex.observables.ConnectableObservable;
 import javafx.beans.binding.Binding;
 
 public enum JavaFxObserver {
@@ -36,6 +37,24 @@ public enum JavaFxObserver {
     public static <T> Binding<T> toBinding(Observable<T> obs, Consumer<Throwable> onErrorAction ) {
         BindingObserver<T> bindingObserver = new BindingObserver<>(onErrorAction);
         obs.subscribe(bindingObserver);
+        return bindingObserver;
+    }
+    /**
+     * Turns an Observable into an lazy JavaFX Binding that subscribes to the Observable when its getValue() is called. Calling the Binding's dispose() method will handle the unsubscription.
+     */
+    public static <T> Binding<T> toLazyBinding(Observable<T> obs) {
+        ConnectableObservable<T> published = obs.publish();
+        BindingObserver<T> bindingObserver = new BindingObserver<>(published, e -> {});
+        published.subscribe(bindingObserver);
+        return bindingObserver;
+    }
+    /**
+     * Turns an Observable into an eager JavaFX Binding that subscribes to the Observable when its getValue() is called. Calling the Binding's dispose() method will handle the unsubscription.
+     */
+    public static <T> Binding<T> toLazyBinding(Observable<T> obs, Consumer<Throwable> onErrorAction ) {
+        ConnectableObservable<T> published = obs.publish();
+        BindingObserver<T> bindingObserver = new BindingObserver<>(published,onErrorAction);
+        published.subscribe(bindingObserver);
         return bindingObserver;
     }
 }

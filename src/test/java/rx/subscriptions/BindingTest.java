@@ -1,6 +1,7 @@
 package rx.subscriptions;
 
 import io.reactivex.Observable;
+import javafx.application.Platform;
 import javafx.beans.binding.Binding;
 import javafx.embed.swing.JFXPanel;
 import org.junit.Test;
@@ -11,6 +12,7 @@ import rx.observers.JavaFxSubscriber;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 
@@ -32,17 +34,80 @@ public final class BindingTest {
         Binding<Long> binding2 = JavaFxObserver.toBinding(source.doOnDispose(unsubscribeWait::countDown).reduce(0L,(x,y) -> x + y).observeOn(JavaFxScheduler.platform()).toObservable());
         bindings.add(binding2);
 
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+        sleep(3000);
         assertTrue(bindings.hasSubscriptions());
 
         bindings.dispose();
 
         try {
             unsubscribeWait.await(10,TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testObserverBinding() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        Platform.runLater(() -> {
+
+            final AtomicInteger emissionCount = new AtomicInteger(0);
+
+            Observable<String> items =
+                    Observable.just("Alpha", "Beta", "Gamma", "Delta")
+                            .doOnNext(s -> emissionCount.incrementAndGet());
+
+            Binding<String> binding = JavaFxObserver.toBinding(items);
+
+            assertTrue(emissionCount.get() == 4);
+            assertTrue(binding.getValue().equals("Delta"));
+            latch.countDown();
+        });
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testObserverLazyBinding() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        Platform.runLater(() -> {
+
+            final AtomicInteger emissionCount = new AtomicInteger(0);
+
+            Observable<String> items =
+                    Observable.just("Alpha", "Beta", "Gamma", "Delta")
+                        .doOnNext(s -> emissionCount.incrementAndGet());
+
+            Binding<String> binding = JavaFxObserver.toLazyBinding(items);
+
+            sleep(1000);
+
+            System.out.println(emissionCount.get());
+            assertTrue(emissionCount.get() == 0);
+
+            binding.getValue();
+
+            sleep(1000);
+
+            assertTrue(emissionCount.get() == 4);
+            assertTrue(binding.getValue().equals("Delta"));
+            latch.countDown();
+        });
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void sleep(int millis) {
+        try {
+            Thread.sleep(millis);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
