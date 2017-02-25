@@ -4,6 +4,8 @@ import io.reactivex.Observable;
 import javafx.beans.binding.Binding;
 import javafx.embed.swing.JFXPanel;
 import org.junit.Test;
+import rx.observables.JavaFxObservable;
+import rx.observers.JavaFxObserver;
 import rx.schedulers.JavaFxScheduler;
 import rx.observers.JavaFxSubscriber;
 
@@ -24,10 +26,10 @@ public final class BindingTest {
         Observable<Long> source = Observable.interval(1,TimeUnit.SECONDS);
         CountDownLatch unsubscribeWait = new CountDownLatch(2);
 
-        Binding<Long> binding1 = JavaFxSubscriber.toBinding(source.doOnDispose(unsubscribeWait::countDown).observeOn(JavaFxScheduler.platform()));
+        Binding<Long> binding1 = JavaFxObserver.toBinding(source.doOnDispose(unsubscribeWait::countDown).observeOn(JavaFxScheduler.platform()));
         bindings.add(binding1);
 
-        Binding<Long> binding2 = JavaFxSubscriber.toBinding(source.doOnDispose(unsubscribeWait::countDown).reduce(0L,(x,y) -> x + y).observeOn(JavaFxScheduler.platform()).toObservable());
+        Binding<Long> binding2 = JavaFxObserver.toBinding(source.doOnDispose(unsubscribeWait::countDown).reduce(0L,(x,y) -> x + y).observeOn(JavaFxScheduler.platform()).toObservable());
         bindings.add(binding2);
 
         try {

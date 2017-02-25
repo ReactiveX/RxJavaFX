@@ -16,26 +16,25 @@
 
 package rx.observers;
 
-import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.functions.Consumer;
 import javafx.beans.binding.Binding;
-public enum JavaFxSubscriber {
-    ;//no instances
 
+public enum JavaFxObserver {
+    ;//no instances
     /**
-     * Turns a Flowable into an eager JavaFX Binding that subscribes immediately to the Observable. Calling the Binding's dispose() method will handle the unsubscription.
+     * Turns an Observable into an eager JavaFX Binding that subscribes immediately to the Observable. Calling the Binding's dispose() method will handle the unsubscription.
      */
-    public static <T> Binding<T> toBinding(Flowable<T> obs) {
-        BindingSubscriber<T> bindingObserver = new BindingSubscriber<>(e -> {});
+    public static <T> Binding<T> toBinding(Observable<T> obs) {
+        BindingObserver<T> bindingObserver = new BindingObserver<>(e -> {});
         obs.subscribe(bindingObserver);
         return bindingObserver;
     }
     /**
-     * Turns a Flowable into an eager JavaFX Binding that subscribes immediately to the Observable. Calling the Binding's dispose() method will handle the unsubscription.
+     * Turns an Observable into an eager JavaFX Binding that subscribes immediately to the Observable. Calling the Binding's dispose() method will handle the unsubscription.
      */
-    public static <T> Binding<T> toBinding(Flowable<T> obs, Consumer<Throwable> onErrorAction ) {
-        BindingSubscriber<T> bindingObserver = new BindingSubscriber<>(onErrorAction);
+    public static <T> Binding<T> toBinding(Observable<T> obs, Consumer<Throwable> onErrorAction ) {
+        BindingObserver<T> bindingObserver = new BindingObserver<>(onErrorAction);
         obs.subscribe(bindingObserver);
         return bindingObserver;
     }
