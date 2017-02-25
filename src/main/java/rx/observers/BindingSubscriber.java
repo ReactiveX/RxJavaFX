@@ -17,6 +17,7 @@
 package rx.observers;
 
 import com.sun.javafx.binding.ExpressionHelper;
+import io.reactivex.flowables.ConnectableFlowable;
 import io.reactivex.functions.Consumer;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Binding;
@@ -30,11 +31,18 @@ import org.reactivestreams.Subscription;
 final class BindingSubscriber<T> implements Subscriber<T>, ObservableValue<T>, Binding<T> {
 
     private final Consumer<Throwable> onError;
+    private final ConnectableFlowable<T> flowable;
+    private boolean connected = false;
     private Subscription subscription;
     private ExpressionHelper<T> helper;
     private T value;
 
     BindingSubscriber(Consumer<Throwable> onError) {
+        this.flowable = null;
+        this.onError = onError;
+    }
+    BindingSubscriber(ConnectableFlowable<T> flowable, Consumer<Throwable> onError) {
+        this.flowable = flowable;
         this.onError = onError;
     }
 
@@ -65,6 +73,10 @@ final class BindingSubscriber<T> implements Subscriber<T>, ObservableValue<T>, B
     }
     @Override
     public T getValue() {
+        if (!connected && flowable != null) {
+            flowable.connect();
+            connected = true;
+        }
         return value;
     }
     @Override

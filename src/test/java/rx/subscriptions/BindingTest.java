@@ -1,5 +1,6 @@
 package rx.subscriptions;
 
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import javafx.application.Platform;
 import javafx.beans.binding.Binding;
@@ -86,7 +87,64 @@ public final class BindingTest {
 
             sleep(1000);
 
-            System.out.println(emissionCount.get());
+            assertTrue(emissionCount.get() == 0);
+
+            binding.getValue();
+
+            sleep(1000);
+
+            assertTrue(emissionCount.get() == 4);
+            assertTrue(binding.getValue().equals("Delta"));
+            latch.countDown();
+        });
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testSubscriberBinding() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        Platform.runLater(() -> {
+
+            final AtomicInteger emissionCount = new AtomicInteger(0);
+
+            Flowable<String> items =
+                    Flowable.just("Alpha", "Beta", "Gamma", "Delta")
+                            .doOnNext(s -> emissionCount.incrementAndGet());
+
+            Binding<String> binding = JavaFxSubscriber.toBinding(items);
+
+            assertTrue(emissionCount.get() == 4);
+            assertTrue(binding.getValue().equals("Delta"));
+            latch.countDown();
+        });
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testSubscriberLazyBinding() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        Platform.runLater(() -> {
+
+            final AtomicInteger emissionCount = new AtomicInteger(0);
+
+            Flowable<String> items =
+                    Flowable.just("Alpha", "Beta", "Gamma", "Delta")
+                            .doOnNext(s -> emissionCount.incrementAndGet());
+
+            Binding<String> binding = JavaFxSubscriber.toLazyBinding(items);
+
+            sleep(1000);
+
             assertTrue(emissionCount.get() == 0);
 
             binding.getValue();

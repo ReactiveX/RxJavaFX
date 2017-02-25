@@ -18,7 +18,9 @@ package rx.observers;
 
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
+import io.reactivex.flowables.ConnectableFlowable;
 import io.reactivex.functions.Consumer;
+import io.reactivex.observables.ConnectableObservable;
 import javafx.beans.binding.Binding;
 public enum JavaFxSubscriber {
     ;//no instances
@@ -27,16 +29,35 @@ public enum JavaFxSubscriber {
      * Turns a Flowable into an eager JavaFX Binding that subscribes immediately to the Observable. Calling the Binding's dispose() method will handle the unsubscription.
      */
     public static <T> Binding<T> toBinding(Flowable<T> obs) {
-        BindingSubscriber<T> bindingObserver = new BindingSubscriber<>(e -> {});
-        obs.subscribe(bindingObserver);
-        return bindingObserver;
+        BindingSubscriber<T> bindingSubscriber = new BindingSubscriber<>(e -> {});
+        obs.subscribe(bindingSubscriber);
+        return bindingSubscriber;
     }
     /**
      * Turns a Flowable into an eager JavaFX Binding that subscribes immediately to the Observable. Calling the Binding's dispose() method will handle the unsubscription.
      */
     public static <T> Binding<T> toBinding(Flowable<T> obs, Consumer<Throwable> onErrorAction ) {
-        BindingSubscriber<T> bindingObserver = new BindingSubscriber<>(onErrorAction);
-        obs.subscribe(bindingObserver);
-        return bindingObserver;
+        BindingSubscriber<T> bindingSubscriber = new BindingSubscriber<>(onErrorAction);
+        obs.subscribe(bindingSubscriber);
+        return bindingSubscriber;
+    }
+
+    /**
+     * Turns a Flowable into an lazy JavaFX Binding that subscribes to the Observable when its getValue() is called. Calling the Binding's dispose() method will handle the unsubscription.
+     */
+    public static <T> Binding<T> toLazyBinding(Flowable<T> flowable) {
+        ConnectableFlowable<T> published = flowable.publish();
+        BindingSubscriber<T> bindingSubscriber = new BindingSubscriber<>(published, e -> {});
+        published.subscribe(bindingSubscriber);
+        return bindingSubscriber;
+    }
+    /**
+     * Turns a Flowable into an eager JavaFX Binding that subscribes to the Observable when its getValue() is called. Calling the Binding's dispose() method will handle the unsubscription.
+     */
+    public static <T> Binding<T> toLazyBinding(Flowable<T> flowable, Consumer<Throwable> onErrorAction ) {
+        ConnectableFlowable<T> published = flowable.publish();
+        BindingSubscriber<T> bindingSubscriber = new BindingSubscriber<>(published,onErrorAction);
+        published.subscribe(bindingSubscriber);
+        return bindingSubscriber;
     }
 }
