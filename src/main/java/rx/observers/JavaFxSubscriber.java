@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package rx.subscribers;
+package rx.observers;
 
 import io.reactivex.Flowable;
 import io.reactivex.Observable;

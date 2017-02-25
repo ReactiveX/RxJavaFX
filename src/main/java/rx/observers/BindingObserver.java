@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package rx.subscribers;
+package rx.observers;
 
 import com.sun.javafx.binding.ExpressionHelper;
 import io.reactivex.Observer;

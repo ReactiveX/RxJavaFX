@@ -5,7 +5,7 @@ import javafx.beans.binding.Binding;
 import javafx.embed.swing.JFXPanel;
 import org.junit.Test;
 import rx.schedulers.JavaFxScheduler;
-import rx.subscribers.JavaFxSubscriber;
+import rx.observers.JavaFxSubscriber;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
