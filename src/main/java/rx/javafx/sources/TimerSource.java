@@ -13,7 +13,7 @@ public final class TimerSource {
     }
 
 
-    public static <T> Observable<Long> interval(final Duration duration) {
+    public static Observable<Long> interval(final Duration duration) {
         return Observable.create(sub -> {
             final AtomicLong value = new AtomicLong(0);
             Timeline timeline = new Timeline(new KeyFrame(duration, ae -> sub.onNext(value.getAndIncrement())));
