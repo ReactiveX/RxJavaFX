@@ -175,7 +175,7 @@ There are several factories to emit many useful `ObservableList`, `ObservableMap
 
 
 ###Binding
-You can convert an RxJava `Observable` into a JavaFX `Binding` by calling the `JavaFxSubscriber.toBinding()` factory. Calling the `dispose()` method on the `Binding` will handle the unsubscription from the `Observable`.  You can then take this `Binding` to bind other control properties to it. 
+You can convert an RxJava `Observable` into a JavaFX `Binding` by calling the `JavaFxObserver.toBinding()` factory. Calling the `dispose()` method on the `Binding` will handle the unsubscription from the `Observable`.  You can then take this `Binding` to bind other control properties to it. 
 
 ```java
 Button incrementBttn = new Button("Increment");
@@ -188,7 +188,7 @@ Observable<String> accumulations = bttnEvents.map(e -> 1)
         .scan(0,(x, y) -> x + y)
         .map(Object::toString);
         
-Binding<String> binding = JavaFxSubscriber.toBinding(accumulations);
+Binding<String> binding = JavaFxObserver.toBinding(accumulations);
 
 incrementLabel.textProperty().bind(binding);
 
@@ -197,7 +197,7 @@ binding.dispose();
 
 ```
 
-It is usually good practice to specify an `onError` to the `Binding`, just like a normal `Subscriber` so you can handle any errors that are communicated up the chain. 
+It is usually good practice to specify an `onError` to the `Binding`, just like a normal `Observer` so you can handle any errors that are communicated up the chain. 
 
 ```
 incrementLabel.textProperty().bind(binding, e -> e.printStackTrace());
@@ -209,7 +209,7 @@ incrementLabel.textProperty().bind(binding, e -> e.printStackTrace());
 The `toBinding()` factory above will eagerly subscribe the `Observable` to the `Binding` implementation. But if you want to delay the subscription to the `Observable` until the `Binding` is actually used (specifically when its `getValue()` is called), use `toLazyBinding()` instead. 
 
 ```java
-Binding<String> lazyBinding = JavaFxSubscriber.toLazyBinding(myObservable);
+Binding<String> lazyBinding = JavaFxObserver.toLazyBinding(myObservable);
 ```
 This can be handy for data controls like `TableView`, which will only request values for records that are visible. Using the `toLazyBinding()` to feed column values will cause subscriptions to only happen with visible records. 
 
@@ -230,7 +230,7 @@ bindings.dispose();
 
 ###CompositeObservable
 
-In UI development, it is not uncommon to have an event triggered in multiple places, or have inputs coming from multiple UI controls.b You may also want to leverage code separation patterns like MVC, and have the Observables completely separated from their Subscribers in modular fashion. Let's say you want to make a `refresh()` operation callable from a `Button`, a `MenuItem`, and a <kbd>CTRL</kbd> + <kbd>R</kbd> hotkey combination. 
+In UI development, it is not uncommon to have an event triggered in multiple places, or have inputs coming from multiple UI controls.b You may also want to leverage code separation patterns like MVC, and have the Observables completely separated from their Observers in modular fashion. Let's say you want to make a `refresh()` operation callable from a `Button`, a `MenuItem`, and a <kbd>CTRL</kbd> + <kbd>R</kbd> hotkey combination. 
 
 ```java
 //make refresh Button
@@ -259,7 +259,7 @@ Observable.merge(buttonClicks, menuItemClicks, hotKeyPresses)
 
 But this is preferable only if all the declarations are easily accessible. If they are in separate places throughout your UI code, this is problematic. Complex UI's are likely to be highly decoupled and have a model backing all the event flows. You cannot "add" and "remove" Observables in an `Observable.merge()` operation, and this can make designing the model rather frustrating. 
 
-At this point, you may be tempted to resort to a `Subject` to act as a sort of [event bus](https://github.com/google/guava/wiki/EventBusExplained) accepting inputs from any number of sources and outputs to any number of subscribers. Although this is a valid use case, Subjects are prone to abuse and can introduce many antipatterns. 
+At this point, you may be tempted to resort to a `Subject` to act as a sort of [event bus](https://github.com/google/guava/wiki/EventBusExplained) accepting inputs from any number of sources and outputs to any number of observers. Although this is a valid use case, Subjects are prone to abuse and can introduce many antipatterns. 
 
 Introducing the `CompositeObservable`. It is a tighter, safer alternative to a `Subject` or an event bus. You can `add()` and `remove()` Observables at any time from a `CompositeObservable`, and this is useful to put in an event model backing the application. 
 
@@ -303,7 +303,7 @@ myEventModel.getRefreshRequests().add(hotKeyPresses);
 myEventModel.getRefreshRequests().subscribe(ae -> refresh());
 ```
 
-The `add()` method on a `CompositeObservable` returns a subscription which you can `unsubscribe()`, and this will affect all existing downstream Subscribers. For UI development, this is good because there is no sensitivity to the order of adding Observables and subscribing. 
+The `add()` method on a `CompositeObservable` returns a subscription which you can `unsubscribe()`, and this will affect all existing downstream Observers. For UI development, this is good because there is no sensitivity to the order of adding Observables and subscribing. 
 
 Of course, you can pass around any type `T` in a `CompositeObservable<T>` and not just `ActionEvent`. It can be = helpful to pass around entire data structures, such as `CompositeObservable<Set<MyType>>`, to relay requests and inputs between controls.
 			
@@ -361,7 +361,7 @@ import javafx.stage.Stage;
 import rx.Observable;
 import rx.Subscription;
 import rx.observables.JavaFxObservable;
-import rx.subscribers.JavaFxSubscriber;
+import rx.subscribers.JavaFxObserver;
 
 public class RxJavaFXTest extends Application {
 
@@ -387,7 +387,7 @@ public class RxJavaFXTest extends Application {
         Observable<ActionEvent> bttnEvents =
                 JavaFxObservable.actionEventsOf(incrementBttn);
 
-        binding1 = JavaFxSubscriber.toBinding(bttnEvents.map(e -> 1).scan(0,(x, y) -> x + y)
+        binding1 = JavaFxObserver.toBinding(bttnEvents.map(e -> 1).scan(0,(x, y) -> x + y)
                 .map(Object::toString));
 
         incrementLabel.textProperty().bind(binding1);
@@ -401,7 +401,7 @@ public class RxJavaFXTest extends Application {
         Observable<String> textInputs =
                 JavaFxObservable.valuesOf(textInput.textProperty());
 
-        binding2 = JavaFxSubscriber.toBinding(textInputs.observeOn(Schedulers.computation())
+        binding2 = JavaFxObserver.toBinding(textInputs.observeOn(Schedulers.computation())
                 .map(s -> new StringBuilder(s).reverse().toString())
                 .observeOn(JavaFxScheduler.platform()));
 
