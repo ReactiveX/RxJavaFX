@@ -350,7 +350,14 @@ If you are building your JavaFX application with [Kotlin](https://kotlinlang.org
 
 ## Comprehensive Example
 ```java
+package io.reactivex.rxjavafx;
 
+import io.reactivex.Observable;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.rxjavafx.observables.JavaFxObservable;
+import io.reactivex.rxjavafx.observers.JavaFxObserver;
+import io.reactivex.rxjavafx.schedulers.JavaFxScheduler;
+import io.reactivex.schedulers.Schedulers;
 import javafx.application.Application;
 import javafx.beans.binding.Binding;
 import javafx.event.ActionEvent;
@@ -358,10 +365,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.stage.Stage;
-import rx.Observable;
-import rx.Subscription;
-import rx.observables.JavaFxObservable;
-import rx.subscribers.JavaFxObserver;
 
 public class RxJavaFXTest extends Application {
 
@@ -375,7 +378,7 @@ public class RxJavaFXTest extends Application {
 
     private final Spinner<Integer> spinner;
     private final Label spinnerChangesLabel;
-    private final Subscription subscription;
+    private final Disposable disposable;
 
     public RxJavaFXTest() {
 
@@ -416,7 +419,7 @@ public class RxJavaFXTest extends Application {
         spinner.setEditable(true);
 
         spinnerChangesLabel = new Label();
-        subscription = JavaFxObservable.changesOf(spinner.valueProperty())
+        disposable = JavaFxObservable.changesOf(spinner.valueProperty())
                 .map(change -> "OLD: " + change.getOldVal() + " NEW: " + change.getNewVal())
                 .subscribe(spinnerChangesLabel::setText);
 
@@ -453,7 +456,7 @@ public class RxJavaFXTest extends Application {
 
         binding1.dispose();
         binding2.dispose();
-        subscription.unsubscribe();
+        disposable.dispose();
     }
 }
 ```
