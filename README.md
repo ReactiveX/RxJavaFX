@@ -4,9 +4,7 @@
 
 Read the free eBook [_Learning RxJava with JavaFX_](https://www.gitbook.com/book/thomasnield/rxjavafx-guide/details) to get started!
 
-Learn more about RxJava on the <a href="https://github.com/ReactiveX/RxJava/wiki">Wiki Home</a> and the <a href="http://techblog.netflix.com/2013/02/rxjava-netflix-api.html">Netflix TechBlog post</a> where RxJava was introduced.
-
-RxJavaFX is a simple API to convert JavaFX events into RxJava Observables and vice versa. It also has a scheduler to safely move emissions to the JavaFX Event Dispatch Thread. 
+RxJavaFX is a lightweight library to convert JavaFX events into [RxJava](https://github.com/ReactiveX/RxJava) Observables/Flowables and vice versa. It also has a `Scheduler` to safely move emissions to the JavaFX Event Dispatch Thread. 
 
 **NOTE**: To use with [Kotlin](http://kotlinlang.org/), check out [RxKotlinFX](https://github.com/thomasnield/RxKotlinFX) to leverage this library with extension functions and additional operators. 
 
@@ -14,14 +12,8 @@ RxJavaFX is a simple API to convert JavaFX events into RxJava Observables and vi
 
 <a href='https://travis-ci.org/ReactiveX/RxJavaFX/builds'><img src='https://travis-ci.org/ReactiveX/RxJavaFX.svg?branch=0.x'></a>
 
-##Documentation
+## Documentation
 [Learning RxJava with JavaFX (EAP)](https://www.gitbook.com/book/thomasnield/rxjavafx-guide/details)
-
-## Communication
-
-- Google Group: [RxJava](http://groups.google.com/d/forum/rxjava)
-- Twitter: [@RxJava](http://twitter.com/RxJava)
-- [GitHub Issues](https://github.com/ReactiveX/RxJava/issues)
 
 
 ## Binaries
@@ -65,10 +57,10 @@ $ ./gradlew build
 
 RxJavaFX has a comprehensive set of features to interop RxJava with JavaFX:
 - Factories to turn `Node`, `ObservableValue`, `ObservableList`, and other component events into an RxJava `Observable`
-- Factories to turn an RxJava `Observable` into a JavaFX `Binding`. 
+- Factories to turn an RxJava `Observable` or `Flowable` into a JavaFX `Binding`. 
 - A scheduler for the JavaFX dispatch thread
 
-###Node Events
+### Node Events
 You can get event emissions by calling `JavaFxObservable.eventsOf()` and pass the JavaFX `Node` and the `EventType` you are interested in.  This will return an RxJava `Observable`. 
 
 ```java
@@ -78,7 +70,7 @@ Observable<ActionEvent> bttnEvents =
         JavaFxObservable.eventsOf(incrementBttn, ActionEvent.ACTION);
 ```
 
-###Action Events
+### Action Events
 Action events are common and do not only apply to `Node` types. They also emit from `MenuItem` and `ContextMenu` instances, as well as a few other types. 
 
 Therefore, a few overloaded factories are provided to emit `ActionEvent` items from these controls
