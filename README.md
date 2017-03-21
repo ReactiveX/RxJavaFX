@@ -345,7 +345,7 @@ Although ReactFX has some asynchronous operators like `threadBridge`, ReactFX em
 
 If you are heavily dependent on RxJava, asynchronous processing, or do not want your entire reactive codebase to be UI-focused, you will probably want to use RxJavaFX. 
 
-##Notes for Kotlin 
+## Notes for Kotlin 
 If you are building your JavaFX application with [Kotlin](https://kotlinlang.org/), check out [RxKotlinFX](https://github.com/thomasnield/RxKotlinFX) to leverage this library through Kotlin extension functions.
 
 ## Comprehensive Example
