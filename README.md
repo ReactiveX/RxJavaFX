@@ -75,14 +75,14 @@ Action events are common and do not only apply to `Node` types. They also emit f
 
 Therefore, a few overloaded factories are provided to emit `ActionEvent` items from these controls
 
-#####Button ActionEvents
+##### Button ActionEvents
 ```java
 Button incrementBttn = new Button("Increment");
 
 Observable<ActionEvent> bttnEvents =
         JavaFxObservable.actionEventsOf(incrementBttn);
 ```
-#####MenuItem ActionEvents
+##### MenuItem ActionEvents
 ```java
 MenuItem menuItem = new MenuItem("Select me");
 
@@ -90,11 +90,11 @@ Observable<ActionEvent> menuItemEvents =
         JavaFxObservable.actionEventsOf(menuItem);
 ```
 
-###Other Event Factories
+### Other Event Factories
 
 There are also factories provided to convert events from a `Dialog`, `Window` or `Scene` into an `Observable`. If you would like to see factories for other components and event types, please let us know or put in a PR. 
 
-####Dialogs and Alerts
+#### Dialogs and Alerts
 ```java
 Alert alert = new Alert(AlertType.CONFIRMATION);
 alert.setTitle("Confirmation");
@@ -106,7 +106,7 @@ JavaFxObservable.fromDialog(alert)
     .subscribe(System.out::println,Throwable::printStackTrace);
 ```
 
-#####Emitting Scene Events
+##### Emitting Scene Events
 
 ```java
 Observable<MouseEvent> sceneMouseMovements =
@@ -115,7 +115,7 @@ Observable<MouseEvent> sceneMouseMovements =
 sceneMouseMovements.subscribe(v -> System.out.println(v.getSceneX() + "," + v.getSceneY()));
 ```
 
-#####Emitting Window Hiding Events
+##### Emitting Window Hiding Events
 ```java
  Observable<WindowEvent> windowHidingEvents =
     JavaFxObservable.eventsOf(primaryStage,WindowEvent.WINDOW_HIDING);
@@ -123,7 +123,7 @@ sceneMouseMovements.subscribe(v -> System.out.println(v.getSceneX() + "," + v.ge
 windowHidingEvents.subscribe(v -> System.out.println("Hiding!"));
 ```
 
-###ObservableValue 
+### ObservableValue 
 Not to be confused with the RxJava `Observable`, the JavaFX `ObservableValue` can be converted into an RxJava `Observable` that emits the initial value and all value changes. 
 
 ```java
@@ -134,7 +134,7 @@ Observable<String> textInputs =
 ```
 Note that many Nodes in JavaFX will have an initial value, which sometimes can be `null`, and you might consider using RxJava's `skip()` operator to ignore this initial value. 
 
-#####ObservableValue Changes
+##### ObservableValue Changes
 
 For every change to an `ObservableValue`, you can emit the old value and new value as a pair. The two values will be wrapped up in a `Change` class and you can access them via `getOldVal()` and `getNewVal()`. Just call the `JavaFxObservable.valuesOfChanges()` factory. 
 
@@ -150,7 +150,7 @@ Subscription subscription = JavaFxObservable.changesOf(spinner.valueProperty())
         .subscribe(spinnerChangesLabel::setText);
 ```
 
-###ObservableList, ObservableMap, and ObservableSet
+### ObservableList, ObservableMap, and ObservableSet
 
 There are several factories to emit many useful `ObservableList`, `ObservableMap`, and `ObservableSet` events as Observables. These all can be found as static factory methods in the `JavaFxObservable` static class. 
 
@@ -174,7 +174,7 @@ There are several factories to emit many useful `ObservableList`, `ObservableMap
 |changesOf()|ObservableSet&lt;T>|Observable&lt;SetChange&lt;T>|Emits every item `ADDED` or `REMOVED` item from an `ObservableSet` with the corresponding flag|
 
 
-###Binding
+### Binding
 You can convert an RxJava `Observable` into a JavaFX `Binding` by calling the `JavaFxObserver.toBinding()` factory. Calling the `dispose()` method on the `Binding` will handle the unsubscription from the `Observable`.  You can then take this `Binding` to bind other control properties to it. 
 
 ```java
@@ -204,7 +204,7 @@ incrementLabel.textProperty().bind(binding, e -> e.printStackTrace());
 ```
 
 
-###Lazy Binding
+### Lazy Binding
 
 The `toBinding()` factory above will eagerly subscribe the `Observable` to the `Binding` implementation. But if you want to delay the subscription to the `Observable` until the `Binding` is actually used (specifically when its `getValue()` is called), use `toLazyBinding()` instead. 
 
@@ -213,7 +213,7 @@ Binding<String> lazyBinding = JavaFxObserver.toLazyBinding(myObservable);
 ```
 This can be handy for data controls like `TableView`, which will only request values for records that are visible. Using the `toLazyBinding()` to feed column values will cause subscriptions to only happen with visible records. 
 
-###CompositeBinding
+### CompositeBinding
 
 You also have the option to use a `CompositeBinding` to group multiple `Binding`s together, and `dispose()` them all at once. It is the JavaFX equivalent to `CompositeSubscription`. 
 
@@ -228,7 +228,7 @@ bindings.add(binding2);
 bindings.dispose();
 ```        
 
-###CompositeObservable
+### CompositeObservable
 
 In UI development, it is not uncommon to have an event triggered in multiple places, or have inputs coming from multiple UI controls.b You may also want to leverage code separation patterns like MVC, and have the Observables completely separated from their Observers in modular fashion. Let's say you want to make a `refresh()` operation callable from a `Button`, a `MenuItem`, and a <kbd>CTRL</kbd> + <kbd>R</kbd> hotkey combination. 
 
@@ -330,7 +330,7 @@ sub2 = textInputs.observeOn(Schedulers.computation())
         .subscribe(fippedTextLabel::setText);
 ```
 
-###JavaFX Interval
+### JavaFX Interval
 
 There is a JavaFX equivalent to `Observable.interval()` that will emit on the JavaFX thread instead. Calling `JavaFxObservable.interval()` will push consecutive `Long` values at the specified `Duration`. 
 
@@ -338,7 +338,7 @@ There is a JavaFX equivalent to `Observable.interval()` that will emit on the Ja
 Observable<Long> everySecond = JavaFxObservable.interval(Duration.millis(1000));
 ```
 
-##Differences from ReactFX
+## Differences from ReactFX
 [ReactFX](https://github.com/TomasMikula/ReactFX) is a popular API to implement reactive patterns with JavaFX using the `EventStream`. However, RxJava uses an `Observable` and the two are not (directly) compatible with each other. 
 
 Although ReactFX has some asynchronous operators like `threadBridge`, ReactFX emphasizes *synchronous* behavior. This means it encourages keeping events on the JavaFX thread. RxJavaFX, which fully embraces RxJava and *asynchronous* design, can switch between threads and schedulers with ease.  As long as subscriptions affecting the UI are observed on the JavaFX thread, you can leverage the powerful operators and libraries of RxJava safely.
