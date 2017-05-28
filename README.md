@@ -16,7 +16,7 @@ RxJavaFX is a lightweight library to convert JavaFX events into [RxJava](https:/
 [Learning RxJava with JavaFX (EAP)](https://www.gitbook.com/book/thomasnield/rxjavafx-guide/details)
 
 
-## Binaries
+## 1.x Binaries
 
 Binaries and dependency information for Maven, Ivy, Gradle and others can be found at [http://search.maven.org](http://search.maven.org/#search%7Cga%7C1%7Cio.reactivex.rxjavafx).
 
@@ -26,7 +26,7 @@ Example for Maven:
 <dependency>
     <groupId>io.reactivex</groupId>
     <artifactId>rxjavafx</artifactId>
-    <version>x.y.z</version>
+    <version>1.x.y</version>
 </dependency>
 ```
 
@@ -34,24 +34,35 @@ Gradle:
 
 ```groovy 
 dependencies {
-	compile 'io.reactivex:rxjavafx:x.y.z'
+	compile 'io.reactivex:rxjavafx:1.x.y'
 }
 ```
-Ivy:
+
+
+## 2.x Binaries
+
+RxJavaFX 2.x versions uses a different group ID `io.reactivex.rxjava2` to prevent clashing with 1.x dependencies. Binaries and dependency information for Maven, Ivy, Gradle and others can be found at [http://search.maven.org](http://search.maven.org/#search%7Cga%7C1%7Cio.reactivex.rxjavafx).
+
+Example for Maven:
 
 ```xml
-<dependency org="io.reactivex" name="rxjavafx" rev="x.y.z" />
+<dependency>
+    <groupId>io.reactivex.rxjava2</groupId>
+    <artifactId>rxjavafx</artifactId>
+    <version>2.x.y</version>
+</dependency>
 ```
 
-## Build
+Gradle: 
 
-To build:
+```groovy 
+dependencies {
+	compile 'io.reactivex.rxjava2:rxjavafx:2.x.y'
+}
+```
 
-```
-$ git clone git@github.com:ReactiveX/RxJavaFX.git
-$ cd RxJavaFX/
-$ ./gradlew build
-```
+
+
 
 ## Features
 
