@@ -27,13 +27,9 @@ import java.util.Arrays;
 
 
 /**
- * A CompositeObservable can merge multiple event source Observables that can be added/removed at any time,
- * affecting all Subscribers regardless of when they subscribed. This is especially helpful for merging
- * multiple UI event sources. You can also pass a Transformer to perform
- * further operations on the combined Observable that is returned
- *
- * @param <T>
+ * Use a Subject instead of a CompositeObservable
  */
+@Deprecated
 public final class CompositeObservable<T> {
 
     private final Subject<T> subject;
