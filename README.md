@@ -320,8 +320,9 @@ public class RxJavaFXTest extends Application {
         Observable<ActionEvent> bttnEvents =
                 JavaFxObservable.actionEventsOf(incrementBttn);
 
-        binding1 = JavaFxObserver.toBinding(bttnEvents.map(e -> 1).scan(0,(x, y) -> x + y)
-                .map(Object::toString));
+        binding1 = bttnEvents.map(e -> 1).scan(0,(x, y) -> x + y)
+                .map(Object::toString)
+                .to(JavaFxObserver::toBinding);
 
         incrementLabel.textProperty().bind(binding1);
 
@@ -334,9 +335,10 @@ public class RxJavaFXTest extends Application {
         Observable<String> textInputs =
                 JavaFxObservable.valuesOf(textInput.textProperty());
 
-        binding2 = JavaFxObserver.toBinding(textInputs.observeOn(Schedulers.computation())
+        binding2 = textInputs.observeOn(Schedulers.computation())
                 .map(s -> new StringBuilder(s).reverse().toString())
-                .observeOn(JavaFxScheduler.platform()));
+                .observeOn(JavaFxScheduler.platform())
+                .to(JavaFxObserver::toBinding);
 
         flippedTextLabel.textProperty().bind(binding2);
 
