@@ -69,6 +69,18 @@ public enum JavaFxObservable {
      * Create an rx Observable from a JavaFX ObservableValue
      *
      * @param fxObservable the observed ObservableValue
+     * @param nullSentinel the default sentinel value emitted when the observable is null
+     * @param <T>          the type of the observed value
+     * @return an Observable emitting values as the wrapped ObservableValue changes, null will be replaces with nullSentinel
+     */
+    public static <T> Observable<T> valuesOf(final ObservableValue<T> fxObservable, final T nullSentinel) {
+        return ObservableValueSource.fromObservableValue(fxObservable, nullSentinel);
+    }
+
+    /**
+     * Create an rx Observable from a JavaFX ObservableValue
+     *
+     * @param fxObservable the observed ObservableValue
      * @param <T>          the type of the observed value
      * @return an Observable emitting nullable values as the wrapped ObservableValue changes
      */
