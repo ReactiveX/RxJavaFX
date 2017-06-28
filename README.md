@@ -2,7 +2,7 @@
 
 # RxJavaFX: JavaFX bindings for RxJava
 
-Read the free eBook [_Learning RxJava with JavaFX_](https://www.gitbook.com/book/thomasnield/rxjavafx-guide/details) to get started! Note this book covers RxJavaFX 1.0. It is being updated for RxJavaFX 2.0 on the 2.x branch. You can also purchase the Packt book [Learning RxJava](https://github.com/ReactiveX/RxJavaFX) which covers RxJava 2.0 in depth and uses a few JavaFX examples. 
+Read the free eBook [_Learning RxJava with JavaFX_](https://www.gitbook.com/book/thomasnield/rxjavafx-guide/details) to get started! Note this book covers RxJavaFX 1.0. It is being updated for RxJavaFX 2.0 on the 2.x branch.
 
 RxJavaFX is a lightweight library to convert JavaFX events into [RxJava](https://github.com/ReactiveX/RxJava) Observables/Flowables and vice versa. It also has a `Scheduler` to safely move emissions to the JavaFX Event Dispatch Thread. 
 
