@@ -42,6 +42,29 @@ public class ObservableValueSource {
         });
     }
 
+    public static <T> Observable<T> fromObservableValue(final ObservableValue<T> fxObservable, final T nullSentinel) {
+        if (nullSentinel == null) {
+            throw new NullPointerException("The null value sentinel must not be null.");
+        }
+        return Observable.create((ObservableEmitter<T> emitter) -> {
+            if (fxObservable.getValue() != null) {
+                emitter.onNext(fxObservable.getValue());
+            }
+
+            final ChangeListener<T> listener = (observableValue, prev, current) -> {
+                if (current != null) {
+                    emitter.onNext(current);
+                } else {
+                    emitter.onNext(nullSentinel);
+                }
+            };
+
+            fxObservable.addListener(listener);
+
+            emitter.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> fxObservable.removeListener(listener)));
+        });
+    }
+
     public static <T> Observable<Optional<T>> fromNullableObservableValue(final ObservableValue<T> fxObservable) {
         return Observable.create((ObservableEmitter<Optional<T>> emitter) -> {
             emitter.onNext(Optional.ofNullable(fxObservable.getValue()));
