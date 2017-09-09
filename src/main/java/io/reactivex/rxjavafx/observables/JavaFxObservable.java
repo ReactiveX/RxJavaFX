@@ -16,6 +16,7 @@
 package io.reactivex.rxjavafx.observables;
 
 
+import io.reactivex.Maybe;
 import io.reactivex.Observable;
 import io.reactivex.rxjavafx.sources.*;
 import javafx.beans.value.ObservableValue;
@@ -367,9 +368,9 @@ public enum JavaFxObservable {
     }
 
     /**
-     * Returns an Observable that emits the T response  of a Dialog. If no response was given then the Observable will be empty.
+     * Returns a Maybe that emits the T response  of a Dialog. If no response was given then the Maybe will be empty.
      */
-    public static <T> Observable<T> fromDialog(Dialog<T> dialog) {
+    public static <T> Maybe<T> fromDialog(Dialog<T> dialog) {
         return DialogSource.fromDialogSource(dialog);
     }
 }

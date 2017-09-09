@@ -15,16 +15,18 @@
  */
 package io.reactivex.rxjavafx.sources;
 
-import io.reactivex.Observable;
+import io.reactivex.Maybe;
+import io.reactivex.Single;
 import io.reactivex.rxjavafx.schedulers.JavaFxScheduler;
 import javafx.scene.control.Dialog;
+
 import java.util.Optional;
 
 public final class DialogSource {
     private DialogSource() {}
 
-    public static <T> Observable<T> fromDialogSource(final Dialog<T> dialog) {
-        return Observable.fromCallable(dialog::showAndWait)
+    public static <T> Maybe<T> fromDialogSource(final Dialog<T> dialog) {
+        return Single.fromCallable(dialog::showAndWait)
                 .subscribeOn(JavaFxScheduler.platform())
                 .filter(Optional::isPresent)
                 .map(Optional::get);
