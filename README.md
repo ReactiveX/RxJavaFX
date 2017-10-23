@@ -14,7 +14,7 @@ RxJavaFX is a lightweight library to convert JavaFX events into [RxJava](https:/
 
 ## Documentation
 
-[Learning RxJava with JavaFX (EAP)](https://www.gitbook.com/book/thomasnield/rxjavafx-guide/details) - Free eBook that covers RxJava 1.0 from a JavaFX perspective.
+[Learning RxJava with JavaFX](https://www.gitbook.com/book/thomasnield/rxjavafx-guide/details) - Free eBook that covers RxJava from a JavaFX perspective.
 
 [Learning RxJava](https://www.packtpub.com/application-development/learning-rxjava) - Packt book covering RxJava 2.0 in depth, with a few RxJavaFX examples.
 
