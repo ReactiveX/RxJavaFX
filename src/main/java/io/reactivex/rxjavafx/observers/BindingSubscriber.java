@@ -1,12 +1,12 @@
 /**
  * Copyright 2017 Netflix, Inc.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,6 +18,7 @@ package io.reactivex.rxjavafx.observers;
 import com.sun.javafx.binding.ExpressionHelper;
 import io.reactivex.flowables.ConnectableFlowable;
 import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Binding;
 import javafx.beans.value.ChangeListener;
@@ -26,23 +27,32 @@ import javafx.collections.ObservableList;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
 
+final class BindingSubscriber<T, S> implements Subscriber<T>, ObservableValue<S>, Binding<S> {
 
-final class BindingSubscriber<T> implements Subscriber<T>, ObservableValue<T>, Binding<T> {
-
-    private final Consumer<Throwable> onError;
-    private final ConnectableFlowable<T> flowable;
+    private final Function<T, S>         unmaskingFunction;
+    private final Consumer<Throwable>    onError;
+    private final ConnectableFlowable<T> obs;
     private boolean connected = false;
-    private Subscription subscription;
-    private ExpressionHelper<T> helper;
-    private T value;
+    private Subscription        subscription;
+    private ExpressionHelper<S> helper;
+    private S                   value;
 
-    BindingSubscriber(Consumer<Throwable> onError) {
-        this.flowable = null;
+    BindingSubscriber(Function<T, S> unmaskingFunction, Consumer<Throwable> onError) {
+        this.unmaskingFunction = unmaskingFunction;
         this.onError = onError;
+        this.obs = null;
     }
-    BindingSubscriber(ConnectableFlowable<T> flowable, Consumer<Throwable> onError) {
-        this.flowable = flowable;
+
+    BindingSubscriber(Function<T, S> unmaskingFunction, ConnectableFlowable<T> obs, Consumer<Throwable> onError) {
+        this.unmaskingFunction = unmaskingFunction;
         this.onError = onError;
+        this.obs = obs;
+    }
+
+    @Override
+    public void onSubscribe(Subscription s) {
+        this.subscription = s;
+        this.subscription.request(Long.MAX_VALUE);
     }
 
     @Override
@@ -60,24 +70,24 @@ final class BindingSubscriber<T> implements Subscriber<T>, ObservableValue<T>, B
     }
 
     @Override
-    public void onSubscribe(Subscription s) {
-        subscription = s;
-        subscription.request(Long.MAX_VALUE);
+    public void onNext(T t) {
+        try {
+            value = unmaskingFunction.apply(t);
+            fireValueChangedEvent();
+        } catch (Exception e) {
+            onError(e);
+        }
     }
 
     @Override
-    public void onNext(T t) {
-        value = t;
-        fireValueChangedEvent();
-    }
-    @Override
-    public T getValue() {
-        if (!connected && flowable != null) {
-            flowable.connect();
+    public S getValue() {
+        if (!connected && obs != null) {
+            obs.connect();
             connected = true;
         }
         return value;
     }
+
     @Override
     public boolean isValid() {
         return true;
@@ -112,7 +122,7 @@ final class BindingSubscriber<T> implements Subscriber<T>, ObservableValue<T>, B
      * {@inheritDoc}
      */
     @Override
-    public void addListener(ChangeListener<? super T> listener) {
+    public void addListener(ChangeListener<? super S> listener) {
         helper = ExpressionHelper.addListener(helper, this, listener);
     }
 
@@ -128,13 +138,13 @@ final class BindingSubscriber<T> implements Subscriber<T>, ObservableValue<T>, B
      * {@inheritDoc}
      */
     @Override
-    public void removeListener(ChangeListener<? super T> listener) {
+    public void removeListener(ChangeListener<? super S> listener) {
         helper = ExpressionHelper.removeListener(helper, listener);
     }
 
     /**
      * Notify the currently registered observers of a value change.
-     *
+     * <p>
      * This implementation will ignore all adds and removes of observers that
      * are done while a notification is processed. The changes take effect in
      * the following call to fireValueChangedEvent.
