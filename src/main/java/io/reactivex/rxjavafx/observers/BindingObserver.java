@@ -1,12 +1,12 @@
 /**
  * Copyright 2017 Netflix, Inc.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +19,7 @@ import com.sun.javafx.binding.ExpressionHelper;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 import io.reactivex.observables.ConnectableObservable;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Binding;
@@ -26,21 +27,24 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 
+final class BindingObserver<T, S> implements Observer<T>, ObservableValue<S>, Binding<S> {
 
-final class BindingObserver<T> implements Observer<T>, ObservableValue<T>, Binding<T> {
-
-    private final Consumer<Throwable> onError;
+    private final Function<T, S>           unmaskingFunction;
+    private final Consumer<Throwable>      onError;
     private final ConnectableObservable<T> obs;
     private boolean connected = false;
-    private Disposable disposable;
-    private ExpressionHelper<T> helper;
-    private T value;
+    private Disposable          disposable;
+    private ExpressionHelper<S> helper;
+    private S                   value;
 
-    BindingObserver(Consumer<Throwable> onError) {
+    BindingObserver(Function<T, S> unmaskingFunction, Consumer<Throwable> onError) {
+        this.unmaskingFunction = unmaskingFunction;
         this.onError = onError;
         this.obs = null;
     }
-    BindingObserver(ConnectableObservable<T> obs, Consumer<Throwable> onError) {
+
+    BindingObserver(Function<T, S> unmaskingFunction, ConnectableObservable<T> obs, Consumer<Throwable> onError) {
+        this.unmaskingFunction = unmaskingFunction;
         this.onError = onError;
         this.obs = obs;
     }
@@ -66,17 +70,23 @@ final class BindingObserver<T> implements Observer<T>, ObservableValue<T>, Bindi
 
     @Override
     public void onNext(T t) {
-        value = t;
-        fireValueChangedEvent();
+        try {
+            value = unmaskingFunction.apply(t);
+            fireValueChangedEvent();
+        } catch (Exception e) {
+            onError(e);
+        }
     }
+
     @Override
-    public T getValue() {
+    public S getValue() {
         if (!connected && obs != null) {
             obs.connect();
             connected = true;
         }
         return value;
     }
+
     @Override
     public boolean isValid() {
         return true;
@@ -111,7 +121,7 @@ final class BindingObserver<T> implements Observer<T>, ObservableValue<T>, Bindi
      * {@inheritDoc}
      */
     @Override
-    public void addListener(ChangeListener<? super T> listener) {
+    public void addListener(ChangeListener<? super S> listener) {
         helper = ExpressionHelper.addListener(helper, this, listener);
     }
 
@@ -127,13 +137,13 @@ final class BindingObserver<T> implements Observer<T>, ObservableValue<T>, Bindi
      * {@inheritDoc}
      */
     @Override
-    public void removeListener(ChangeListener<? super T> listener) {
+    public void removeListener(ChangeListener<? super S> listener) {
         helper = ExpressionHelper.removeListener(helper, listener);
     }
 
     /**
      * Notify the currently registered observers of a value change.
-     *
+     * <p>
      * This implementation will ignore all adds and removes of observers that
      * are done while a notification is processed. The changes take effect in
      * the following call to fireValueChangedEvent.

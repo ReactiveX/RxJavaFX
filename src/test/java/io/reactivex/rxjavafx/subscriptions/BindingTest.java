@@ -1,12 +1,12 @@
 /**
  * Copyright 2017 Netflix, Inc.
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,15 +17,17 @@ package io.reactivex.rxjavafx.subscriptions;
 
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
-import io.reactivex.rxjavafx.subscriptions.CompositeBinding;
+import io.reactivex.processors.PublishProcessor;
+import io.reactivex.rxjavafx.observers.JavaFxObserver;
+import io.reactivex.rxjavafx.observers.JavaFxSubscriber;
+import io.reactivex.rxjavafx.schedulers.JavaFxScheduler;
+import io.reactivex.subjects.PublishSubject;
 import javafx.application.Platform;
 import javafx.beans.binding.Binding;
 import javafx.embed.swing.JFXPanel;
 import org.junit.Test;
-import io.reactivex.rxjavafx.observers.JavaFxObserver;
-import io.reactivex.rxjavafx.schedulers.JavaFxScheduler;
-import io.reactivex.rxjavafx.observers.JavaFxSubscriber;
 
+import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -37,17 +39,18 @@ public final class BindingTest {
     public BindingTest() {
         new JFXPanel();
     }
+
     @Test
     public void testCompositeBinding() {
         CompositeBinding bindings = new CompositeBinding();
 
-        Observable<Long> source = Observable.interval(1,TimeUnit.SECONDS);
+        Observable<Long> source = Observable.interval(1, TimeUnit.SECONDS);
         CountDownLatch unsubscribeWait = new CountDownLatch(2);
 
         Binding<Long> binding1 = JavaFxObserver.toBinding(source.doOnDispose(unsubscribeWait::countDown).observeOn(JavaFxScheduler.platform()));
         bindings.add(binding1);
 
-        Binding<Long> binding2 = JavaFxObserver.toBinding(source.doOnDispose(unsubscribeWait::countDown).reduce(0L,(x,y) -> x + y).observeOn(JavaFxScheduler.platform()).toObservable());
+        Binding<Long> binding2 = JavaFxObserver.toBinding(source.doOnDispose(unsubscribeWait::countDown).reduce(0L, (x, y) -> x + y).observeOn(JavaFxScheduler.platform()).toObservable());
         bindings.add(binding2);
 
         sleep(3000);
@@ -56,7 +59,7 @@ public final class BindingTest {
         bindings.dispose();
 
         try {
-            unsubscribeWait.await(10,TimeUnit.SECONDS);
+            unsubscribeWait.await(10, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -88,6 +91,55 @@ public final class BindingTest {
     }
 
     @Test
+    public void testObserverNullBinding() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        Platform.runLater(() -> {
+
+            String nil = "null";
+            PublishSubject<String> items = PublishSubject.create();
+            Binding<String> binding = JavaFxObserver.toNullBinding(items, nil);
+            items.onNext(nil);
+
+            assertTrue(binding.getValue() == null);
+            items.onNext("Alpha");
+            assertTrue(binding.getValue().equals("Alpha"));
+            items.onNext(nil);
+            assertTrue(binding.getValue() == null);
+            latch.countDown();
+        });
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testObserverNullableBinding() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        Platform.runLater(() -> {
+
+            PublishSubject<Optional<String>> items = PublishSubject.create();
+            Binding<String> binding = JavaFxObserver.toNullableBinding(items);
+            items.onNext(Optional.empty());
+
+            assertTrue(binding.getValue() == null);
+            items.onNext(Optional.of("Alpha"));
+            assertTrue(binding.getValue().equals("Alpha"));
+            items.onNext(Optional.empty());
+            assertTrue(binding.getValue() == null);
+            latch.countDown();
+        });
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
     public void testObserverLazyBinding() {
         final CountDownLatch latch = new CountDownLatch(1);
         Platform.runLater(() -> {
@@ -96,7 +148,7 @@ public final class BindingTest {
 
             Observable<String> items =
                     Observable.just("Alpha", "Beta", "Gamma", "Delta")
-                        .doOnNext(s -> emissionCount.incrementAndGet());
+                            .doOnNext(s -> emissionCount.incrementAndGet());
 
             Binding<String> binding = JavaFxObserver.toLazyBinding(items);
 
@@ -110,6 +162,55 @@ public final class BindingTest {
 
             assertTrue(emissionCount.get() == 4);
             assertTrue(binding.getValue().equals("Delta"));
+            latch.countDown();
+        });
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testSubscriberNullBinding() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        Platform.runLater(() -> {
+
+            String nil = "null";
+            PublishProcessor<String> items = PublishProcessor.create();
+            Binding<String> binding = JavaFxSubscriber.toNullBinding(items, nil);
+            items.onNext(nil);
+
+            assertTrue(binding.getValue() == null);
+            items.onNext("Alpha");
+            assertTrue(binding.getValue().equals("Alpha"));
+            items.onNext(nil);
+            assertTrue(binding.getValue() == null);
+            latch.countDown();
+        });
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testSubscriberNullableBinding() {
+        final CountDownLatch latch = new CountDownLatch(1);
+        Platform.runLater(() -> {
+
+            PublishProcessor<Optional<String>> items = PublishProcessor.create();
+            Binding<String> binding = JavaFxSubscriber.toNullableBinding(items);
+            items.onNext(Optional.empty());
+
+            assertTrue(binding.getValue() == null);
+            items.onNext(Optional.of("Alpha"));
+            assertTrue(binding.getValue().equals("Alpha"));
+            items.onNext(Optional.empty());
+            assertTrue(binding.getValue() == null);
             latch.countDown();
         });
 
