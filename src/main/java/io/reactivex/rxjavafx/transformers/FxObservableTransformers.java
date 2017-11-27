@@ -210,8 +210,9 @@ public final class FxObservableTransformers {
                     if (done)
                         return;
                     try {
+                        ++count;
                         if (ctObserver.doOnNextCountAction != null)
-                            ctObserver.doOnNextCountAction.accept(++count);
+                            ctObserver.doOnNextCountAction.accept(count);
                     } catch(Exception e) {
                         Exceptions.throwIfFatal(e);
                         onError(e);
