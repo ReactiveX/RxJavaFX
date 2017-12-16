@@ -45,7 +45,7 @@ dependencies {
 
 ## 2.x Binaries
 
-RxJavaFX 2.x versions uses a different group ID `io.reactivex.rxjava2` to prevent clashing with 1.x dependencies. Binaries and dependency information for Maven, Ivy, Gradle and others can be found at [http://search.maven.org](http://search.maven.org/#search%7Cga%7C1%7Cio.reactivex.rxjavafx).
+RxJavaFX 2.x versions uses a different group ID `io.reactivex.rxjava2` to prevent clashing with 1.x dependencies. Binaries and dependency information for Maven, Ivy, Gradle and others can be found at [http://search.maven.org](http://search.maven.org/#search%7Cga%7C1%7Cio.reactivex.rxjava2.rxjavafx).
 
 Example for Maven:
 
