@@ -17,6 +17,7 @@ package io.reactivex.rxjavafx.sources;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.disposables.Disposables;
 import io.reactivex.rxjavafx.schedulers.JavaFxScheduler;
 import io.reactivex.rxjavafx.subscriptions.JavaFxSubscriptions;
 import javafx.collections.ListChangeListener;
@@ -33,8 +34,8 @@ public final class ObservableListSource {
         return Observable.create((ObservableOnSubscribe<ObservableList<T>>) subscriber -> {
             ListChangeListener<T> listener = c -> subscriber.onNext(source);
             source.addListener(listener);
-            subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
-        }).startWith(source).subscribeOn(JavaFxScheduler.platform());
+            subscriber.setDisposable(Disposables.fromRunnable(() -> source.removeListener(listener)));
+        }).startWith(source);
     }
 
     public static <T> Observable<T> fromObservableListAdds(final ObservableList<T> source) {
@@ -49,9 +50,9 @@ public final class ObservableListSource {
                 }
             };
             source.addListener(listener);
-            subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
+            subscriber.setDisposable(Disposables.fromRunnable(() -> source.removeListener(listener)));
 
-        }).subscribeOn(JavaFxScheduler.platform());
+        });
     }
     public static <T> Observable<T> fromObservableListRemovals(final ObservableList<T> source) {
 
@@ -66,9 +67,9 @@ public final class ObservableListSource {
             };
 
             source.addListener(listener);
-            subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
+            subscriber.setDisposable(Disposables.fromRunnable(() -> source.removeListener(listener)));
 
-        }).subscribeOn(JavaFxScheduler.platform());
+        });
     }
     public static <T> Observable<T> fromObservableListUpdates(final ObservableList<T> source) {
 
@@ -84,9 +85,9 @@ public final class ObservableListSource {
                 }
             };
             source.addListener(listener);
-            subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
+            subscriber.setDisposable(Disposables.fromRunnable(() -> source.removeListener(listener)));
 
-        }).subscribeOn(JavaFxScheduler.platform());
+        });
     }
     public static <T> Observable<ListChange<T>> fromObservableListChanges(final ObservableList<T> source) {
         return Observable.create((ObservableOnSubscribe<ListChange<T>>) subscriber -> {
@@ -108,8 +109,8 @@ public final class ObservableListSource {
             };
             source.addListener(listener);
 
-            subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
-        }).subscribeOn(JavaFxScheduler.platform());
+            subscriber.setDisposable(Disposables.fromRunnable(() -> source.removeListener(listener)));
+        });
     }
 
     public static <T> Observable<ListChange<T>> fromObservableListDistinctChanges(final ObservableList<T> source) {
@@ -134,8 +135,8 @@ public final class ObservableListSource {
             };
             source.addListener(listener);
 
-            subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
-        }).subscribeOn(JavaFxScheduler.platform());
+            subscriber.setDisposable(Disposables.fromRunnable(() -> source.removeListener(listener)));
+        });
     }
     public static <T,R> Observable<ListChange<T>> fromObservableListDistinctChanges(final ObservableList<T> source, Function<T,R> mapper) {
 
@@ -158,8 +159,8 @@ public final class ObservableListSource {
                 }
             };
             source.addListener(listener);
-            subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
-        }).subscribeOn(JavaFxScheduler.platform());
+            subscriber.setDisposable(Disposables.fromRunnable(() -> source.removeListener(listener)));
+        });
     }
     public static <T,R> Observable<ListChange<R>> fromObservableListDistinctMappings(final ObservableList<T> source, Function<T,R> mapper) {
 
@@ -184,9 +185,9 @@ public final class ObservableListSource {
                 }
             };
             source.addListener(listener);
-            subscriber.setDisposable(JavaFxSubscriptions.unsubscribeInEventDispatchThread(() -> source.removeListener(listener)));
+            subscriber.setDisposable(Disposables.fromRunnable(() -> source.removeListener(listener)));
 
-        }).subscribeOn(JavaFxScheduler.platform());
+        });
     }
 
     private static final class DupeCounter<T> {

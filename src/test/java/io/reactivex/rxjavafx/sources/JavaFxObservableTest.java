@@ -34,7 +34,9 @@ import io.reactivex.rxjavafx.schedulers.JavaFxScheduler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertTrue;
 
@@ -46,11 +48,12 @@ public final class JavaFxObservableTest {
 
         final CountDownLatch latch = new CountDownLatch(5);
 
-        JavaFxObservable.interval(Duration.millis(1000)).take(5)
+        JavaFxObservable.interval(Duration.millis(100)).take(5)
                 .subscribe(v -> latch.countDown());
 
         try {
-            latch.await();
+            boolean finished = latch.await(1000, TimeUnit.MILLISECONDS);
+            assertTrue(finished);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -58,7 +61,7 @@ public final class JavaFxObservableTest {
 
     @Test
     public void testRxObservableListAdds() {
-        new JFXPanel();
+//        new JFXPanel();
 
         ObservableList<String> sourceList = FXCollections.observableArrayList();
         Observable<String> emissions = JavaFxObservable.additionsOf(sourceList);
@@ -66,13 +69,13 @@ public final class JavaFxObservableTest {
         CountDownLatch gate = new CountDownLatch(1);
 
         emissions.observeOn(Schedulers.io())
-                .observeOn(JavaFxScheduler.platform())
+//                .observeOn(JavaFxScheduler.platform())
                 .take(3)
                 .toList()
                 .toObservable()
                 .subscribe(l -> assertTrue(l.containsAll(Arrays.asList("Alpha","Beta","Gamma"))),Throwable::printStackTrace,gate::countDown);
 
-        Platform.runLater(() -> {
+        CompletableFuture.runAsync(() -> {
             sourceList.add("Alpha");
             sourceList.add("Beta");
             sourceList.remove("Alpha");
@@ -80,7 +83,8 @@ public final class JavaFxObservableTest {
         });
 
         try {
-            gate.await();
+            boolean finished = gate.await(1000, TimeUnit.MILLISECONDS);
+            assertTrue(finished);
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
@@ -89,7 +93,7 @@ public final class JavaFxObservableTest {
 
     @Test
     public void testRxObservableListRemoves() {
-        new JFXPanel();
+//        new JFXPanel();
 
         ObservableList<String> sourceList = FXCollections.observableArrayList();
         Observable<String> emissions = JavaFxObservable.removalsOf(sourceList);
@@ -120,7 +124,7 @@ public final class JavaFxObservableTest {
 
     @Test
     public void testRxObservableListChanges() {
-        new JFXPanel();
+//        new JFXPanel();
 
         ObservableList<String> sourceList = FXCollections.observableArrayList();
         Observable<ListChange<String>> emissions = JavaFxObservable.changesOf(sourceList);
@@ -164,7 +168,7 @@ public final class JavaFxObservableTest {
 
     @Test
     public void testRxObservableListDistinctChangeMappings() {
-        new JFXPanel();
+//        new JFXPanel();
 
         ObservableList<String> sourceList = FXCollections.observableArrayList();
         Observable<ListChange<Integer>> emissions = JavaFxObservable.distinctMappingsOf(sourceList, String::length);
@@ -181,7 +185,7 @@ public final class JavaFxObservableTest {
 
         }
         emissions.observeOn(Schedulers.io())
-                .observeOn(JavaFxScheduler.platform())
+//                .observeOn(JavaFxScheduler.platform())
                 .take(3)
                 .groupBy(ListChange::getFlag)
                 .flatMapSingle(grp -> grp.count().map(ct -> new FlagAndCount(grp.getKey(),ct)))
@@ -190,7 +194,7 @@ public final class JavaFxObservableTest {
                     if (l.flag.equals(Flag.REMOVED)) { assertTrue(l.count == 1); }
                 },Throwable::printStackTrace,gate::countDown);
 
-        Platform.runLater(() -> {
+        CompletableFuture.runAsync(() -> {
             sourceList.add("Alpha");
             sourceList.add("Beta");
             sourceList.add("Alpha");
@@ -201,7 +205,8 @@ public final class JavaFxObservableTest {
         });
 
         try {
-            gate.await();
+            boolean finished = gate.await(1000, TimeUnit.MILLISECONDS);
+            assertTrue(finished);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -210,7 +215,7 @@ public final class JavaFxObservableTest {
 
     @Test
     public void testRxObservableListDistinctChanges() {
-        new JFXPanel();
+//        new JFXPanel();
 
         ObservableList<String> sourceList = FXCollections.observableArrayList();
         Observable<ListChange<String>> emissions = JavaFxObservable.distinctChangesOf(sourceList);
@@ -227,7 +232,7 @@ public final class JavaFxObservableTest {
 
         }
         emissions.observeOn(Schedulers.io())
-                .observeOn(JavaFxScheduler.platform())
+//                .observeOn(JavaFxScheduler.platform())
                 .take(5)
                 .groupBy(ListChange::getFlag)
                 .flatMapSingle(grp -> grp.count().map(ct -> new FlagAndCount(grp.getKey(),ct)))
@@ -236,7 +241,7 @@ public final class JavaFxObservableTest {
                     if (l.flag.equals(Flag.REMOVED)) { assertTrue(l.count == 2); }
                 },Throwable::printStackTrace,gate::countDown);
 
-        Platform.runLater(() -> {
+        CompletableFuture.runAsync(() -> {
             sourceList.add("Alpha");
             sourceList.add("Beta");
             sourceList.add("Alpha");
@@ -247,7 +252,8 @@ public final class JavaFxObservableTest {
         });
 
         try {
-            gate.await();
+            boolean finished = gate.await(1000, TimeUnit.MILLISECONDS);
+            assertTrue(finished);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -256,7 +262,7 @@ public final class JavaFxObservableTest {
 
     @Test
     public void testRxObservableListUpdates() {
-        new JFXPanel();
+//        new JFXPanel();
 
         class Person {
             Property<String> name;
@@ -282,20 +288,21 @@ public final class JavaFxObservableTest {
         CountDownLatch gate = new CountDownLatch(1);
 
         emissions.observeOn(Schedulers.io())
-                .observeOn(JavaFxScheduler.platform())
+//                .observeOn(JavaFxScheduler.platform())
                 .take(2)
                 .count()
                 .toObservable()
                 .subscribe(ct -> assertTrue(ct == 2),Throwable::printStackTrace,gate::countDown);
 
-        Platform.runLater(() -> {
+        CompletableFuture.runAsync(() -> {
             sourceList.addAll(person1,person2,person3);
             person1.age.setValue(24);
             person2.age.setValue(32);
         });
 
         try {
-            gate.await();
+            boolean finished = gate.await(1000, TimeUnit.MILLISECONDS);
+            assertTrue(finished);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
