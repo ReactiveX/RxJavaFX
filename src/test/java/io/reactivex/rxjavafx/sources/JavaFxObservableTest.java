@@ -17,16 +17,16 @@ package io.reactivex.rxjavafx.sources;
 
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.observers.TestObserver;
 import io.reactivex.schedulers.Schedulers;
 import io.reactivex.subjects.PublishSubject;
 import javafx.application.Platform;
-import javafx.beans.property.Property;
-import javafx.beans.property.ReadOnlyStringWrapper;
-import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.JFXPanel;
 import javafx.util.Duration;
+import org.junit.Assert;
 import org.junit.Test;
 import io.reactivex.rxjavafx.observables.JavaFxObservable;
 import io.reactivex.rxjavafx.schedulers.JavaFxScheduler;
@@ -54,6 +54,44 @@ public final class JavaFxObservableTest {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Test
+    public void testListEmitOnChanged() {
+
+        ObservableList<String> sourceList = FXCollections.observableArrayList("Alpha", "Beta", "Gamma");
+
+        TestObserver<List<String>> testObserver = new TestObserver<>();
+
+        JavaFxObservable.emitOnChanged(sourceList)
+                .subscribe(testObserver);
+
+        testObserver.assertValueCount(1);
+
+        sourceList.add("Delta");
+
+        testObserver.assertValueCount(2);
+    }
+
+    @Test
+    public void testListPropertyEmitOnChanged() {
+
+        ListProperty<String> sourceList = new SimpleListProperty<>(FXCollections.observableArrayList("Alpha", "Beta", "Gamma"));
+
+        TestObserver<List<String>> testObserver = new TestObserver<>();
+
+        JavaFxObservable.emitOnChanged(sourceList)
+                .subscribe(testObserver);
+
+        testObserver.assertValueCount(1);
+
+        sourceList.add("Delta");
+
+        testObserver.assertValueCount(2);
+
+        sourceList.setValue(FXCollections.observableArrayList("Zeta", "Eta", "Iota"));
+
+        testObserver.assertValueCount(3);
     }
 
     @Test
@@ -301,51 +339,4 @@ public final class JavaFxObservableTest {
         }
     }
 
-    @Test
-    public void testcompositeObservableInfinite() {
-
-        new JFXPanel();
-
-        CountDownLatch latch = new CountDownLatch(1);
-
-        Platform.runLater(() -> {
-            final List<String> emissions = new ArrayList<>();
-            CompositeObservable<String> compositeObservable = new CompositeObservable<>();
-
-            PublishSubject<String> source1 = PublishSubject.create();
-            PublishSubject<String> source2 = PublishSubject.create();
-            PublishSubject<String> source3 = PublishSubject.create();
-
-            Disposable sub1 = compositeObservable.add(source1);
-            Disposable sub2 = compositeObservable.add(source2);
-            Disposable sub3 = compositeObservable.add(source3);
-
-            compositeObservable.toObservable().subscribe(emissions::add);
-
-            source1.onNext("Alpha");
-            assertTrue(emissions.get(0).equals("Alpha"));
-
-            source2.onNext("Beta");
-            assertTrue(emissions.get(1).equals("Beta"));
-
-            source3.onNext("Gamma");
-            assertTrue(emissions.get(2).equals("Gamma"));
-
-            source1.onNext("Delta");
-            assertTrue(emissions.get(3).equals("Delta"));
-
-            sub2.dispose();
-
-            source2.onNext("Epsilon");
-            assertTrue(emissions.size() == 4);
-
-            latch.countDown();
-        });
-
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
 }
