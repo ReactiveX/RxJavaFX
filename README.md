@@ -45,7 +45,7 @@ dependencies {
 
 ## 2.x Binaries
 
-RxJavaFX 2.x versions uses a different group ID `io.reactivex.rxjava2` to prevent clashing with 1.x dependencies. Binaries and dependency information for Maven, Ivy, Gradle and others can be found at [http://search.maven.org](http://search.maven.org/#search%7Cga%7C1%7Cio.reactivex.rxjavafx).
+RxJavaFX 2.x versions uses a different group ID `io.reactivex.rxjava2` to prevent clashing with 1.x dependencies. Binaries and dependency information for Maven, Ivy, Gradle and others can be found at [http://search.maven.org](http://search.maven.org/#search%7Cga%7C1%7Cio.reactivex.rxjava2.rxjavafx).
 
 Example for Maven:
 
@@ -172,7 +172,7 @@ There are several factories to emit many useful `ObservableList`, `ObservableMap
 
 |Factory Method|Parameter Type|Return Type|Description|
 |---|---|---|---
-|emitOnChanged()()|ObservableList&lt;T>|Observable&lt;ObservableList&lt;T>>|Emits the entire `ObservableList` every time it changes|
+|emitOnChanged()|ObservableList&lt;T>|Observable&lt;ObservableList&lt;T>>|Emits the entire `ObservableList` every time it changes|
 |additionsOf()|ObservableList&lt;T>|Observable&lt;T>|Emits additions to an `ObservableList`|
 |removalsOf()|ObservableList&lt;T>|Observable&lt;T>|Emits removals from an `ObservableList`|
 |updatesOf()|ObservableList&lt;T>|Observable&lt;ListChange&lt;T>>|Emits every item that was the result of a change to an `ObservableList`, with an `ADDED`, `REMOVED`, or `UPDATED` flag|
