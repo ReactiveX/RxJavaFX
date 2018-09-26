@@ -14,11 +14,22 @@ task wrapper(type: Wrapper) {
     distributionUrl = 'https://services.gradle.org/distributions/gradle-2.8-all.zip'
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
+def currentOS = org.gradle.internal.os.OperatingSystem.current()
+def platform
+if (currentOS.isWindows()) {
+    platform = 'win'
+} else if (currentOS.isLinux()) {
+    platform = 'linux'
+} else if (currentOS.isMacOsX()) {
+    platform = 'mac'
+}
+
 
 dependencies {
     compile 'io.reactivex.rxjava2:rxjava:2.1.6'
+    compile "org.openjfx:javafx-base:11:${platform}"
+    compile "org.openjfx:javafx-graphics:11:${platform}"
+    compile "org.openjfx:javafx-controls:11:${platform}"
     testCompile 'junit:junit-dep:4.+'
     testCompile 'org.mockito:mockito-core:1.8.5'
 }
