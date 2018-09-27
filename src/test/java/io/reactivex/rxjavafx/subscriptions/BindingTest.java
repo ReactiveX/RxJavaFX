@@ -24,7 +24,6 @@ import io.reactivex.rxjavafx.schedulers.JavaFxScheduler;
 import io.reactivex.subjects.PublishSubject;
 import javafx.application.Platform;
 import javafx.beans.binding.Binding;
-import javafx.embed.swing.JFXPanel;
 import org.junit.Test;
 
 import java.util.Optional;
@@ -36,9 +35,6 @@ import static org.junit.Assert.*;
 
 public final class BindingTest {
 
-    public BindingTest() {
-        new JFXPanel();
-    }
 
     @Test
     public void testCompositeBinding() {
@@ -78,8 +74,8 @@ public final class BindingTest {
 
             Binding<String> binding = JavaFxObserver.toBinding(items);
 
-            assertTrue(emissionCount.get() == 4);
-            assertTrue(binding.getValue().equals("Delta"));
+            assertEquals(4, emissionCount.get());
+            assertEquals("Delta", binding.getValue());
             latch.countDown();
         });
 
@@ -100,11 +96,11 @@ public final class BindingTest {
             Binding<String> binding = JavaFxObserver.toNullBinding(items, nil);
             items.onNext(nil);
 
-            assertTrue(binding.getValue() == null);
+            assertNull(binding.getValue());
             items.onNext("Alpha");
-            assertTrue(binding.getValue().equals("Alpha"));
+            assertEquals("Alpha", binding.getValue());
             items.onNext(nil);
-            assertTrue(binding.getValue() == null);
+            assertNull(binding.getValue());
             latch.countDown();
         });
 
@@ -124,11 +120,11 @@ public final class BindingTest {
             Binding<String> binding = JavaFxObserver.toNullableBinding(items);
             items.onNext(Optional.empty());
 
-            assertTrue(binding.getValue() == null);
+            assertNull(binding.getValue());
             items.onNext(Optional.of("Alpha"));
-            assertTrue(binding.getValue().equals("Alpha"));
+            assertEquals("Alpha", binding.getValue());
             items.onNext(Optional.empty());
-            assertTrue(binding.getValue() == null);
+            assertNull(binding.getValue());
             latch.countDown();
         });
 
@@ -154,14 +150,14 @@ public final class BindingTest {
 
             sleep(1000);
 
-            assertTrue(emissionCount.get() == 0);
+            assertEquals(0, emissionCount.get());
 
             binding.getValue();
 
             sleep(1000);
 
-            assertTrue(emissionCount.get() == 4);
-            assertTrue(binding.getValue().equals("Delta"));
+            assertEquals(4, emissionCount.get());
+            assertEquals("Delta", binding.getValue());
             latch.countDown();
         });
 
@@ -182,11 +178,11 @@ public final class BindingTest {
             Binding<String> binding = JavaFxSubscriber.toNullBinding(items, nil);
             items.onNext(nil);
 
-            assertTrue(binding.getValue() == null);
+            assertNull(binding.getValue());
             items.onNext("Alpha");
-            assertTrue(binding.getValue().equals("Alpha"));
+            assertEquals("Alpha", binding.getValue());
             items.onNext(nil);
-            assertTrue(binding.getValue() == null);
+            assertNull(binding.getValue());
             latch.countDown();
         });
 
@@ -206,11 +202,11 @@ public final class BindingTest {
             Binding<String> binding = JavaFxSubscriber.toNullableBinding(items);
             items.onNext(Optional.empty());
 
-            assertTrue(binding.getValue() == null);
+            assertNull(binding.getValue());
             items.onNext(Optional.of("Alpha"));
-            assertTrue(binding.getValue().equals("Alpha"));
+            assertEquals("Alpha", binding.getValue());
             items.onNext(Optional.empty());
-            assertTrue(binding.getValue() == null);
+            assertNull(binding.getValue());
             latch.countDown();
         });
 
@@ -234,8 +230,8 @@ public final class BindingTest {
 
             Binding<String> binding = JavaFxSubscriber.toBinding(items);
 
-            assertTrue(emissionCount.get() == 4);
-            assertTrue(binding.getValue().equals("Delta"));
+            assertEquals(4, emissionCount.get());
+            assertEquals("Delta", binding.getValue());
             latch.countDown();
         });
 
@@ -261,14 +257,14 @@ public final class BindingTest {
 
             sleep(1000);
 
-            assertTrue(emissionCount.get() == 0);
+            assertEquals(0, emissionCount.get());
 
             binding.getValue();
 
             sleep(1000);
 
-            assertTrue(emissionCount.get() == 4);
-            assertTrue(binding.getValue().equals("Delta"));
+            assertEquals(4, emissionCount.get());
+            assertEquals("Delta", binding.getValue());
             latch.countDown();
         });
 

@@ -15,26 +15,22 @@
  */
 package io.reactivex.rxjavafx.observers;
 
-import com.sun.javafx.binding.ExpressionHelper;
 import io.reactivex.Observer;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.observables.ConnectableObservable;
-import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Binding;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
 
-final class BindingObserver<T, S> implements Observer<T>, ObservableValue<S>, Binding<S> {
+final class BindingObserver<T, S> extends ObservableListenerHelper<S> implements Observer<T>, ObservableValue<S>, Binding<S> {
 
     private final Function<T, S>           unmaskingFunction;
     private final Consumer<Throwable>      onError;
     private final ConnectableObservable<T> obs;
     private boolean connected = false;
     private Disposable          disposable;
-    private ExpressionHelper<S> helper;
     private S                   value;
 
     BindingObserver(Function<T, S> unmaskingFunction, Consumer<Throwable> onError) {
@@ -72,7 +68,7 @@ final class BindingObserver<T, S> implements Observer<T>, ObservableValue<S>, Bi
     public void onNext(T t) {
         try {
             value = unmaskingFunction.apply(t);
-            fireValueChangedEvent();
+            fireChange();
         } catch (Exception e) {
             onError(e);
         }
@@ -107,48 +103,5 @@ final class BindingObserver<T, S> implements Observer<T>, ObservableValue<S>, Bi
         if (disposable != null) {
             disposable.dispose();
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void addListener(InvalidationListener listener) {
-        helper = ExpressionHelper.addListener(helper, this, listener);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void addListener(ChangeListener<? super S> listener) {
-        helper = ExpressionHelper.addListener(helper, this, listener);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void removeListener(InvalidationListener listener) {
-        helper = ExpressionHelper.removeListener(helper, listener);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void removeListener(ChangeListener<? super S> listener) {
-        helper = ExpressionHelper.removeListener(helper, listener);
-    }
-
-    /**
-     * Notify the currently registered observers of a value change.
-     * <p>
-     * This implementation will ignore all adds and removes of observers that
-     * are done while a notification is processed. The changes take effect in
-     * the following call to fireValueChangedEvent.
-     */
-    protected void fireValueChangedEvent() {
-        ExpressionHelper.fireValueChangedEvent(helper);
     }
 }

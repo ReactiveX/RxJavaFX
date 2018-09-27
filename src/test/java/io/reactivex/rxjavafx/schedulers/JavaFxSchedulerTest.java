@@ -16,10 +16,8 @@
 package io.reactivex.rxjavafx.schedulers;
 
 import io.reactivex.Scheduler;
-import io.reactivex.rxjavafx.schedulers.JavaFxScheduler;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.embed.swing.JFXPanel;
 import javafx.stage.Stage;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -62,8 +60,7 @@ public final class JavaFxSchedulerTest {
 
     @BeforeClass
     public static void initJFX() {
-        //use panel to initialize JavaFX thread
-        JFXPanel panel = new JFXPanel();
+        javafx.application.Platform.startup(() ->{});
     }
 
     @Test
@@ -74,6 +71,7 @@ public final class JavaFxSchedulerTest {
         final CountDownLatch latch = new CountDownLatch(4);
 
         final Runnable innerAction = mock(Runnable.class);
+
         final Runnable action = () -> {
             try {
                 innerAction.run();

@@ -1,10 +1,9 @@
 buildscript {
     repositories { jcenter() }
+    repositories { mavenCentral() }
+    dependencies { classpath 'com.netflix.nebula:gradle-rxjava-project-plugin:3.+' }
 }
 
-plugins {
-    id 'nebula.rxjava-project' version '3.0.0'
-}
 apply plugin: 'java'
 
 group = 'io.reactivex.rxjava2'
@@ -24,9 +23,10 @@ if (currentOS.isWindows()) {
     platform = 'mac'
 }
 
+repositories { jcenter() }
 
 dependencies {
-    compile 'io.reactivex.rxjava2:rxjava:2.1.6'
+    compile 'io.reactivex.rxjava2:rxjava:2.2.2'
     compile "org.openjfx:javafx-base:11:${platform}"
     compile "org.openjfx:javafx-graphics:11:${platform}"
     compile "org.openjfx:javafx-controls:11:${platform}"

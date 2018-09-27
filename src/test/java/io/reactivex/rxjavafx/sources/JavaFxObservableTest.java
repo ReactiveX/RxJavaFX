@@ -16,22 +16,17 @@
 package io.reactivex.rxjavafx.sources;
 
 import io.reactivex.Observable;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.observers.TestObserver;
+import io.reactivex.rxjavafx.observables.JavaFxObservable;
+import io.reactivex.rxjavafx.schedulers.JavaFxScheduler;
 import io.reactivex.schedulers.Schedulers;
-import io.reactivex.subjects.PublishSubject;
 import javafx.application.Platform;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.embed.swing.JFXPanel;
 import javafx.util.Duration;
-import org.junit.Assert;
 import org.junit.Test;
-import io.reactivex.rxjavafx.observables.JavaFxObservable;
-import io.reactivex.rxjavafx.schedulers.JavaFxScheduler;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -42,7 +37,6 @@ public final class JavaFxObservableTest {
 
     @Test
     public void testIntervalSource() {
-        new JFXPanel();
 
         final CountDownLatch latch = new CountDownLatch(5);
 
@@ -96,7 +90,6 @@ public final class JavaFxObservableTest {
 
     @Test
     public void testRxObservableListAdds() {
-        new JFXPanel();
 
         ObservableList<String> sourceList = FXCollections.observableArrayList();
         Observable<String> emissions = JavaFxObservable.additionsOf(sourceList);
@@ -127,7 +120,6 @@ public final class JavaFxObservableTest {
 
     @Test
     public void testRxObservableListRemoves() {
-        new JFXPanel();
 
         ObservableList<String> sourceList = FXCollections.observableArrayList();
         Observable<String> emissions = JavaFxObservable.removalsOf(sourceList);
@@ -158,7 +150,7 @@ public final class JavaFxObservableTest {
 
     @Test
     public void testRxObservableListChanges() {
-        new JFXPanel();
+        //new JFXPanel()();
 
         ObservableList<String> sourceList = FXCollections.observableArrayList();
         Observable<ListChange<String>> emissions = JavaFxObservable.changesOf(sourceList);
@@ -202,7 +194,6 @@ public final class JavaFxObservableTest {
 
     @Test
     public void testRxObservableListDistinctChangeMappings() {
-        new JFXPanel();
 
         ObservableList<String> sourceList = FXCollections.observableArrayList();
         Observable<ListChange<Integer>> emissions = JavaFxObservable.distinctMappingsOf(sourceList, String::length);
@@ -248,7 +239,7 @@ public final class JavaFxObservableTest {
 
     @Test
     public void testRxObservableListDistinctChanges() {
-        new JFXPanel();
+        //new JFXPanel()();
 
         ObservableList<String> sourceList = FXCollections.observableArrayList();
         Observable<ListChange<String>> emissions = JavaFxObservable.distinctChangesOf(sourceList);
@@ -294,7 +285,6 @@ public final class JavaFxObservableTest {
 
     @Test
     public void testRxObservableListUpdates() {
-        new JFXPanel();
 
         class Person {
             Property<String> name;
