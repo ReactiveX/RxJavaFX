@@ -1,13 +1,29 @@
 buildscript {
     repositories { jcenter() }
     repositories { mavenCentral() }
-    dependencies { classpath 'com.netflix.nebula:gradle-rxjava-project-plugin:3.+' }
+    classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3"
+    classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.5.2"
 }
 
-apply plugin: 'java'
 
 group = 'io.reactivex.rxjava2'
 
+version = project.properties["release.version"]
+
+def releaseTag = System.getenv("TRAVIS_TAG");
+if (releaseTag != null && !releaseTag.isEmpty()) {
+    if (releaseTag.startsWith("v")) {
+        releaseTag = releaseTag.substring(1);
+    }
+    version = releaseTag;
+    project.properties.put("release.version", releaseTag);
+
+    println("Releasing with version " + version);
+}
+
+apply plugin: 'java'
+apply plugin: "com.jfrog.bintray"
+apply plugin: "com.jfrog.artifactory"
 
 def currentOS = org.gradle.internal.os.OperatingSystem.current()
 def platform
@@ -30,3 +46,124 @@ dependencies {
     testCompile 'org.mockito:mockito-core:1.8.5'
 }
 
+
+
+apply plugin: "maven-publish"
+
+install {
+    repositories.mavenInstaller.pom.project {
+        name "RxJava"
+        description "Reactive Extensions for Java"
+        url "https://github.com/ReactiveX/RxJava"
+        licenses {
+            license {
+                name "The Apache Software License, Version 2.0"
+                url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                distribution "repo"
+            }
+        }
+        developers {
+            developer {
+                id "akarnokd"
+                name "David Karnok"
+                email "akarnokd@gmail.com"
+            }
+        }
+        scm {
+            connection "scm:git:git@github.com:ReactiveX/RxJava.git"
+            url "scm:git:git@github.com:ReactiveX/RxJava.git"
+            developerConnection "scm:git:git@github.com:ReactiveX/RxJava.git"
+        }
+        issueManagement {
+            system "github"
+            url "https://github.com/ReactiveX/RxJava/issues"
+        }
+    }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact (sourcesJar) {
+                classifier = "sources"
+            }
+        }
+    }
+}
+
+// Reactive-Streams as compile dependency
+publishing.publications.all {
+    pom.withXml {
+        asNode().dependencies."*".findAll() {
+            it.scope.text() == "runtime" && project.configurations.compile.allDependencies.find { dep ->
+                dep.name == it.artifactId.text()
+            }
+        }.each { it.scope*.value = "compile"}
+    }
+}
+
+
+
+if (rootProject.hasProperty("releaseMode")) {
+
+    if ("branch".equals(rootProject.releaseMode)) {
+        // From https://github.com/ReactiveX/RxAndroid/blob/2.x/rxandroid/build.gradle#L94
+
+        println("ReleaseMode: " + rootProject.releaseMode);
+        artifactory {
+            contextUrl = "https://oss.jfrog.org"
+
+            publish {
+                repository {
+                    repoKey = "oss-snapshot-local"
+
+                    username = rootProject.bintrayUser
+                    password = rootProject.bintrayKey
+                }
+
+                defaults {
+                    publishConfigs("archives")
+                }
+            }
+        }
+
+        build.finalizedBy(artifactoryPublish)
+    }
+
+    if ("full".equals(rootProject.releaseMode)) {
+        // based on https://github.com/bintray/gradle-bintray-plugin
+        def rver = version;
+
+        println("ReleaseMode: " + rootProject.releaseMode + " version " + rver);
+
+        bintray {
+            user = rootProject.bintrayUser
+            key = rootProject.bintrayKey
+            configurations = ["archives"]
+            publish = true
+            pkg {
+                repo = "RxJava"
+                name = "RxJava"
+                userOrg = "reactivex"
+                labels = ["rxjava", "reactivex"]
+                licenses = ["Apache-2.0"]
+                vcsUrl = "https://github.com/ReactiveX/RxJava.git"
+                version {
+                    name = rver
+                    gpg {
+                        sign = true
+                    }
+                    mavenCentralSync {
+                        sync = true
+                        user = rootProject.sonatypeUsername
+                        password = rootProject.sonatypePassword
+                        close = "1"
+                    }
+                }
+            }
+        }
+
+        build.finalizedBy(bintrayUpload)
+    }
+}
