@@ -1,6 +1,11 @@
 buildscript {
-    repositories { jcenter() }
-    repositories { mavenCentral() }
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
 
     dependencies {
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3"
@@ -9,7 +14,8 @@ buildscript {
 }
 
 
-group = 'io.reactivex.rxjava2'
+group = "io.reactivex.rxjava2"
+ext.githubProjectName = "rxjavafx"
 
 version = project.properties["release.version"]
 
@@ -24,9 +30,16 @@ if (releaseTag != null && !releaseTag.isEmpty()) {
     println("Releasing with version " + version);
 }
 
-apply plugin: 'java'
+
+apply plugin: "java"
+apply plugin: "maven"
 apply plugin: "com.jfrog.bintray"
 apply plugin: "com.jfrog.artifactory"
+
+
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
 
 def currentOS = org.gradle.internal.os.OperatingSystem.current()
 def platform
@@ -38,7 +51,9 @@ if (currentOS.isWindows()) {
     platform = 'mac'
 }
 
-repositories { jcenter() }
+repositories {
+    mavenCentral()
+}
 
 dependencies {
     compile 'io.reactivex.rxjava2:rxjava:2.2.2'
@@ -51,13 +66,31 @@ dependencies {
 
 
 
+task sourcesJar(type: Jar, dependsOn: classes) {
+    classifier = "sources"
+    from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = "javadoc"
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives jar
+    archives sourcesJar
+    archives javadocJar
+}
+
+
+
 apply plugin: "maven-publish"
 
 install {
     repositories.mavenInstaller.pom.project {
-        name "RxJava"
-        description "Reactive Extensions for Java"
-        url "https://github.com/ReactiveX/RxJava"
+        name "RxJavaFX"
+        description "RxJava Extensions for JavaFX"
+        url "https://github.com/ReactiveX/RxJavaFX"
         licenses {
             license {
                 name "The Apache Software License, Version 2.0"
@@ -67,19 +100,19 @@ install {
         }
         developers {
             developer {
-                id "akarnokd"
-                name "David Karnok"
-                email "akarnokd@gmail.com"
+                id "thomasnield"
+                name "Thomas Nield"
+                email "thomasnield@live.com"
             }
         }
         scm {
-            connection "scm:git:git@github.com:ReactiveX/RxJava.git"
-            url "scm:git:git@github.com:ReactiveX/RxJava.git"
-            developerConnection "scm:git:git@github.com:ReactiveX/RxJava.git"
+            connection "scm:git:git@github.com:ReactiveX/RxJavaFX.git"
+            url "scm:git:git@github.com:ReactiveX/RxJavaFX.git"
+            developerConnection "scm:git:git@github.com:ReactiveX/RxJavaFX.git"
         }
         issueManagement {
             system "github"
-            url "https://github.com/ReactiveX/RxJava/issues"
+            url "https://github.com/ReactiveX/RxJavaFX/issues"
         }
     }
 }
@@ -146,12 +179,12 @@ if (rootProject.hasProperty("releaseMode")) {
             configurations = ["archives"]
             publish = true
             pkg {
-                repo = "RxJava"
-                name = "RxJava"
+                repo = "RxJavaFX"
+                name = "RxJavaFX"
                 userOrg = "reactivex"
-                labels = ["rxjava", "reactivex"]
+                labels = ["rxjavafx", "reactivex"]
                 licenses = ["Apache-2.0"]
-                vcsUrl = "https://github.com/ReactiveX/RxJava.git"
+                vcsUrl = "https://github.com/ReactiveX/RxJavaFX.git"
                 version {
                     name = rver
                     gpg {

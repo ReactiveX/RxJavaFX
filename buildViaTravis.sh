@@ -1,4 +1,11 @@
 
+#!/bin/bash
+# This script will build the project.
+
+buildTag="$TRAVIS_TAG"
+
+export GRADLE_OPTS=-Xmx1024m
+
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
   echo -e "Build Pull Request #$TRAVIS_PULL_REQUEST => Branch [$TRAVIS_BRANCH]"
   ./gradlew -PreleaseMode=pr build
