@@ -15,7 +15,7 @@ buildscript {
 
 
 group = "io.reactivex.rxjava2"
-ext.githubProjectName = "rxjavafx"
+ext.githubProjectName = "RxJavaFX"
 
 version = project.properties["release.version"]
 
@@ -30,7 +30,7 @@ if (releaseTag != null && !releaseTag.isEmpty()) {
     println("Releasing with version " + version);
 }
 
-
+apply plugin: "java-library"
 apply plugin: "java"
 apply plugin: "maven"
 apply plugin: "com.jfrog.bintray"
@@ -134,6 +134,7 @@ publishing.publications.all {
 
 if (rootProject.hasProperty("releaseMode")) {
 
+    /*
     if ("branch".equals(rootProject.releaseMode)) {
         // From https://github.com/ReactiveX/RxAndroid/blob/2.x/rxandroid/build.gradle#L94
 
@@ -157,6 +158,7 @@ if (rootProject.hasProperty("releaseMode")) {
 
         build.finalizedBy(artifactoryPublish)
     }
+    */
 
     if ("full".equals(rootProject.releaseMode)) {
         // based on https://github.com/bintray/gradle-bintray-plugin
