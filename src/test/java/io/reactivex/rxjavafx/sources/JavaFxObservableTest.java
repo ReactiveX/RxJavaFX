@@ -25,6 +25,7 @@ import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.util.Duration;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -34,6 +35,11 @@ import java.util.concurrent.CountDownLatch;
 import static org.junit.Assert.assertTrue;
 
 public final class JavaFxObservableTest {
+
+    @BeforeClass
+    public static void initJFX() {
+        javafx.application.Platform.startup(() ->{});
+    }
 
     @Test
     public void testIntervalSource() {
@@ -87,6 +93,27 @@ public final class JavaFxObservableTest {
 
         testObserver.assertValueCount(3);
     }
+    @Test
+    public void testRxObservableChanges() {
+        Property<String> sourceProperty = new SimpleStringProperty();
+        Observable<Change<String>> emissions = JavaFxObservable.changesOf(sourceProperty).take(4);
+
+        TestObserver<Change<String>> testObserver = new TestObserver<>();
+
+        emissions.subscribe(testObserver);
+
+        sourceProperty.setValue("Alpha");
+        sourceProperty.setValue("Beta");
+        sourceProperty.setValue(null);
+        sourceProperty.setValue("Gamma");
+
+        testObserver.assertValues(
+                        new Change<>(null, "Alpha"),
+                        new Change<>("Alpha", "Beta"),
+                        new Change<>("Beta", null),
+                        new Change<>(null, "Gamma")
+        );
+    }
 
     @Test
     public void testRxObservableListAdds() {
@@ -101,7 +128,7 @@ public final class JavaFxObservableTest {
                 .take(3)
                 .toList()
                 .toObservable()
-                .subscribe(l -> assertTrue(l.containsAll(Arrays.asList("Alpha","Beta","Gamma"))),Throwable::printStackTrace,gate::countDown);
+                .subscribe(l -> assertTrue(l.equals(Arrays.asList("Alpha", "Beta", "Gamma"))), Throwable::printStackTrace, gate::countDown);;
 
         Platform.runLater(() -> {
             sourceList.add("Alpha");
