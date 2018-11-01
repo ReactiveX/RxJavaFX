@@ -36,11 +36,6 @@ import static org.junit.Assert.assertTrue;
 
 public final class JavaFxObservableTest {
 
-    @BeforeClass
-    public static void initJFX() {
-        javafx.application.Platform.startup(() ->{});
-    }
-
     @Test
     public void testIntervalSource() {
 
