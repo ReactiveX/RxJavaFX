@@ -15,6 +15,8 @@
  */
 package io.reactivex.rxjavafx.sources;
 
+import java.util.Objects;
+
 public final class Change<T> {
     private final T oldVal;
     private final T newVal;
@@ -28,5 +30,27 @@ public final class Change<T> {
     }
     public T getNewVal() {
         return newVal;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Change<?> change = (Change<?>) o;
+        return Objects.equals(oldVal, change.oldVal) &&
+                Objects.equals(newVal, change.newVal);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(oldVal, newVal);
+    }
+
+    @Override
+    public String toString() {
+        return "Change{" +
+                "oldVal=" + oldVal +
+                ", newVal=" + newVal +
+                '}';
     }
 }
