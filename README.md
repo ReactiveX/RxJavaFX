@@ -10,7 +10,7 @@ RxJavaFX is a lightweight library to convert JavaFX events into [RxJava](https:/
 
 ## Master Build Status
 
-<a href='https://travis-ci.org/ReactiveX/RxJavaFX/builds'><img src='https://travis-ci.org/ReactiveX/RxJavaFX.svg?branch=0.x'></a>
+<a href='https://travis-ci.org/ReactiveX/RxJavaFX/builds'><img src='https://travis-ci.org/ReactiveX/RxJavaFX.svg?branch=2.11.x'></a>
 
 ## Documentation
 
