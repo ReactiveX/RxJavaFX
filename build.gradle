@@ -169,7 +169,7 @@ if (rootProject.hasProperty("releaseMode")) {
             configurations = ["archives"]
             publish = true
             pkg {
-                repo = "RxJavaFX"
+                repo = "rxjavafx"
                 name = "RxJavaFX"
                 userOrg = "reactivex"
                 labels = ["rxjavafx", "reactivex"]
