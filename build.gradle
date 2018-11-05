@@ -32,7 +32,7 @@ if (releaseTag != null && !releaseTag.isEmpty()) {
 
 apply plugin: "java-library"
 apply plugin: "java"
-apply plugin: "maven"
+apply plugin: "maven-publish"
 apply plugin: "com.jfrog.bintray"
 apply plugin: "com.jfrog.artifactory"
 
@@ -70,49 +70,40 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = "sources"
     from sourceSets.main.allSource
 }
-artifacts {
-    archives jar
-}
-
-apply plugin: "maven-publish"
-
-install {
-    repositories.mavenInstaller.pom.project {
-        name "RxJavaFX"
-        description "RxJava Extensions for JavaFX"
-        url "https://github.com/ReactiveX/RxJavaFX"
-        licenses {
-            license {
-                name "The Apache Software License, Version 2.0"
-                url "http://www.apache.org/licenses/LICENSE-2.0.txt"
-                distribution "repo"
-            }
-        }
-        developers {
-            developer {
-                id "thomasnield"
-                name "Thomas Nield"
-                email "thomasnield@live.com"
-            }
-        }
-        scm {
-            connection "scm:git:git@github.com:ReactiveX/RxJavaFX.git"
-            url "scm:git:git@github.com:ReactiveX/RxJavaFX.git"
-            developerConnection "scm:git:git@github.com:ReactiveX/RxJavaFX.git"
-        }
-        issueManagement {
-            system "github"
-            url "https://github.com/ReactiveX/RxJavaFX/issues"
-        }
-    }
-}
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
-            artifact (sourcesJar) {
-                classifier = "sources"
+            artifact sourcesJar
+
+            pom {
+                name = "RxJavaFX"
+                description = "RxJava Extensions for JavaFX"
+                url = "https://github.com/ReactiveX/RxJavaFX"
+                licenses {
+                    license {
+                        name = "The Apache Software License, Version 2.0"
+                        url = "http://www.apache.org/licenses/LICENSE-2.0.txt"
+                        distribution = "repo"
+                    }
+                }
+                developers {
+                    developer {
+                        id = "thomasnield"
+                        name = "Thomas Nield"
+                        email = "thomasnield@live.com"
+                    }
+                }
+                scm {
+                    connection = "scm:git:git@github.com:ReactiveX/RxJavaFX.git"
+                    developerConnection = "scm:git:git@github.com:ReactiveX/RxJavaFX.git"
+                    url = "scm:git:git@github.com:ReactiveX/RxJavaFX.git"
+                }
+                issueManagement {
+                    system = "github"
+                    url = "https://github.com/ReactiveX/RxJavaFX/issues"
+                }
             }
         }
     }
@@ -149,7 +140,7 @@ if (rootProject.hasProperty("releaseMode")) {
                 }
 
                 defaults {
-                    publishConfigs("archives")
+                    publications = ["mavenJava"]
                 }
             }
         }
@@ -166,7 +157,7 @@ if (rootProject.hasProperty("releaseMode")) {
         bintray {
             user = rootProject.bintrayUser
             key = rootProject.bintrayKey
-            configurations = ["archives"]
+            publications = ["mavenJava"]
             publish = true
             pkg {
                 repo = "rxjavafx"
