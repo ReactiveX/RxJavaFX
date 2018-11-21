@@ -17,7 +17,7 @@ buildscript {
 group = "io.reactivex.rxjava2"
 ext.githubProjectName = "RxJavaFX"
 
-version = "2.11.0-RC7"
+version = "2.11.0-RC8"
 
 /*
 def releaseTag = System.getenv("TRAVIS_TAG");
@@ -77,7 +77,7 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
-            artifact sourcesJar
+            //artifact sourcesJar
 
             pom {
                 name = "RxJavaFX"
