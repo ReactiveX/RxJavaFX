@@ -17,7 +17,7 @@ buildscript {
 group = "io.reactivex.rxjava2"
 ext.githubProjectName = "RxJavaFX"
 
-version = "2.11.0-RC5"
+version = "2.11.0-RC6"
 
 /*
 def releaseTag = System.getenv("TRAVIS_TAG");
@@ -162,10 +162,10 @@ if (rootProject.hasProperty("releaseMode")) {
             publications = ["mavenJava"]
             publish = true
             pkg {
-                repo = "rxjavafx"
-                name = "RxJavaFX"
+                repo = "RxJava"
+                name = "rxjavafx"
                 userOrg = "reactivex"
-                labels = ["rxjavafx", "reactivex"]
+                labels = ["rxjava", "reactivex"]
                 licenses = ["Apache-2.0"]
                 vcsUrl = "https://github.com/ReactiveX/RxJavaFX.git"
                 version {
