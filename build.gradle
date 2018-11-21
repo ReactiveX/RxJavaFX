@@ -24,6 +24,11 @@ sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
 
 
+boolean isReleaseBuild = gradle.startParameter.taskNames.contains('bintrayUpload')
+version = isReleaseBuild ? VERSION_NAME : "$VERSION_NAME-SNAPSHOT"
+logger.info("RxJavaFX using version=$project.version")
+
+
 def currentOS = org.gradle.internal.os.OperatingSystem.current()
 def platform
 if (currentOS.isWindows()) {
@@ -47,8 +52,25 @@ dependencies {
     testCompile 'org.mockito:mockito-core:1.8.5'
 }
 
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
 
-apply from: "$rootDir/gradle/artifacts.gradle"
+artifacts {
+    archives sourcesJar
+}
+
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            artifact sourcesJar
+        }
+    }
+}
+
 
 install {
     repositories.mavenInstaller.pom.project {
