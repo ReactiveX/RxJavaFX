@@ -17,7 +17,7 @@ buildscript {
 group = "io.reactivex.rxjava2"
 ext.githubProjectName = "RxJavaFX"
 
-version = "2.11.0-RC9"
+version = "2.11.0-RC10"
 
 /*
 def releaseTag = System.getenv("TRAVIS_TAG");
@@ -111,18 +111,6 @@ publishing {
     }
 }
 
-// Reactive-Streams as compile dependency
-publishing.publications.all {
-    pom.withXml {
-        asNode().dependencies."*".findAll() {
-            it.scope.text() == "runtime" && project.configurations.compile.allDependencies.find { dep ->
-                dep.name == it.artifactId.text()
-            }
-        }.each { it.scope*.value = "compile"}
-    }
-}
-
-
 
 if (rootProject.hasProperty("releaseMode")) {
 
@@ -152,9 +140,8 @@ if (rootProject.hasProperty("releaseMode")) {
 
     if ("full".equals(rootProject.releaseMode)) {
         // based on https://github.com/bintray/gradle-bintray-plugin
-        def rver = version;
 
-        println("ReleaseMode: " + rootProject.releaseMode + " version " + rver);
+        println("ReleaseMode: " + rootProject.releaseMode + " version " + version);
 
         bintray {
             user = rootProject.bintrayUser
@@ -162,14 +149,14 @@ if (rootProject.hasProperty("releaseMode")) {
             publications = ["mavenJava"]
             publish = true
             pkg {
-                repo = "RxJava/io/reactivex/rxjava2/rxjavafx"
+                repo = "RxJavaFX"
                 name = "RxJavaFX"
                 userOrg = "reactivex"
                 labels = ["rxjava", "reactivex"]
                 licenses = ["Apache-2.0"]
                 vcsUrl = "https://github.com/ReactiveX/RxJavaFX.git"
                 version {
-                    name = rver
+                    name = version
                     gpg {
                         sign = true
                     }
@@ -185,4 +172,37 @@ if (rootProject.hasProperty("releaseMode")) {
 
         build.finalizedBy(bintrayUpload)
     }
+}
+
+
+
+
+
+bintray {
+    configurations = ['archives']
+
+    publish = true
+
+    pkg {
+        repo = 'RxJava'
+        name = 'RxJavaFX'
+        userOrg = 'reactivex'
+        licenses = ['Apache-2.0']
+        labels = ['rxjava', 'reactivex']
+        websiteUrl = 'https://github.com/ReactiveX/RxJavaFX/'
+        issueTrackerUrl = 'https://github.com/ReactiveX/RxJavaFX/issues'
+        vcsUrl = "https://github.com/ReactiveX/RxJavaFX.git"
+    }
+}
+
+if (project.hasProperty('bintrayUser') && project.hasProperty('bintrayKey')) {
+    bintray.user = project.bintrayUser
+    bintray.key = project.bintrayKey
+}
+
+if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
+    def sync = bintray.pkg.version.mavenCentralSync
+    sync.sync = true
+    sync.user = project.sonatypeUsername
+    sync.password = project.sonatypePassword
 }
