@@ -17,8 +17,9 @@ buildscript {
 group = "io.reactivex.rxjava2"
 ext.githubProjectName = "RxJavaFX"
 
-version = project.properties["release.version"]
+version = "2.11.0-RC1"
 
+/*
 def releaseTag = System.getenv("TRAVIS_TAG");
 if (releaseTag != null && !releaseTag.isEmpty()) {
     if (releaseTag.startsWith("v")) {
@@ -29,6 +30,7 @@ if (releaseTag != null && !releaseTag.isEmpty()) {
 
     println("Releasing with version " + version);
 }
+*/
 
 apply plugin: "java-library"
 apply plugin: "java"
