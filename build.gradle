@@ -13,25 +13,6 @@ buildscript {
     }
 }
 
-
-group = "io.reactivex.rxjava2"
-ext.githubProjectName = "RxJavaFX"
-
-version = "2.11.0-RC11"
-
-/*
-def releaseTag = System.getenv("TRAVIS_TAG");
-if (releaseTag != null && !releaseTag.isEmpty()) {
-    if (releaseTag.startsWith("v")) {
-        releaseTag = releaseTag.substring(1);
-    }
-    version = releaseTag;
-    project.properties.put("release.version", releaseTag);
-
-    println("Releasing with version " + version);
-}
-*/
-
 apply plugin: "java-library"
 apply plugin: "java"
 apply plugin: "maven-publish"
@@ -67,12 +48,37 @@ dependencies {
 }
 
 
+apply from: "$rootDir/gradle/artifacts.gradle"
 
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = "sources"
-    from sourceSets.main.allSource
+install {
+    repositories.mavenInstaller.pom.project {
+        name POM_NAME
+        description POM_DESCRIPTION
+        packaging POM_PACKAGING
+        url POM_URL
+
+        licenses {
+            license {
+                name POM_LICENCE_NAME
+                url POM_LICENCE_URL
+                distribution POM_LICENCE_DIST
+            }
+        }
+
+        scm {
+            url POM_SCM_URL
+            connection POM_SCM_CONNECTION
+            developerConnection POM_SCM_DEV_CONNECTION
+        }
+
+        developers {
+            developer {
+                id 'thomasnield'
+                name 'Thomas Nield'
+            }
+        }
+    }
 }
-
 
 bintray {
     configurations = ['archives']
