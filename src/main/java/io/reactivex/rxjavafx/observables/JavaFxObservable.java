@@ -217,7 +217,6 @@ public enum JavaFxObservable {
      * Creates an observable that emits all updated items from an ObservableList.
      * If you declare an ObservableList that listens to one or more properties of each element,
      * you can emit the changed items every time these properties are modified
-     * <pre>ObservableList<Person> sourceList = FXCollections.observableArrayList(user -> new javafx.beans.Observable[]{user.age} );</pre>
      * @param source      The target ObservableList for the item update events
      *
      * @return An Observable emitting items updated in the ObservableList
