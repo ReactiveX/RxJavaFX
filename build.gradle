@@ -66,8 +66,9 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
-            //artifact sourcesJar
-
+            artifact sourcesJar
+            groupId GROUP
+            version VERSION_NAME
             pom {
                 name = POM_NAME
                 description = POM_DESCRIPTION
