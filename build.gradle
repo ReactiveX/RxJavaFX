@@ -117,16 +117,22 @@ bintray {
         issueTrackerUrl = 'https://github.com/ReactiveX/RxJavaFX/issues'
         vcsUrl = "https://github.com/ReactiveX/RxJavaFX.git"
     }
-}
 
-if (project.hasProperty('bintrayUser') && project.hasProperty('bintrayKey')) {
-    bintray.user = project.bintrayUser
-    bintray.key = project.bintrayKey
-}
+    version {
+        name = VERSION_NAME
+        vcsTag = VERSION_NAME
 
-if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
-    def sync = bintray.pkg.version.mavenCentralSync
-    sync.sync = true
-    sync.user = project.sonatypeUsername
-    sync.password = project.sonatypePassword
+
+        if (project.hasProperty('bintrayUser') && project.hasProperty('bintrayKey')) {
+            user = project.bintrayUser
+            key = project.bintrayKey
+        }
+        
+        if (project.hasProperty('sonatypeUsername') && project.hasProperty('sonatypePassword')) {
+            sync.sync = true
+            user = project.sonatypeUsername
+            password = project.sonatypePassword
+            close = '1' //Optional property. By default the staging repository is closed and artifacts are released to Maven Central. You can optionally turn this behaviour off (by puting 0 as value) and release the version manually.
+        }
+    }
 }
