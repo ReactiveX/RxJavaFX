@@ -66,16 +66,6 @@ publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
-            artifact sourcesJar
-        }
-    }
-}
-
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
             //artifact sourcesJar
 
             pom {
