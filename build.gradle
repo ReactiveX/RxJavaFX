@@ -72,35 +72,44 @@ publishing {
 }
 
 
-install {
-    repositories.mavenInstaller.pom.project {
-        name POM_NAME
-        description POM_DESCRIPTION
-        packaging POM_PACKAGING
-        url POM_URL
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            //artifact sourcesJar
 
-        licenses {
-            license {
-                name POM_LICENCE_NAME
-                url POM_LICENCE_URL
-                distribution POM_LICENCE_DIST
-            }
-        }
-
-        scm {
-            url POM_SCM_URL
-            connection POM_SCM_CONNECTION
-            developerConnection POM_SCM_DEV_CONNECTION
-        }
-
-        developers {
-            developer {
-                id 'thomasnield'
-                name 'Thomas Nield'
+            pom {
+                name = POM_NAME
+                description = POM_DESCRIPTION
+                url = POM_URL
+                licenses {
+                    license {
+                        name = POM_LICENCE_NAME
+                        url = POM_SCM_URL
+                        distribution = POM_LICENCE_DIST
+                    }
+                }
+                developers {
+                    developer {
+                        id = "thomasnield"
+                        name = "Thomas Nield"
+                        email = "thomasnield@live.com"
+                    }
+                }
+                scm {
+                    connection = POM_SCM_CONNECTION
+                    developerConnection = POM_SCM_DEV_CONNECTION
+                    url = "scm:git:git@github.com:ReactiveX/RxJavaFX.git"
+                }
+                issueManagement {
+                    system = "github"
+                    url = "https://github.com/ReactiveX/RxJavaFX/issues"
+                }
             }
         }
     }
 }
+
 
 bintray {
     configurations = ['archives']
