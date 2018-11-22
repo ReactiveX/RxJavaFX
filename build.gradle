@@ -120,11 +120,14 @@ bintray {
         version {
             name = VERSION_NAME
             vcsTag = VERSION_NAME
-
+            gpg {
+                sign = true
+            }
             mavenCentralSync {
                 sync = true
-                user = project.sonatypeUsername
-                password = project.sonatypePassword
+                user = rootProject.sonatypeUsername
+                password = rootProject.sonatypePassword
+                close = "1"
             }
         }
 
