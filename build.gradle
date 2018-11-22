@@ -57,8 +57,14 @@ task sourcesJar(type: Jar) {
     from sourceSets.main.allSource
 }
 
+task javadoc {
+    source = sourceSets.main.allJava
+    classpath = configurations.compile
+}
+
 artifacts {
     archives sourcesJar
+    archives javadoc
 }
 
 
