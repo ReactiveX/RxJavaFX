@@ -128,7 +128,6 @@ bintray {
     pom {
         name = POM_NAME
         description = POM_DESCRIPTION
-        url = POM_URL
         licenses {
             license {
                 name = POM_LICENCE_NAME
