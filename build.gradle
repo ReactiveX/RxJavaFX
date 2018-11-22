@@ -13,13 +13,13 @@ buildscript {
     }
 }
 
-apply plugin: "java-library"
 apply plugin: "java"
 apply plugin: "maven-publish"
 apply plugin: "com.jfrog.bintray"
 apply plugin: "com.jfrog.artifactory"
 
 
+group = GROUP
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
 
