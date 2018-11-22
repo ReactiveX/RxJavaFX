@@ -52,6 +52,10 @@ dependencies {
     testCompile 'org.mockito:mockito-core:1.8.5'
 }
 
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.10.2' //version required
+}
+
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     from sourceSets.main.allSource
