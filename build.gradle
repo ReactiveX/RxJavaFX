@@ -49,7 +49,7 @@ dependencies {
     compile "org.openjfx:javafx-base:11:${platform}"
     compile "org.openjfx:javafx-graphics:11:${platform}"
     compile "org.openjfx:javafx-controls:11:${platform}"
-    testCompile 'junit:junit-dep:4.12'
+    testCompile 'junit:junit-dep:4.11'
     testCompile 'org.mockito:mockito-core:1.8.5'
 }
 
