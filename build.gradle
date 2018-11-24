@@ -45,11 +45,11 @@ repositories {
 }
 
 dependencies {
-    compile 'io.reactivex.rxjava2:rxjava:2.2.2'
+    compile 'io.reactivex.rxjava2:rxjava:2.2.4'
     compile "org.openjfx:javafx-base:11:${platform}"
     compile "org.openjfx:javafx-graphics:11:${platform}"
     compile "org.openjfx:javafx-controls:11:${platform}"
-    testCompile 'junit:junit-dep:4.+'
+    testCompile 'junit:junit-dep:4.12'
     testCompile 'org.mockito:mockito-core:1.8.5'
 }
 
@@ -124,35 +124,6 @@ bintray {
     configurations = ['archives']
 
     publish = true
-
-    pom {
-        name = POM_NAME
-        description = POM_DESCRIPTION
-        licenses {
-            license {
-                name = POM_LICENCE_NAME
-                url = POM_SCM_URL
-                distribution = POM_LICENCE_DIST
-            }
-        }
-        developers {
-            developer {
-                id = "thomasnield"
-                name = "Thomas Nield"
-                email = "thomasnield@live.com"
-            }
-        }
-        scm {
-            connection = POM_SCM_CONNECTION
-            developerConnection = POM_SCM_DEV_CONNECTION
-            url = "scm:git:git@github.com:ReactiveX/RxJavaFX.git"
-        }
-        issueManagement {
-            system = "github"
-            url = "https://github.com/ReactiveX/RxJavaFX/issues"
-        }
-    }
-
     pkg {
         repo = 'RxJava'
         name = 'RxJavaFX'
