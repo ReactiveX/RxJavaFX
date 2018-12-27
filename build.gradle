@@ -91,7 +91,6 @@ publishing {
             version VERSION_NAME
             artifactId ARTIFACT_ID
 
-
             pom {
                 name = POM_NAME
                 description = POM_DESCRIPTION
