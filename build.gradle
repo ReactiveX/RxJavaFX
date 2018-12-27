@@ -89,10 +89,14 @@ publishing {
 
             groupId GROUP
             version VERSION_NAME
+            artifactId ARTIFACT_ID
+
+
             pom {
                 name = POM_NAME
                 description = POM_DESCRIPTION
                 url = POM_URL
+
                 licenses {
                     license {
                         name = POM_LICENCE_NAME
@@ -105,6 +109,8 @@ publishing {
                         id = "thomasnield"
                         name = "Thomas Nield"
                         email = "thomasnield@live.com"
+                        organization = "ReactiveX"
+                        organizationUrl = "http://reactivex.io/"
                     }
                 }
                 scm {
