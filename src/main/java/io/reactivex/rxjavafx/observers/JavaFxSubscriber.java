@@ -18,6 +18,7 @@ package io.reactivex.rxjavafx.observers;
 import io.reactivex.Flowable;
 import io.reactivex.flowables.ConnectableFlowable;
 import io.reactivex.functions.Consumer;
+import io.reactivex.plugins.RxJavaPlugins;
 import io.reactivex.rxjavafx.observables.JavaFxObservable;
 import javafx.beans.binding.Binding;
 import javafx.beans.value.ObservableValue;
@@ -141,6 +142,6 @@ public enum JavaFxSubscriber {
     }
 
     private static void onError(Throwable t) {
-        // nothing
+        RxJavaPlugins.onError(t);
     }
 }
