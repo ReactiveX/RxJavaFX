@@ -151,7 +151,7 @@ Note that many Nodes in JavaFX will have an initial value, which sometimes can b
 
 ##### ObservableValue Changes
 
-For every change to an `ObservableValue`, you can emit the old value and new value as a pair. The two values will be wrapped up in a `Change` class and you can access them via `getOldVal()` and `getNewVal()`. Just call the `JavaFxObservable.valuesOfChanges()` factory. 
+For every change to an `ObservableValue`, you can emit the old value and new value as a pair. The two values will be wrapped up in a `Change` class and you can access them via `getOldVal()` and `getNewVal()`. Just call the `JavaFxObservable.changesOf()` factory. 
 
 ```java
 SpinnerValueFactory<Integer> svf = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 100);
