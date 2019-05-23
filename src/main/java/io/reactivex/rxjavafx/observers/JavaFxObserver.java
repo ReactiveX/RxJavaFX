@@ -15,14 +15,15 @@
  */
 package io.reactivex.rxjavafx.observers;
 
+import java.util.Optional;
+
 import io.reactivex.Observable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.observables.ConnectableObservable;
+import io.reactivex.plugins.RxJavaPlugins;
 import io.reactivex.rxjavafx.observables.JavaFxObservable;
 import javafx.beans.binding.Binding;
 import javafx.beans.value.ObservableValue;
-
-import java.util.Optional;
 
 public enum JavaFxObserver {
     ;//no instances
@@ -141,6 +142,6 @@ public enum JavaFxObserver {
     }
 
     private static void onError(Throwable t) {
-        // nothing
+        RxJavaPlugins.onError(t);
     }
 }
