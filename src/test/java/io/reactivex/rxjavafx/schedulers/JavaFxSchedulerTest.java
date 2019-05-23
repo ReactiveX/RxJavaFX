@@ -58,10 +58,13 @@ public final class JavaFxSchedulerTest {
         }
     }
 
-    @BeforeClass
-    public static void initJFX() {
-        javafx.application.Platform.startup(() ->{});
-    }
+	@BeforeClass
+	public static void initJFX() {
+		try {
+			javafx.application.Platform.startup(() ->{});
+		}catch(final IllegalStateException ignore) {
+		}
+	}
 
     @Test
     public void testPeriodicScheduling() throws Exception {

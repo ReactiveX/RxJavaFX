@@ -36,6 +36,14 @@ import static org.junit.Assert.assertTrue;
 
 public final class JavaFxObservableTest {
 
+	@BeforeClass
+	public static void initJFX() {
+		try {
+			javafx.application.Platform.startup(() ->{});
+		}catch(final IllegalStateException ignore) {
+		}
+	}
+
     @Test
     public void testIntervalSource() {
 
