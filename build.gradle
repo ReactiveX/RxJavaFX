@@ -70,13 +70,11 @@ javadoc {
     source = sourceSets.main.allJava
     classpath = configurations.compileClasspath
 
-    options
-            {
-                setMemberLevel JavadocMemberLevel.PUBLIC
-                setAuthor true
-
-                links "https://docs.oracle.com/javase/8/docs/api/"
-            }
+    options {
+        setMemberLevel JavadocMemberLevel.PUBLIC
+        setAuthor true
+//        links "https://docs.oracle.com/javase/8/docs/api/" // causes build to fail on openjdk-11.0.2+9
+    }
 }
 
 task packageJavadoc(type: Jar) {
