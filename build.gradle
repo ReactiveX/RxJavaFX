@@ -62,7 +62,7 @@ test {
 }
 
 task sourcesJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from sourceSets.main.allSource
 }
 
@@ -81,7 +81,7 @@ javadoc {
 
 task packageJavadoc(type: Jar) {
     from javadoc
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
 }
 
 publishing {
@@ -130,7 +130,7 @@ publishing {
     }
 }
 bintray {
-    configurations = ['archives']
+    publications = ['mavenJava']
 
     publish = true
     pkg {
