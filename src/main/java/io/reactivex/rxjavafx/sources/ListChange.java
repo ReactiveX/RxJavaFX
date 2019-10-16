@@ -15,6 +15,8 @@
  */
 package io.reactivex.rxjavafx.sources;
 
+import java.util.Objects;
+
 /**
  * Holds an ADDED, REMOVED, or UPDATED flag with the associated value
  * @param <T>
@@ -22,13 +24,15 @@ package io.reactivex.rxjavafx.sources;
 public final class ListChange<T> {
     private final T value;
     private final Flag flag;
+    private final int index;
 
-    private ListChange(T value, Flag flag) {
+    private ListChange(T value, Flag flag, int index) {
         this.value = value;
         this.flag = flag;
+        this.index = index;
     }
-    public static <T> ListChange<T> of(T value, Flag flag) {
-        return new ListChange<>(value, flag);
+    public static <T> ListChange<T> of(T value, Flag flag, int index) {
+        return new ListChange<>(value, flag, index);
     }
     public T getValue() {
         return value;
@@ -36,8 +40,27 @@ public final class ListChange<T> {
     public Flag getFlag() {
         return flag;
     }
+    public int getIndex() {
+        return index;
+    }
+
     @Override
     public String toString() {
-        return flag + " " + value;
+        return flag + " " + value + " " + index;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ListChange<?> that = (ListChange<?>) o;
+        return index == that.index &&
+                value.equals(that.value) &&
+                flag == that.flag;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(value, flag, index);
     }
 }
