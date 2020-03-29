@@ -15,10 +15,10 @@
  */
 package io.reactivex.rxjavafx.observers;
 
-import io.reactivex.Flowable;
-import io.reactivex.flowables.ConnectableFlowable;
-import io.reactivex.functions.Consumer;
-import io.reactivex.plugins.RxJavaPlugins;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.flowables.ConnectableFlowable;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.plugins.RxJavaPlugins;
 import io.reactivex.rxjavafx.observables.JavaFxObservable;
 import javafx.beans.binding.Binding;
 import javafx.beans.value.ObservableValue;

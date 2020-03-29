@@ -15,11 +15,11 @@
  */
 package io.reactivex.rxjavafx.observers;
 
-import io.reactivex.Observer;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
-import io.reactivex.observables.ConnectableObservable;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.observables.ConnectableObservable;
 import javafx.beans.binding.Binding;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -69,7 +69,7 @@ final class BindingObserver<T, S> extends ObservableListenerHelper<S> implements
         try {
             value = unmaskingFunction.apply(t);
             fireChange();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             onError(e);
         }
     }

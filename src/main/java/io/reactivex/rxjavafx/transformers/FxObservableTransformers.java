@@ -16,14 +16,14 @@
 
 package io.reactivex.rxjavafx.transformers;
 
-import io.reactivex.ObservableOperator;
-import io.reactivex.ObservableTransformer;
-import io.reactivex.Observer;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.exceptions.Exceptions;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
-import io.reactivex.observers.ResourceObserver;
+import io.reactivex.rxjava3.core.ObservableOperator;
+import io.reactivex.rxjava3.core.ObservableTransformer;
+import io.reactivex.rxjava3.core.Observer;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.exceptions.Exceptions;
+import io.reactivex.rxjava3.functions.Action;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.observers.ResourceObserver;
 import javafx.application.Platform;
 
 
@@ -183,7 +183,7 @@ public final class FxObservableTransformers {
                     try {
                         if (ctObserver.doOnCompletedCountAction != null)
                             ctObserver.doOnCompletedCountAction.accept(count);
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         Exceptions.throwIfFatal(e);
                         onError(e);
                         return;
@@ -199,7 +199,7 @@ public final class FxObservableTransformers {
                     try {
                         if (ctObserver.doOnErrorCountAction != null)
                             ctObserver.doOnErrorCountAction.accept(count);
-                    } catch(Exception e1) {
+                    } catch(Throwable e1) {
                         Exceptions.throwIfFatal(e1);
                         child.onError(e1);
                     }
@@ -213,7 +213,7 @@ public final class FxObservableTransformers {
                         ++count;
                         if (ctObserver.doOnNextCountAction != null)
                             ctObserver.doOnNextCountAction.accept(count);
-                    } catch(Exception e) {
+                    } catch(Throwable e) {
                         Exceptions.throwIfFatal(e);
                         onError(e);
                         return;

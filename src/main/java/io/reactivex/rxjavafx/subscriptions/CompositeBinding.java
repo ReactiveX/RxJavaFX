@@ -15,7 +15,7 @@
  */
 package io.reactivex.rxjavafx.subscriptions;
 
-import io.reactivex.exceptions.Exceptions;
+import io.reactivex.rxjava3.exceptions.Exceptions;
 import javafx.beans.binding.Binding;
 
 import java.util.*;

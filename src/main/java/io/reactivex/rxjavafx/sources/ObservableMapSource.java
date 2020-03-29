@@ -15,8 +15,8 @@
  */
 package io.reactivex.rxjavafx.sources;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
 import io.reactivex.rxjavafx.observables.JavaFxObservable;
 import io.reactivex.rxjavafx.subscriptions.JavaFxSubscriptions;
 import javafx.beans.property.ListProperty;
@@ -43,7 +43,7 @@ public final class ObservableMapSource {
         if (source instanceof MapProperty<?,?>) {
             return JavaFxObservable.valuesOf((MapProperty<K,T>) source);
         } else {
-            return mutations.startWith(source);
+            return mutations.startWithArray(source);
         }
     }
 

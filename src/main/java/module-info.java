@@ -1,5 +1,5 @@
 module rxjavafx {
-	requires io.reactivex.rxjava2;
+	requires io.reactivex.rxjava3;
 	requires javafx.base;
 	requires javafx.graphics;
 	requires javafx.controls;
@@ -10,5 +10,5 @@ module rxjavafx {
 	exports io.reactivex.rxjavafx.schedulers;
 	exports io.reactivex.rxjavafx.sources;
 	exports io.reactivex.rxjavafx.subscriptions;
-	exports io.reactivex.rxjavafx.transformers;
+	exports io.reactivex.rxjavafx.transformers;	
 }

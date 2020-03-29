@@ -15,8 +15,8 @@
  */
 package io.reactivex.rxjavafx.sources;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableOnSubscribe;
 import io.reactivex.rxjavafx.observables.JavaFxObservable;
 import io.reactivex.rxjavafx.schedulers.JavaFxScheduler;
 import io.reactivex.rxjavafx.subscriptions.JavaFxSubscriptions;
@@ -42,7 +42,7 @@ public final class ObservableListSource {
         if (source instanceof ListProperty<?>) {
             return JavaFxObservable.valuesOf((ListProperty<T>) source);
         } else {
-            return mutations.startWith(source);
+            return mutations.startWithArray(source);
         }
     }
 
