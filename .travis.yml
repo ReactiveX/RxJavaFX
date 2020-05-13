@@ -6,9 +6,8 @@ jdk:
 sudo: false
 # as per http://blog.travis-ci.com/2014-12-17-faster-builds-with-container-based-infrastructure/
 
-before_install:
-- export DISPLAY=:99.0
-- sh -e /etc/init.d/xvfb start
+services:
+  - xvfb
 
 # script for build and release via Travis to Bintray
 script: gradle/buildViaTravis.sh
