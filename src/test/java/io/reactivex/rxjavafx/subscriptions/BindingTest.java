@@ -15,13 +15,13 @@
  */
 package io.reactivex.rxjavafx.subscriptions;
 
-import io.reactivex.Flowable;
-import io.reactivex.Observable;
-import io.reactivex.processors.PublishProcessor;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.processors.PublishProcessor;
 import io.reactivex.rxjavafx.observers.JavaFxObserver;
 import io.reactivex.rxjavafx.observers.JavaFxSubscriber;
 import io.reactivex.rxjavafx.schedulers.JavaFxScheduler;
-import io.reactivex.subjects.PublishSubject;
+import io.reactivex.rxjava3.subjects.PublishSubject;
 import javafx.application.Platform;
 import javafx.beans.binding.Binding;
 import org.junit.Test;

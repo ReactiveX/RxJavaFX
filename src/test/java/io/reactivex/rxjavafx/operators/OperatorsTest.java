@@ -1,7 +1,7 @@
 package io.reactivex.rxjavafx.operators;
 
-import io.reactivex.Flowable;
-import io.reactivex.Observable;
+import io.reactivex.rxjava3.core.Flowable;
+import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjavafx.transformers.FxFlowableTransformers;
 import io.reactivex.rxjavafx.transformers.FxObservableTransformers;
 import org.junit.Assert;

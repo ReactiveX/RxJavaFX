@@ -15,9 +15,8 @@
  */
 package io.reactivex.rxjavafx.schedulers;
 
-import io.reactivex.Scheduler;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.disposables.Disposables;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.disposables.Disposable;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Platform;
@@ -118,7 +117,7 @@ public final class JavaFxScheduler extends Scheduler {
             final Timeline timer = new Timeline(new KeyFrame(Duration.millis(delay), event -> schedule(queuedRunnable)));
             timer.play();
 
-            return Disposables.fromRunnable(() -> {
+            return Disposable.fromRunnable(() -> {
                 queuedRunnable.dispose();
                 timer.stop();
             });
@@ -127,7 +126,7 @@ public final class JavaFxScheduler extends Scheduler {
         @Override
         public Disposable schedule(final Runnable action) {
             if (isDisposed()) {
-                return Disposables.disposed();
+                return Disposable.disposed();
             }
 
             final QueuedRunnable queuedRunnable = action instanceof QueuedRunnable ? (QueuedRunnable) action : new QueuedRunnable(action);

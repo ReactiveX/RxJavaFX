@@ -16,8 +16,8 @@
 package io.reactivex.rxjavafx.observables;
 
 
-import io.reactivex.Maybe;
-import io.reactivex.Observable;
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.Observable;
 import io.reactivex.rxjavafx.sources.*;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;

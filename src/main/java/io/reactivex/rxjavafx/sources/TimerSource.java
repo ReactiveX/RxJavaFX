@@ -15,7 +15,7 @@
  */
 package io.reactivex.rxjavafx.sources;
 
-import io.reactivex.Observable;
+import io.reactivex.rxjava3.core.Observable;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;

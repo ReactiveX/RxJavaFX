@@ -15,12 +15,12 @@
  */
 package io.reactivex.rxjavafx.transformers;
 
-import io.reactivex.FlowableOperator;
-import io.reactivex.FlowableTransformer;
-import io.reactivex.exceptions.Exceptions;
-import io.reactivex.functions.Action;
-import io.reactivex.functions.Consumer;
-import io.reactivex.subscribers.ResourceSubscriber;
+import io.reactivex.rxjava3.core.FlowableOperator;
+import io.reactivex.rxjava3.core.FlowableTransformer;
+import io.reactivex.rxjava3.exceptions.Exceptions;
+import io.reactivex.rxjava3.functions.Action;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.subscribers.ResourceSubscriber;
 import javafx.application.Platform;
 import org.reactivestreams.Subscriber;
 import org.reactivestreams.Subscription;
@@ -190,7 +190,7 @@ public class FxFlowableTransformers {
                     try {
                         if (ctObserver.doOnCompletedCountAction != null)
                             ctObserver.doOnCompletedCountAction.accept(count);
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         Exceptions.throwIfFatal(e);
                         onError(e);
                         return;
@@ -206,7 +206,7 @@ public class FxFlowableTransformers {
                     try {
                         if (ctObserver.doOnErrorCountAction != null)
                             ctObserver.doOnErrorCountAction.accept(count);
-                    } catch(Exception e1) {
+                    } catch(Throwable e1) {
                         Exceptions.throwIfFatal(e1);
                         child.onError(e1);
                     }
@@ -220,7 +220,7 @@ public class FxFlowableTransformers {
                         ++count;
                         if (ctObserver.doOnNextCountAction != null)
                             ctObserver.doOnNextCountAction.accept(count);
-                    } catch(Exception e) {
+                    } catch(Throwable e) {
                         Exceptions.throwIfFatal(e);
                         onError(e);
                         return;

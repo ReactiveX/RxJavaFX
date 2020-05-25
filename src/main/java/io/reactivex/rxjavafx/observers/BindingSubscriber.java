@@ -15,9 +15,9 @@
  */
 package io.reactivex.rxjavafx.observers;
 
-import io.reactivex.flowables.ConnectableFlowable;
-import io.reactivex.functions.Consumer;
-import io.reactivex.functions.Function;
+import io.reactivex.rxjava3.flowables.ConnectableFlowable;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.functions.Function;
 import javafx.beans.binding.Binding;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableList;
@@ -70,7 +70,7 @@ final class BindingSubscriber<T, S> extends ObservableListenerHelper<S> implemen
         try {
             value = unmaskingFunction.apply(t);
             fireChange();
-        } catch (Exception e) {
+        } catch (Throwable e) {
             onError(e);
         }
     }

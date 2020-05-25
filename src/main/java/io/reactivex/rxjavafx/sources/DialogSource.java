@@ -15,8 +15,8 @@
  */
 package io.reactivex.rxjavafx.sources;
 
-import io.reactivex.Maybe;
-import io.reactivex.Single;
+import io.reactivex.rxjava3.core.Maybe;
+import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjavafx.schedulers.JavaFxScheduler;
 import javafx.scene.control.Dialog;
 

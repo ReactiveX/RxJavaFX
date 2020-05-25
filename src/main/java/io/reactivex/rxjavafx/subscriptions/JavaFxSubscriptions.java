@@ -16,10 +16,9 @@
 package io.reactivex.rxjavafx.subscriptions;
 
 
-import io.reactivex.Scheduler;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.disposables.Disposables;
-import javafx.application.Platform;;
+import io.reactivex.rxjava3.core.Scheduler;
+import io.reactivex.rxjava3.disposables.Disposable;
+import javafx.application.Platform;
 import io.reactivex.rxjavafx.schedulers.JavaFxScheduler;
 
 
@@ -36,7 +35,7 @@ public final class JavaFxSubscriptions {
      * @return an Disposable that always runs <code>unsubscribe</code> in the event dispatch thread.
      */
     public static Disposable unsubscribeInEventDispatchThread(final Runnable unsubscribe) {
-        return Disposables.fromRunnable(() -> {
+        return Disposable.fromRunnable(() -> {
             if (Platform.isFxApplicationThread()) {
                 unsubscribe.run();
             } else {

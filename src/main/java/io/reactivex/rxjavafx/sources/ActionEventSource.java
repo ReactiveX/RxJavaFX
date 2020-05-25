@@ -15,8 +15,8 @@
  */
 package io.reactivex.rxjavafx.sources;
 
-import io.reactivex.Observable;
-import io.reactivex.ObservableEmitter;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.core.ObservableEmitter;
 import io.reactivex.rxjavafx.schedulers.JavaFxScheduler;
 import io.reactivex.rxjavafx.subscriptions.JavaFxSubscriptions;
 import javafx.event.ActionEvent;

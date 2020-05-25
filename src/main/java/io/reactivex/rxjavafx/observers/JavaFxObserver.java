@@ -17,10 +17,10 @@ package io.reactivex.rxjavafx.observers;
 
 import java.util.Optional;
 
-import io.reactivex.Observable;
-import io.reactivex.functions.Consumer;
-import io.reactivex.observables.ConnectableObservable;
-import io.reactivex.plugins.RxJavaPlugins;
+import io.reactivex.rxjava3.core.Observable;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.observables.ConnectableObservable;
+import io.reactivex.rxjava3.plugins.RxJavaPlugins;
 import io.reactivex.rxjavafx.observables.JavaFxObservable;
 import javafx.beans.binding.Binding;
 import javafx.beans.value.ObservableValue;

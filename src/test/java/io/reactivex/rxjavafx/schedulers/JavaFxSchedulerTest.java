@@ -15,7 +15,7 @@
  */
 package io.reactivex.rxjavafx.schedulers;
 
-import io.reactivex.Scheduler;
+import io.reactivex.rxjava3.core.Scheduler;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.stage.Stage;
