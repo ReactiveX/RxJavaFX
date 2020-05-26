@@ -103,14 +103,20 @@ public final class ObservableListSource {
             ListChangeListener<T> listener = c -> {
                 while (c.next()) {
                     if (c.wasAdded()) {
-                        c.getAddedSubList().forEach(v -> subscriber.onNext(ListChange.of(v,Flag.ADDED)));
+                        for (int i = c.getFrom(); i < c.getTo(); i++) {
+                            subscriber.onNext(ListChange.of(c.getList().get(i), Flag.ADDED, i));
+                        }
                     }
                     if (c.wasRemoved()) {
-                        c.getRemoved().forEach(v -> subscriber.onNext(ListChange.of(v,Flag.REMOVED)));
+                        int removedIdx = 0;
+                        for (int i = c.getFrom(); i < c.getTo() + 1; i++) {
+                            subscriber.onNext(ListChange.of(c.getRemoved().get(removedIdx), Flag.REMOVED, i));
+                            removedIdx++;
+                        }
                     }
                     if (c.wasUpdated()) {
                         for (int i = c.getFrom(); i < c.getTo(); i++) {
-                            subscriber.onNext(ListChange.of(c.getList().get(i),Flag.UPDATED));
+                            subscriber.onNext(ListChange.of(c.getList().get(i), Flag.UPDATED, i));
                         }
                     }
                 }
@@ -132,12 +138,22 @@ public final class ObservableListSource {
 
                 while (c.next()) {
                     if (c.wasAdded()) {
-                        c.getAddedSubList().stream().filter(v -> dupeCounter.add(v) == 1)
-                                .forEach(v -> subscriber.onNext(ListChange.of(v,Flag.ADDED)));
+                        for (int i = c.getFrom(); i < c.getTo(); i++) {
+                            var item = c.getList().get(i);
+                            if (dupeCounter.add(item) == 1) {
+                                subscriber.onNext(ListChange.of(item, Flag.ADDED, i));
+                            }
+                        }
                     }
                     if (c.wasRemoved()) {
-                        c.getRemoved().stream().filter(v -> dupeCounter.remove(v) == 0)
-                                .forEach(v -> subscriber.onNext(ListChange.of(v,Flag.REMOVED)));
+                        int removedIdx = 0;
+                        for (int i = c.getFrom(); i < c.getTo() + 1; i++) {
+                            var item = c.getRemoved().get(removedIdx);
+                            if (dupeCounter.remove(item) == 0) {
+                                subscriber.onNext(ListChange.of(item, Flag.REMOVED, i));
+                            }
+                            removedIdx++;
+                        }
                     }
                 }
             };
@@ -157,12 +173,22 @@ public final class ObservableListSource {
 
                 while (c.next()) {
                     if (c.wasAdded()) {
-                        c.getAddedSubList().stream().filter(v -> dupeCounter.add(mapper.apply(v)) == 1)
-                                .forEach(v -> subscriber.onNext(ListChange.of(v,Flag.ADDED)));
+                        for (int i = c.getFrom(); i < c.getTo(); i++) {
+                            var item = c.getList().get(i);
+                            if (dupeCounter.add(mapper.apply(item)) == 1) {
+                                subscriber.onNext(ListChange.of(item, Flag.ADDED, i));
+                            }
+                        }
                     }
                     if (c.wasRemoved()) {
-                        c.getRemoved().stream().filter(v -> dupeCounter.remove(mapper.apply(v)) == 0)
-                                .forEach(v -> subscriber.onNext(ListChange.of(v,Flag.REMOVED)));
+                        int removedIdx = 0;
+                        for (int i = c.getFrom(); i < c.getTo() + 1; i++) {
+                            var item = c.getRemoved().get(removedIdx);
+                            if (dupeCounter.remove(mapper.apply(item)) == 0) {
+                                subscriber.onNext(ListChange.of(item, Flag.REMOVED, i));
+                            }
+                            removedIdx++;
+                        }
                     }
                 }
             };
@@ -181,14 +207,22 @@ public final class ObservableListSource {
 
                 while (c.next()) {
                     if (c.wasAdded()) {
-                        c.getAddedSubList().stream().map(mapper)
-                                .filter(v -> dupeCounter.add(v) == 1)
-                                .forEach(v -> subscriber.onNext(ListChange.of(v,Flag.ADDED)));
+                        for (int i = c.getFrom(); i < c.getTo(); i++) {
+                            var item = mapper.apply(c.getList().get(i));
+                            if (dupeCounter.add(item) == 1) {
+                                subscriber.onNext(ListChange.of(item, Flag.ADDED, i));
+                            }
+                        }
                     }
                     if (c.wasRemoved()) {
-                        c.getRemoved().stream().map(mapper)
-                                .filter(v -> dupeCounter.remove(v) == 0)
-                                .forEach(v -> subscriber.onNext(ListChange.of(v,Flag.REMOVED)));
+                        int removedIdx = 0;
+                        for (int i = c.getFrom(); i < c.getTo() + 1; i++) {
+                            var item = mapper.apply(c.getRemoved().get(removedIdx));
+                            if (dupeCounter.remove(item) == 0) {
+                                subscriber.onNext(ListChange.of(item, Flag.REMOVED, i));
+                            }
+                            removedIdx++;
+                        }
                     }
                 }
             };
