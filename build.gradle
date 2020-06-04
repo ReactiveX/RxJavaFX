@@ -10,13 +10,10 @@ buildscript {
     dependencies {
         classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.8.4"
         classpath "org.jfrog.buildinfo:build-info-extractor-gradle:4.5.2"
-        classpath "org.javamodularity:moduleplugin:1.5.0"
     }
 }
 
-apply plugin: "java"
-apply plugin: "org.javamodularity.moduleplugin"
-apply plugin: "maven"
+apply plugin: "java-library"
 apply plugin: "maven-publish"
 apply plugin: "com.jfrog.bintray"
 apply plugin: "com.jfrog.artifactory"
@@ -47,47 +44,38 @@ repositories {
 }
 
 dependencies {
-    compile 'io.reactivex.rxjava3:rxjava:3.0.1'
-    compile "org.openjfx:javafx-base:11:${platform}"
-    compile "org.openjfx:javafx-graphics:11:${platform}"
-    compile "org.openjfx:javafx-controls:11:${platform}"
-    testCompile 'junit:junit-dep:4.11'
-    testCompile 'org.mockito:mockito-core:1.8.5'
+    implementation 'io.reactivex.rxjava3:rxjava:3.0.1'
+    implementation "org.openjfx:javafx-base:11:${platform}"
+    implementation "org.openjfx:javafx-graphics:11:${platform}"
+    implementation "org.openjfx:javafx-controls:11:${platform}"
+    testImplementation 'junit:junit-dep:4.11'
+    testImplementation 'org.mockito:mockito-core:1.8.5'
 }
 
 test {
-    moduleOptions {
-        runOnClasspath = true
-    }
+    useJUnit()
 }
 
-task sourcesJar(type: Jar) {
-    archiveClassifier = 'sources'
-    from sourceSets.main.allSource
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+    modularity.inferModulePath = true
 }
 
 javadoc {
-    source = sourceSets.main.allJava
-    classpath = configurations.compileClasspath
-
     options {
         setMemberLevel JavadocMemberLevel.PUBLIC
         setAuthor true
-//        links "https://docs.oracle.com/javase/8/docs/api/" // causes build to fail on openjdk-11.0.2+9
+	links "https://docs.oracle.com/en/java/javase/11/docs/api/"
     }
 }
 
-task packageJavadoc(type: Jar) {
-    from javadoc
-    archiveClassifier = 'javadoc'
-}
 
 publishing {
     publications {
         mavenJava(MavenPublication) {
             from components.java
-            artifact sourcesJar
-            artifact packageJavadoc
 
             groupId GROUP
             version VERSION_NAME
