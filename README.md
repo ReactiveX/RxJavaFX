@@ -1,6 +1,6 @@
 ![](http://i.imgur.com/x7rmXke.png)
 
-# RxJavaFX: JavaFX bindings for RxJava
+# RxJavaFX: This Include JAvaFX for BINDING
 
 Read the free eBook [_Learning RxJava with JavaFX_](https://www.gitbook.com/book/thomasnield/rxjavafx-guide/details) to get started.
 
@@ -12,7 +12,7 @@ RxJavaFX is a lightweight library to convert JavaFX events into [RxJava](https:/
 
 <a href='https://travis-ci.org/ReactiveX/RxJavaFX/builds'><img src='https://travis-ci.org/ReactiveX/RxJavaFX.svg?branch=2.11.x'></a>
 
-## Documentation
+## Documentation for the Repository
 
 [Learning RxJava with JavaFX](https://www.gitbook.com/book/thomasnield/rxjavafx-guide/details) - Free eBook that covers RxJava from a JavaFX perspective.
 
