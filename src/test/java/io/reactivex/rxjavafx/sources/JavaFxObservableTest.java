@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import static junit.framework.TestCase.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public final class JavaFxObservableTest {
@@ -180,31 +181,28 @@ public final class JavaFxObservableTest {
 
     @Test
     public void testRxObservableListChanges() {
-        //new JFXPanel()();
 
         ObservableList<String> sourceList = FXCollections.observableArrayList();
         Observable<ListChange<String>> emissions = JavaFxObservable.changesOf(sourceList);
 
         CountDownLatch gate = new CountDownLatch(1);
 
-        class FlagAndCount {
-            final Flag flag;
-            final long count;
-            FlagAndCount(Flag flag, long count) {
-                this.flag = flag;
-                this.count = count;
-            }
-
-        }
+        var expected = List.of(
+                ListChange.of("Alpha", Flag.ADDED, 0),
+                ListChange.of("Beta", Flag.ADDED, 1),
+                ListChange.of("Alpha", Flag.REMOVED, 0),
+                ListChange.of("Gamma", Flag.ADDED, 1),
+                ListChange.of("Gamma", Flag.REMOVED, 1),
+                ListChange.of("Epsilon", Flag.ADDED, 0)
+        );
         emissions.observeOn(Schedulers.io())
                 .observeOn(JavaFxScheduler.platform())
-                .take(5)
-                .groupBy(ListChange::getFlag)
-                .flatMapSingle(grp -> grp.count().map(ct -> new FlagAndCount(grp.getKey(),ct)))
-                .subscribe(l -> {
-                    if (l.flag.equals(Flag.ADDED)) { assertTrue(l.count == 3); }
-                    if (l.flag.equals(Flag.REMOVED)) { assertTrue(l.count == 2); }
-                },Throwable::printStackTrace,gate::countDown);
+                .take(6)
+                .toList()
+                .toObservable()
+                .subscribe(l -> assertEquals(expected, l),
+                                Throwable::printStackTrace,
+                                gate::countDown);
 
         Platform.runLater(() -> {
             sourceList.add("Alpha");
@@ -212,6 +210,7 @@ public final class JavaFxObservableTest {
             sourceList.remove("Alpha");
             sourceList.add("Gamma");
             sourceList.remove("Gamma");
+            sourceList.add(0, "Epsilon");
         });
 
         try {
@@ -230,24 +229,21 @@ public final class JavaFxObservableTest {
 
         CountDownLatch gate = new CountDownLatch(1);
 
-        class FlagAndCount {
-            final Flag flag;
-            final long count;
-            FlagAndCount(Flag flag, long count) {
-                this.flag = flag;
-                this.count = count;
-            }
-
-        }
+        var expected = List.of(
+                ListChange.of(5, Flag.ADDED, 0),
+                ListChange.of(4, Flag.ADDED, 1),
+                ListChange.of(5, Flag.REMOVED, 1),
+                ListChange.of(7, Flag.ADDED, 1)
+                );
         emissions.observeOn(Schedulers.io())
                 .observeOn(JavaFxScheduler.platform())
-                .take(3)
-                .groupBy(ListChange::getFlag)
-                .flatMapSingle(grp -> grp.count().map(ct -> new FlagAndCount(grp.getKey(),ct)))
-                .subscribe(l -> {
-                    if (l.flag.equals(Flag.ADDED)) { assertTrue(l.count == 2); }
-                    if (l.flag.equals(Flag.REMOVED)) { assertTrue(l.count == 1); }
-                },Throwable::printStackTrace,gate::countDown);
+                .take(4)
+                .toList()
+                .toObservable()
+                .subscribe(l -> assertEquals(expected, l),
+                                Throwable::printStackTrace,
+                                gate::countDown
+                );
 
         Platform.runLater(() -> {
             sourceList.add("Alpha");
@@ -257,6 +253,7 @@ public final class JavaFxObservableTest {
             sourceList.add("Gamma");
             sourceList.remove("Gamma");
             sourceList.remove("Alpha");
+            sourceList.add(1, "Epsilon");
         });
 
         try {
@@ -269,31 +266,29 @@ public final class JavaFxObservableTest {
 
     @Test
     public void testRxObservableListDistinctChanges() {
-        //new JFXPanel()();
-
         ObservableList<String> sourceList = FXCollections.observableArrayList();
         Observable<ListChange<String>> emissions = JavaFxObservable.distinctChangesOf(sourceList);
 
         CountDownLatch gate = new CountDownLatch(1);
 
-        class FlagAndCount {
-            final Flag flag;
-            final long count;
-            FlagAndCount(Flag flag, long count) {
-                this.flag = flag;
-                this.count = count;
-            }
+        var expected = List.of(
+                ListChange.of("Alpha", Flag.ADDED, 0),
+                ListChange.of("Beta", Flag.ADDED, 1),
+                ListChange.of("Gamma", Flag.ADDED, 2),
+                ListChange.of("Gamma", Flag.REMOVED, 2),
+                ListChange.of("Alpha", Flag.REMOVED, 1),
+                ListChange.of("Epsilon", Flag.ADDED, 1)
+        );
 
-        }
         emissions.observeOn(Schedulers.io())
                 .observeOn(JavaFxScheduler.platform())
-                .take(5)
-                .groupBy(ListChange::getFlag)
-                .flatMapSingle(grp -> grp.count().map(ct -> new FlagAndCount(grp.getKey(),ct)))
-                .subscribe(l -> {
-                    if (l.flag.equals(Flag.ADDED)) { assertTrue(l.count == 3); }
-                    if (l.flag.equals(Flag.REMOVED)) { assertTrue(l.count == 2); }
-                },Throwable::printStackTrace,gate::countDown);
+                .take(6)
+                .toList()
+                .toObservable()
+                .subscribe(l -> assertEquals(expected, l),
+                                Throwable::printStackTrace,
+                                gate::countDown
+                );
 
         Platform.runLater(() -> {
             sourceList.add("Alpha");
@@ -303,6 +298,7 @@ public final class JavaFxObservableTest {
             sourceList.add("Gamma");
             sourceList.remove("Gamma");
             sourceList.remove("Alpha");
+            sourceList.add(1, "Epsilon");
         });
 
         try {
